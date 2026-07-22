@@ -1,0 +1,187 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+}
+
+@layer components {
+  /* Button styles */
+  .btn-primary {
+    @apply bg-home-blue text-white font-medium py-2.5 px-5 rounded-xl
+           hover:bg-[#1D4ED8] active:scale-[0.98] transition-all
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply bg-white text-gray-700 font-medium py-2.5 px-5 rounded-xl
+           border border-gray-200 hover:bg-gray-50 active:scale-[0.98]
+           transition-all;
+  }
+
+  /* Input styles */
+  .input-field {
+    @apply w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl
+           text-gray-900 placeholder-gray-400
+           focus:outline-none focus:ring-2 focus:ring-home-blue/20 focus:border-home-blue
+           transition-all;
+  }
+
+  /* Card styles */
+  .card {
+    @apply bg-white border border-gray-100 rounded-2xl p-6
+           hover:shadow-md transition-shadow;
+  }
+
+  /* ==================== EMPLOYEE DARK THEME ==================== */
+  .emp-page {
+    @apply bg-emp-bg text-emp-text min-h-screen;
+  }
+  .emp-card {
+    @apply bg-emp-card border border-emp-border rounded-2xl p-6
+           hover:border-emp-accent/30 transition-all;
+  }
+  .emp-card-sm {
+    @apply bg-emp-card border border-emp-border rounded-xl p-4
+           hover:border-emp-accent/30 transition-all;
+  }
+  .emp-input {
+    @apply w-full px-4 py-2.5 bg-emp-bg border border-emp-border rounded-xl
+           text-emp-text placeholder-emp-muted/50
+           focus:outline-none focus:ring-2 focus:ring-emp-accent/20 focus:border-emp-accent
+           transition-all;
+  }
+  .emp-btn-primary {
+    @apply bg-emp-accent text-white font-medium py-2.5 px-5 rounded-xl
+           hover:bg-emp-accent-hover active:scale-[0.98] transition-all;
+  }
+  .emp-btn-secondary {
+    @apply bg-emp-card text-emp-text font-medium py-2.5 px-5 rounded-xl
+           border border-emp-border hover:bg-emp-card-hover transition-all;
+  }
+  .emp-text-heading { @apply text-emp-text; }
+  .emp-text-body { @apply text-emp-muted; }
+  .emp-badge {
+    @apply px-2.5 py-1 rounded-full text-xs font-medium;
+  }
+  .emp-sidebar {
+    @apply bg-emp-card border-r border-emp-border;
+  }
+  .emp-nav-link {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium
+           text-emp-muted hover:text-emp-text hover:bg-emp-card-hover
+           transition-all;
+  }
+  .emp-nav-link-active {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium
+           bg-emp-accent/15 text-emp-accent border border-emp-accent/20;
+  }
+
+  /* ==================== WORKER DARK THEME ==================== */
+  .wrk-page {
+    @apply bg-wrk-bg text-wrk-text min-h-screen;
+  }
+  .wrk-card {
+    @apply bg-wrk-card border border-wrk-border rounded-2xl p-6
+           hover:border-wrk-accent/30 transition-all;
+  }
+  .wrk-card-sm {
+    @apply bg-wrk-card border border-wrk-border rounded-xl p-4
+           hover:border-wrk-accent/30 transition-all;
+  }
+  .wrk-input {
+    @apply w-full px-4 py-2.5 bg-wrk-bg border border-wrk-border rounded-xl
+           text-wrk-text placeholder-wrk-muted/50
+           focus:outline-none focus:ring-2 focus:ring-wrk-accent/20 focus:border-wrk-accent
+           transition-all;
+  }
+  .wrk-btn-primary {
+    @apply bg-wrk-accent text-white font-medium py-2.5 px-5 rounded-xl
+           hover:bg-wrk-accent-hover active:scale-[0.98] transition-all;
+  }
+  .wrk-btn-secondary {
+    @apply bg-wrk-card text-wrk-text font-medium py-2.5 px-5 rounded-xl
+           border border-wrk-border hover:bg-wrk-card-hover transition-all;
+  }
+  .wrk-text-heading { @apply text-wrk-text; }
+  .wrk-text-body { @apply text-wrk-muted; }
+  .wrk-badge {
+    @apply px-2.5 py-1 rounded-full text-xs font-medium;
+  }
+  .wrk-sidebar {
+    @apply bg-wrk-card border-r border-wrk-border;
+  }
+  .wrk-nav-link {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium
+           text-wrk-muted hover:text-wrk-text hover:bg-wrk-card-hover
+           transition-all;
+  }
+  .wrk-nav-link-active {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium
+           bg-wrk-accent/15 text-wrk-accent border border-wrk-accent/20;
+  }
+
+  /* ==================== ADMIN DARK THEME ==================== */
+  .adm-page {
+    @apply bg-adm-bg text-adm-text min-h-screen;
+  }
+  .adm-card {
+    @apply bg-adm-card border border-adm-border rounded-2xl p-6
+           hover:border-adm-accent/30 transition-all;
+  }
+  .adm-card-sm {
+    @apply bg-adm-card border border-adm-border rounded-xl p-4
+           hover:border-adm-accent/30 transition-all;
+  }
+  .adm-input {
+    @apply w-full px-4 py-2.5 bg-adm-bg border border-adm-border rounded-xl
+           text-adm-text placeholder-adm-muted/50
+           focus:outline-none focus:ring-2 focus:ring-adm-accent/20 focus:border-adm-accent
+           transition-all;
+  }
+  .adm-btn-primary {
+    @apply bg-adm-accent text-adm-bg font-bold py-2.5 px-5 rounded-xl
+           hover:bg-adm-accent-hover active:scale-[0.98] transition-all;
+  }
+  .adm-btn-secondary {
+    @apply bg-adm-card text-adm-text font-medium py-2.5 px-5 rounded-xl
+           border border-adm-border hover:bg-adm-card-hover transition-all;
+  }
+  .adm-text-heading { @apply text-adm-text; }
+  .adm-text-body { @apply text-adm-muted; }
+  .adm-badge {
+    @apply px-2.5 py-1 rounded-full text-xs font-medium;
+  }
+  .adm-sidebar {
+    @apply bg-adm-card border-r border-adm-border;
+  }
+  .adm-nav-link {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium
+           text-adm-muted hover:text-adm-text hover:bg-adm-card-hover
+           transition-all;
+  }
+  .adm-nav-link-active {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium
+           bg-adm-accent/15 text-adm-accent border border-adm-accent/20;
+  }
+}
