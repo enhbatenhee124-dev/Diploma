@@ -234,9 +234,99 @@ export function useChat(threadId) {
   return { messages, loading, error, send }
 }
 
+/**
+ * Хадгалсан хайлтууд (FR-5.4).
+ * Зөвхөн ажил хайгчид — сервер бусад дүрд 403 буцаана.
+ */
+export function useSavedSearches() {
+  const { user } = useAuth()
+  const isWorker = user?.role === 'employee'
+
+  const { data, loading, error, refresh } = useFetch(
+    useCallback(
+      () => (isWorker ? q.fetchSavedSearches() : Promise.resolve({ ok: true, data: [] })),
+      [isWorker]
+    ),
+    [isWorker],
+    empty
+  )
+
+  const save = useCallback(async input => {
+    const result = await q.createSavedSearch(input)
+    if (result.ok) refresh()
+    return result
+  }, [refresh])
+
+  const toggleNotify = useCallback(async (id, notify) => {
+    const result = await q.setSearchNotify(id, notify)
+    if (result.ok) refresh()
+    return result
+  }, [refresh])
+
+  const remove = useCallback(async id => {
+    const result = await q.deleteSavedSearch(id)
+    if (result.ok) refresh()
+    return result
+  }, [refresh])
+
+  return { searches: data, loading, error, save, toggleNotify, remove, refresh }
+}
+
 /** Мэдээлсэн зүйлс (админд бүгд, хэрэглэгчид өөрийнх). */
 export function useReports() {
   return useFetch(q.fetchReports, [], empty)
+}
+
+/**
+ * Мэдэгдлүүд — шинэ нь realtime-аар шууд ирнэ (FR-8, NFR-6).
+ *
+ * Уншсан гэж тэмдэглэхэд шууд харагдацыг (optimistic) шинэчилнэ: хэрэглэгч
+ * дарсан даруйдаа хариу харах ёстой, сервер хүлээхгүй.
+ */
+export function useNotifications() {
+  const { user } = useAuth()
+  const id = user?.id
+
+  const [items, setItems] = useState(empty)
+  const [loading, setLoading] = useState(true)
+
+  const load = useCallback(async () => {
+    if (!id) {
+      setItems(empty)
+      setLoading(false)
+      return
+    }
+    const result = await q.fetchNotifications()
+    if (result.ok) setItems(result.data.items)
+    setLoading(false)
+  }, [id])
+
+  useEffect(() => { load() }, [load])
+
+  // Шинэ мэдэгдэл ирэхэд жагсаалтын эхэнд нэмнэ
+  useEffect(() => {
+    if (!id) return
+    return q.subscribeToNotifications(id, incoming => {
+      setItems(prev => (prev.some(n => n.id === incoming.id) ? prev : [incoming, ...prev]))
+    })
+  }, [id])
+
+  const unread = items.filter(n => !n.isRead).length
+
+  const markRead = useCallback(async notificationId => {
+    setItems(prev => prev.map(n => (n.id === notificationId ? { ...n, isRead: true } : n)))
+    const result = await q.markNotificationRead(notificationId)
+    if (!result.ok) load()   // амжилтгүй бол бодит төлөвт буцаана
+  }, [load])
+
+  const markAllRead = useCallback(async () => {
+    if (!unread) return
+    setItems(prev => prev.map(n => ({ ...n, isRead: true })))
+    const result = await q.markAllNotificationsRead()
+    if (!result.ok) load()
+  }, [unread, load])
+
+  return { items, unread, loading, markRead, markAllRead, refresh: load }
 }
 
 /** Ажилтны ур чадвар / боломжит цаг. */

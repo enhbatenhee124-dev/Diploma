@@ -155,6 +155,57 @@ export function subscribeToMessages(threadId, onMessage) {
 }
 
 // ------------------------------
+// Хадгалсан хайлт (FR-5.4)
+// ------------------------------
+export const fetchSavedSearches = () => apiGet('/searches')
+
+export const createSavedSearch = ({ name, filters, notify }) =>
+  apiPost('/searches', { name, filters, notify })
+
+export const setSearchNotify = (id, notify) => apiPatch(`/searches/${id}`, { notify })
+
+export const deleteSavedSearch = id => apiDelete(`/searches/${id}`)
+
+// ------------------------------
+// Мэдэгдэл (FR-8, NFR-6)
+// ------------------------------
+export const fetchNotifications = () => apiGet('/notifications')
+
+export const markNotificationRead = id => apiPost(`/notifications/${id}/read`)
+
+export const markAllNotificationsRead = () => apiPost('/notifications/read-all')
+
+/**
+ * Шинэ мэдэгдэл ирэхэд шууд сонсох. Салгах функц буцаана.
+ *
+ * Чаттай ижил шалтгаанаар Supabase Realtime руу ШУУД холбогдоно —
+ * сервер WebSocket барихгүй тул төлөвгүй хэвээр үлдэнэ. RLS нь хэрэглэгч
+ * зөвхөн ӨӨРИЙН мэдэгдлийг сонсохыг баталгаажуулна.
+ */
+export function subscribeToNotifications(userId, onNotification) {
+  const channel = supabase
+    .channel(`notifications:${userId}`)
+    .on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` },
+      payload => {
+        const r = payload.new
+        onNotification({
+          id: r.id,
+          type: r.type,
+          message: r.message,
+          description: r.description,
+          isRead: r.is_read,
+          createdAt: r.created_at,
+        })
+      }
+    )
+    .subscribe()
+
+  return () => supabase.removeChannel(channel)
+}
+
+// ------------------------------
 // Мэдээлэх / хянах (FR-9.2)
 // ------------------------------
 export const createReport = ({ targetType, targetId, reason }) =>

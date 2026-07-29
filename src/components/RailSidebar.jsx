@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { LogOut, Menu, X } from 'lucide-react'
+import NotificationBell from './NotificationBell'
 
 // ------------------------------
 // Эвхэгддэг хажуугийн цэс
@@ -103,8 +104,14 @@ export default function RailSidebar({ theme = 'emp', items, brand, caption, logo
         })}
       </nav>
 
-      {/* Гарах */}
-      <div className="pr-3 pb-4 pt-2 flex-shrink-0">
+      {/* Мэдэгдэл + Гарах */}
+      <div className="pr-3 pb-4 pt-2 flex-shrink-0 border-t border-white/5">
+        <NotificationBell
+          rail={rail}
+          iconCol={ICON_COL}
+          labelClass={labelClass(rail)}
+          idleClass={t.idle}
+        />
         <button
           onClick={onLogout}
           title={rail ? 'Гарах' : undefined}

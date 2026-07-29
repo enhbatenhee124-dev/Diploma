@@ -10,6 +10,7 @@ import {
   useShifts, useApplications, useSavedJobs, useEmployerProfiles, useMyProgress, combine,
 } from '../../hooks/useData'
 import { applyToShift, withdrawApplication } from '../../data/queries'
+import ReportButton from '../../components/ReportButton'
 import { levelAdvice, shiftHours, EMPTY_STATS } from '../../utils/gamification'
 import { Loading, ErrorBox } from '../../components/States'
 
@@ -208,6 +209,15 @@ export default function JobDetail() {
                 <span className="emp-text-body">{shift.category}</span>
               </div>
             </div>
+
+            {/* FR-9.2 — сэжигтэй зарыг админд мэдээлэх.
+                Зөвхөн нэвтэрсэн хэрэглэгч: мэдээлэгчийг тодорхойлж чадахгүй
+                бол спам шүүх боломжгүй. */}
+            {user && (
+              <div className="mt-5 pt-4 border-t border-emp-border">
+                <ReportButton targetType="shift" targetId={shift.id} label="Энэ зарыг мэдээлэх" />
+              </div>
+            )}
           </div>
         </div>
       </div>

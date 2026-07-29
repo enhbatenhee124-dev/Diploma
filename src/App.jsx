@@ -45,6 +45,7 @@ const ManageUsers = lazy(() => import('./pages/admin/ManageUsers'))
 const ManageJobs = lazy(() => import('./pages/admin/ManageJobs'))
 const AdminAnalytics = lazy(() => import('./pages/admin/AdminAnalytics'))
 const Payments = lazy(() => import('./pages/admin/Payments'))
+const Moderation = lazy(() => import('./pages/admin/Moderation'))
 
 function Spinner() {
   return (
@@ -119,6 +120,7 @@ export default function App() {
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="users" element={<ManageUsers />} />
           <Route path="jobs" element={<ManageJobs />} />
+          <Route path="moderation" element={<Moderation />} />
           <Route path="analytics" element={<AdminAnalytics />} />
           <Route path="payments" element={<Payments />} />
         </Route>

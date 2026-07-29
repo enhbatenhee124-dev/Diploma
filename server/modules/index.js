@@ -3,6 +3,8 @@ import applications from './applications/routes.js'
 import reviews from './reviews/routes.js'
 import profiles from './profiles/routes.js'
 import chat from './chat/routes.js'
+import notifications from './notifications/routes.js'
+import searches from './searches/routes.js'
 import gamification from './gamification/routes.js'
 import moderation from './moderation/routes.js'
 import employers from './employers/routes.js'
@@ -27,6 +29,8 @@ export const modules = [
   reviews,
   profiles,
   chat,
+  notifications,
+  searches,
   gamification,
   moderation,
   employers,

@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router-dom'
-import { LayoutDashboard, Users, Briefcase, BarChart3, Shield, CreditCard } from 'lucide-react'
+import { LayoutDashboard, Users, Briefcase, BarChart3, Shield, CreditCard, Flag } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import RailSidebar from '../components/RailSidebar'
 
@@ -7,6 +7,7 @@ const navItems = [
   { path: '/admin/dashboard', label: 'Хянах самбар', icon: LayoutDashboard },
   { path: '/admin/users', label: 'Хэрэглэгчид', icon: Users },
   { path: '/admin/jobs', label: 'Ажлын зарууд', icon: Briefcase },
+  { path: '/admin/moderation', label: 'Хяналт', icon: Flag },
   { path: '/admin/payments', label: 'Төлбөр', icon: CreditCard },
   { path: '/admin/analytics', label: 'Анализ', icon: BarChart3 },
 ]

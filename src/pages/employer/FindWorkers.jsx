@@ -7,6 +7,7 @@ import { useNotification } from '../../hooks/useNotification'
 import { useShifts, useApplications, useProfiles, useWorkerDirectory, combine } from '../../hooks/useData'
 import { inviteWorker } from '../../data/queries'
 import { Loading, ErrorBox } from '../../components/States'
+import ReportButton from '../../components/ReportButton'
 
 const StarRating = ({ rating, size = "w-4 h-4" }) => {
   return (
@@ -185,14 +186,18 @@ export default function FindWorkers() {
                     {worker.bio && (
                       <p className="text-sm text-wrk-muted mt-2">{worker.bio}</p>
                     )}
+                    {/* FR-9.2 */}
+                    <div className="mt-3">
+                      <ReportButton targetType="user" targetId={worker.id} />
+                    </div>
                   </div>
                 </div>
-                <button 
+                <button
                   onClick={() => {
                     if (employerShifts.length > 0) setSelectedShift(employerShifts[0].id)
                     setShowRequestModal(worker.id)
                   }}
-                  className="wrk-btn-primary flex items-center gap-2"
+                  className="wrk-btn-primary flex items-center gap-2 flex-shrink-0"
                 >
                   <PlusCircle className="w-4 h-4" /> Ажилд урь
                 </button>

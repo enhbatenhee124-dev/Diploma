@@ -11,13 +11,19 @@ const required = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KE
 const missing = required.filter(key => !process.env[key])
 
 if (missing.length) {
-  console.error(
+  const detail =
     '\n❌ Дараах орчны хувьсагч дутуу байна:\n' +
     missing.map(k => `   • ${k}`).join('\n') +
-    '\n\n   `.env.example`-г `.env` болгон хуулаад Supabase-ийн Settings → API\n' +
-    '   хэсгээс утгуудыг нь бөглөнө үү.\n'
-  )
-  process.exit(1)
+    '\n\n   Локалд: `.env.example`-г `.env` болгон хуулаад Supabase-ийн\n' +
+    '   Settings → API хэсгээс утгуудыг нь бөглөнө үү.\n' +
+    '   Vercel дээр: Project → Settings → Environment Variables.\n'
+
+  console.error(detail)
+
+  // ⚠ `process.exit()` БИШ, `throw`. Serverless (Vercel) орчинд процессыг
+  //   таслах нь "Runtime exited" гэсэн ойлгомжгүй алдаа өгдөг бөгөөд яг
+  //   ямар хувьсагч дутуугийн бүртгэлд харагдахгүй.
+  throw new Error(`Орчны хувьсагч дутуу: ${missing.join(', ')}`)
 }
 
 export const PORT = Number(process.env.PORT) || 3001

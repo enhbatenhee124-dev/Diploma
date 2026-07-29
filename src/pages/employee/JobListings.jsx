@@ -1,6 +1,10 @@
-import { useState } from 'react'
+import { useState, lazy, Suspense } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, MapPin, DollarSign, Clock, Bookmark, BookmarkCheck, Filter, ChevronDown, Star, Building, CheckCircle, Info } from 'lucide-react'
+import { Search, MapPin, DollarSign, Clock, Bookmark, BookmarkCheck, Filter, ChevronDown, Star, Building, CheckCircle, Info, List as ListIcon, Map as MapIcon } from 'lucide-react'
+
+// Leaflet-ийг эхний ачаалалтад оруулахгүй — хэрэглэгчдийн дийлэнх нь
+// жагсаалтаар хайдаг (FR-5.3)
+const JobMap = lazy(() => import('../../components/JobMap'))
 import { DISTRICTS } from '../../data/constants'
 import { format } from 'date-fns'
 import { useAuth } from '../../hooks/useAuth'
@@ -13,6 +17,7 @@ import { sortByMatch, canMatch } from '../../utils/matching'
 import { applyToShift, withdrawApplication } from '../../data/queries'
 import { levelAdvice, EMPTY_STATS } from '../../utils/gamification'
 import { Loading, ErrorBox } from '../../components/States'
+import SavedSearches from '../../components/SavedSearches'
 
 const getSkillLabel = skill => {
   const map = {
@@ -48,6 +53,7 @@ export default function JobListings() {
   const [search, setSearch] = useState('')
   const [selectedDistrict, setSelectedDistrict] = useState('Бүгд')
   const [sortMode, setSortMode] = useState('match')   // 'match' | 'date'
+  const [view, setView] = useState('list')            // 'list' | 'map'
   const { notify } = useNotification()
   const shiftsQ = useShifts()
   const appsQ = useApplications()
@@ -110,6 +116,11 @@ export default function JobListings() {
         .map(shift => ({ shift, score: 0, reasons: [] }))
         .sort((a, b) => new Date(a.shift.startAt) - new Date(b.shift.startAt))
 
+  // Газрын зураг дээр аль хэдийн хүсэлт илгээсэн ажлыг өөр өнгөөр тэмдэглэнэ
+  const appliedIds = new Set(
+    localApplications.filter(app => app.workerId === user?.id).map(app => app.shiftId)
+  )
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -144,6 +155,22 @@ export default function JobListings() {
             <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white pointer-events-none" />
           </div>
         </div>
+
+        {/* Хадгалсан хайлт (FR-5.4) — зөвхөн нэвтэрсэн ажил хайгчид */}
+        {user?.role === 'employee' && (
+          <div className="mt-4 pt-4 border-t border-emp-border">
+            <SavedSearches
+              currentFilters={{
+                search: search || undefined,
+                district: selectedDistrict !== 'Бүгд' ? selectedDistrict : undefined,
+              }}
+              onApply={filters => {
+                setSearch(filters.search || '')
+                setSelectedDistrict(filters.district || 'Бүгд')
+              }}
+            />
+          </div>
+        )}
       </div>
 
       {/* Results */}
@@ -152,6 +179,29 @@ export default function JobListings() {
           <p className="text-sm emp-text-body">{ranked.length} ажил олдлоо</p>
 
           <div className="flex items-center gap-2">
+            {/* Жагсаалт ↔ Газрын зураг (FR-5.3) */}
+            {[
+              { value: 'list', label: 'Жагсаалт', icon: ListIcon },
+              { value: 'map', label: 'Газрын зураг', icon: MapIcon },
+            ].map(opt => {
+              const Icon = opt.icon
+              return (
+                <button
+                  key={opt.value}
+                  onClick={() => setView(opt.value)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
+                    view === opt.value
+                      ? 'bg-emp-accent text-white'
+                      : 'bg-white/5 emp-text-body hover:bg-white/10'
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" /> {opt.label}
+                </button>
+              )
+            })}
+
+            <span className="w-px h-5 bg-white/10 mx-1" />
+
             {[
               { value: 'match', label: 'Надад тохирох' },
               { value: 'date', label: 'Огноогоор' },
@@ -188,7 +238,25 @@ export default function JobListings() {
           </div>
         )}
 
-        {ranked.map(({ shift: job, score, reasons }) => {
+        {/* Газрын зураг — Leaflet ~150KB тул зөвхөн сонгосон үед татагдана */}
+        {view === 'map' && (
+          <Suspense
+            fallback={
+              <div className="h-[28rem] rounded-2xl border border-white/10 bg-white/[0.03]
+                              flex items-center justify-center">
+                <span className="text-sm emp-text-body">Газрын зураг ачаалж байна…</span>
+              </div>
+            }
+          >
+            <JobMap
+              shifts={ranked.map(r => r.shift)}
+              appliedIds={appliedIds}
+              basePath={user ? '/employee/jobs' : '/jobs'}
+            />
+          </Suspense>
+        )}
+
+        {view === 'list' && ranked.map(({ shift: job, score, reasons }) => {
           const employerProfile = getEmployerProfile(job.employerId)
           const applied = !!getUserApplication(job.id)
           const saved = isSaved(job.id)

@@ -34,6 +34,8 @@ server/
     reviews/              Үнэлгээ                   (FR-7)
     profiles/             Профайл, ур чадвар, гоёолт (FR-2, FR-3, NFR-3)
     chat/                 Платформ доторх чат       (FR-6.4)
+    notifications/        Мэдэгдлийн урсгал         (FR-8, NFR-6)
+    searches/             Хадгалсан хайлт           (FR-5.4)
     gamification/         EXP, түвшин, тэргүүлэгчид
     moderation/           Мэдээлэх, хянах           (FR-9.2)
     employers/            Баталгаажуулах дараалал   (FR-3.2, FR-9.1)
@@ -125,6 +127,13 @@ server/
 | `GET` | `/api/chat/threads/:id/messages` | Мессежүүд 🔒 |
 | `POST` | `/api/chat/threads/:id/messages` | Мессеж илгээх 🔒 |
 | `POST` | `/api/chat/threads/:id/read` | Уншсан гэж тэмдэглэх 🔒 |
+| `GET` | `/api/notifications` | Миний мэдэгдлүүд + уншаагүйн тоо 🔒 |
+| `POST` | `/api/notifications/:id/read` | Уншсан гэж тэмдэглэх 🔒 |
+| `POST` | `/api/notifications/read-all` | Бүгдийг уншсан 🔒 |
+| `GET` | `/api/searches` | Хадгалсан хайлтууд 🔒 ажилтан |
+| `POST` | `/api/searches` | Хайлт хадгалах 🔒 ажилтан |
+| `PATCH` | `/api/searches/:id` | Мэдэгдэл асаах/унтраах 🔒 ажилтан |
+| `DELETE` | `/api/searches/:id` | Хайлт устгах 🔒 ажилтан |
 | `GET` | `/api/gamification/me` | Миний EXP, түвшин 🔒 |
 | `GET` | `/api/gamification/ranking?role=` | Тэргүүлэгчид |
 | `POST` | `/api/moderation/reports` | Мэдээлэх 🔒 |
@@ -159,9 +168,26 @@ server/
 
 ### Realtime
 
-Чатын шинэ мессежийг браузер **Supabase Realtime-аас шууд** сонсоно
-(`subscribeToMessages`). Сервер WebSocket барихгүй тул төлөвгүй (stateless)
-хэвээр үлдэж, хэвтээ масштаблахад асуудалгүй. Харах эрхийг RLS шалгана.
+Чатын шинэ мессеж болон мэдэгдлийг браузер **Supabase Realtime-аас шууд**
+сонсоно (`subscribeToMessages`, `subscribeToNotifications`). Сервер
+WebSocket барихгүй тул төлөвгүй (stateless) хэвээр үлдэж, хэвтээ
+масштаблахад асуудалгүй. Харах эрхийг RLS шалгана.
+
+Аль хүснэгт realtime-д нэвтрэхийг `20260729000400_realtime_publication.sql`
+тодорхойлно — дашбоардаас гараар тохируулбал шинэ орчинд дагаж очихгүй.
+
+### Өгөгдлийн сан дахь автомат ажил
+
+Зарим логик серверт бус өгөгдлийн санд байрлана. Шалтгаан: тэдгээр нь
+хүсэлтээс хамааралгүй ажиллах, эсвэл бүх хэрэглэгчийн өгөгдлийг унших
+шаардлагатай (RLS-ээс болж серверээс хийх боломжгүй).
+
+| Юу | Хэзээ | Хаана |
+|---|---|---|
+| Хугацаа өнгөрсөн зар хаах (FR-4.3) | pg_cron, 10 мин тутам | `close_expired_shifts()` |
+| Хадгалсан хайлтад мэдэгдэх (FR-5.4) | Зар нэмэгдэхэд | `notify_saved_searches()` триггер |
+| Зөвшөөрөгдсөн хүсэлтэд чат нээх (FR-6.4) | Төлөв солигдоход | `auto_open_chat()` триггер |
+| Захиалга/түвшний шалгалт | Зар, хүсэлт нэмэгдэхэд | `enforce_shift_quota()`, `enforce_level_requirement()` |
 
 ## Өгөгдлийн сан
 

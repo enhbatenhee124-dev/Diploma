@@ -1,0 +1,9 @@
+# Serverless багцад хэрэггүй зүйлс — хүйтэн эхлэлтийг хурдасгана
+tests
+supabase
+server/scripts
+**/*.test.js
+vitest.config.js
+.env
+.env.*
+!.env.example

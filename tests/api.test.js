@@ -30,7 +30,7 @@ const api = () => request(app)
 let sb
 let token = {}
 let available = false
-const created = { shiftIds: [] }
+const created = { shiftIds: [], reportIds: [] }
 
 /** Утас/и-мэйлээр нэвтэрч access token авна. */
 async function login(identifier) {
@@ -66,10 +66,21 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
-  // Тестийн үүсгэсэн зарыг устгана — өгөгдлийн санд хог үлдээхгүй
+  // Тестийн үүсгэсэн өгөгдлийг устгана — өгөгдлийн санд хог үлдээхгүй
   if (!available) return
+
   for (const id of created.shiftIds) {
     await api().delete(`/api/shifts/${id}`).set(...auth(token.employer))
+  }
+
+  // `reports.target_id` нь гадаад түлхүүр биш тул зар устгахад cascade
+  // хийгдэхгүй. API-д мэдээлэл УСТГАХ зам ЗОРИУД байхгүй (аудитын мөр
+  // үлдэх ёстой) учир цэвэрлэгээг service_role-оор хийнэ.
+  if (created.reportIds.length) {
+    const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
+      auth: { persistSession: false },
+    })
+    await admin.from('reports').delete().in('id', created.reportIds)
   }
 })
 
@@ -89,7 +100,9 @@ describe('Сервер амьд эсэх', () => {
     expect(res.body.modules).toContain('/api/shifts')
     expect(res.body.modules).toContain('/api/applications')
     expect(res.body.modules).toContain('/api/billing')
-    expect(res.body.modules).toHaveLength(9)
+    expect(res.body.modules).toContain('/api/notifications')
+    expect(res.body.modules).toContain('/api/searches')
+    expect(res.body.modules).toHaveLength(11)
   })
 
   it('байхгүй зам 404 буцаана', async () => {
@@ -456,6 +469,312 @@ describe.runIf(hasSupabase)('Хадгалсан ажил', () => {
     expect(second.status).toBe(200)
 
     await api().delete(`/api/shifts/${shift.id}/save`).set(...auth(token.worker))
+  })
+})
+
+// ------------------------------
+// Хадгалсан хайлт ба мэдэгдэл (FR-5.4)
+// ------------------------------
+describe.runIf(hasSupabase)('Хадгалсан хайлт', () => {
+  const searchIds = []
+
+  afterAll(async () => {
+    if (!available) return
+    for (const id of searchIds) {
+      await api().delete(`/api/searches/${id}`).set(...auth(token.worker))
+    }
+  })
+
+  it('шүүлтгүй хайлт хадгалахыг татгалзана', async () => {
+    if (!available) return
+
+    // Шүүлтгүй бол БҮХ шинэ зар мэдэгдэл болно — хэрэглэгчийг живүүлнэ
+    const res = await api()
+      .post('/api/searches')
+      .set(...auth(token.worker))
+      .send({ name: 'Бүгд', filters: {} })
+
+    expect(res.status).toBe(400)
+  })
+
+  it('ажил олгогч хандаж чадахгүй', async () => {
+    if (!available) return
+    const res = await api().get('/api/searches').set(...auth(token.employer))
+    expect(res.status).toBe(403)
+  })
+
+  it('хайлт хадгалж, танихгүй шүүлтийг хаяна', async () => {
+    if (!available) return
+
+    const res = await api()
+      .post('/api/searches')
+      .set(...auth(token.worker))
+      .send({
+        name: '[ТЕСТ] Сүхбаатар',
+        filters: { district: 'Сүхбаатар', minWage: 9000, хуурамч: 'утга' },
+      })
+
+    expect(res.status).toBe(201)
+    expect(res.body.data.filters).toEqual({ district: 'Сүхбаатар', minWage: 9000 })
+    searchIds.push(res.body.data.id)
+  })
+
+  it('ТОХИРОХ зар нийтлэгдэхэд мэдэгдэл ирнэ', async () => {
+    if (!available || !searchIds.length) return
+
+    const before = await api().get('/api/notifications').set(...auth(token.worker))
+
+    const shift = await api()
+      .post('/api/shifts')
+      .set(...auth(token.employer))
+      .send({
+        title: '[ТЕСТ] Хайлтад тохирох ажил',
+        category: 'food',
+        description: 'Хадгалсан хайлтын автомат тест.',
+        district: 'Сүхбаатар',
+        startAt: new Date(Date.now() + 86400_000).toISOString(),
+        endAt: new Date(Date.now() + 90000_000).toISOString(),
+        hourlyWage: 12000,
+        slots: 1,
+      })
+    expect(shift.status).toBe(201)
+    created.shiftIds.push(shift.body.data.id)
+
+    const after = await api().get('/api/notifications').set(...auth(token.worker))
+    expect(after.body.data.unread).toBe(before.body.data.unread + 1)
+    expect(after.body.data.items[0].message).toMatch(/Шинэ тохирох ажил/)
+  })
+
+  it('ҮЛ ТОХИРОХ зар мэдэгдэл үүсгэхгүй', async () => {
+    if (!available || !searchIds.length) return
+
+    const before = await api().get('/api/notifications').set(...auth(token.worker))
+
+    const shift = await api()
+      .post('/api/shifts')
+      .set(...auth(token.employer))
+      .send({
+        title: '[ТЕСТ] Өөр дүүргийн ажил',
+        category: 'food',
+        description: 'Хадгалсан хайлтад тохирох ЁСГҮЙ.',
+        district: 'Налайх',
+        startAt: new Date(Date.now() + 86400_000).toISOString(),
+        endAt: new Date(Date.now() + 90000_000).toISOString(),
+        hourlyWage: 12000,
+        slots: 1,
+      })
+    expect(shift.status).toBe(201)
+    created.shiftIds.push(shift.body.data.id)
+
+    const after = await api().get('/api/notifications').set(...auth(token.worker))
+    expect(after.body.data.unread).toBe(before.body.data.unread)
+  })
+
+  it('мэдэгдлийг унтраана', async () => {
+    if (!available || !searchIds.length) return
+
+    const res = await api()
+      .patch(`/api/searches/${searchIds[0]}`)
+      .set(...auth(token.worker))
+      .send({ notify: false })
+
+    expect(res.status).toBe(200)
+    expect(res.body.data.notify).toBe(false)
+  })
+
+  it('унтраасан хайлт мэдэгдэл үүсгэхгүй', async () => {
+    if (!available || !searchIds.length) return
+
+    const before = await api().get('/api/notifications').set(...auth(token.worker))
+
+    const shift = await api()
+      .post('/api/shifts')
+      .set(...auth(token.employer))
+      .send({
+        title: '[ТЕСТ] Унтраасны дараах ажил',
+        category: 'food',
+        description: 'Мэдэгдэл унтраасан тул ирэх ЁСГҮЙ.',
+        district: 'Сүхбаатар',
+        startAt: new Date(Date.now() + 86400_000).toISOString(),
+        endAt: new Date(Date.now() + 90000_000).toISOString(),
+        hourlyWage: 12000,
+        slots: 1,
+      })
+    created.shiftIds.push(shift.body.data.id)
+
+    const after = await api().get('/api/notifications').set(...auth(token.worker))
+    expect(after.body.data.unread).toBe(before.body.data.unread)
+  })
+})
+
+// ------------------------------
+// Мэдээлэх ба хянах (FR-9.2)
+// ------------------------------
+describe.runIf(hasSupabase)('Мэдээлэх', () => {
+  let reportId
+
+  it('ажилтан зарыг мэдээлнэ', async () => {
+    if (!available) return
+
+    const shifts = await api().get('/api/shifts').set(...auth(token.worker))
+    const shift = shifts.body.data[0]
+    if (!shift) return
+
+    const res = await api()
+      .post('/api/moderation/reports')
+      .set(...auth(token.worker))
+      .send({ targetType: 'shift', targetId: shift.id, reason: '[ТЕСТ] Автомат тестийн мэдээлэл' })
+
+    // Өмнөх тестээс үлдсэн бол 409 — хоёулаа хүлээн зөвшөөрөгдөнө
+    expect([201, 409]).toContain(res.status)
+    if (res.status === 201) {
+      reportId = res.body.data.id
+      created.reportIds.push(reportId)
+    }
+  })
+
+  it('нэг зүйлийг хоёр удаа мэдээлж чадахгүй', async () => {
+    if (!available || !reportId) return
+
+    const shifts = await api().get('/api/shifts').set(...auth(token.worker))
+    const res = await api()
+      .post('/api/moderation/reports')
+      .set(...auth(token.worker))
+      .send({ targetType: 'shift', targetId: shifts.body.data[0].id, reason: 'дахин мэдээлэх' })
+
+    expect(res.status).toBe(409)
+  })
+
+  it('хэт богино шалтгааныг татгалзана', async () => {
+    if (!available) return
+
+    const shifts = await api().get('/api/shifts').set(...auth(token.worker))
+    const res = await api()
+      .post('/api/moderation/reports')
+      .set(...auth(token.worker))
+      .send({ targetType: 'shift', targetId: shifts.body.data[0].id, reason: 'ab' })
+
+    expect(res.status).toBe(400)
+  })
+
+  it('өөрийгөө мэдээлж чадахгүй', async () => {
+    if (!available) return
+
+    const me = await api().get('/api/gamification/me').set(...auth(token.worker))
+    const res = await api()
+      .post('/api/moderation/reports')
+      .set(...auth(token.worker))
+      .send({ targetType: 'user', targetId: me.body.data.userId, reason: 'өөрийгөө мэдээлэх' })
+
+    expect(res.status).toBe(400)
+  })
+
+  it('энгийн хэрэглэгч мэдээллийн жагсаалт харж чадахгүй', async () => {
+    if (!available) return
+
+    const res = await api().get('/api/moderation/reports').set(...auth(token.worker))
+    expect(res.status).toBe(403)
+  })
+
+  it('админ жагсаалтыг харж, шийдвэрлэнэ', async () => {
+    if (!available || !reportId) return
+
+    const list = await api().get('/api/moderation/reports').set(...auth(token.admin))
+    expect(list.status).toBe(200)
+    expect(list.body.data.some(r => r.id === reportId)).toBe(true)
+
+    const resolved = await api()
+      .patch(`/api/moderation/reports/${reportId}`)
+      .set(...auth(token.admin))
+      .send({ status: 'resolved', note: 'автомат тест' })
+    expect(resolved.status).toBe(200)
+  })
+
+  it('мэдэгдэхгүй шийдвэрийн төлвийг татгалзана', async () => {
+    if (!available || !reportId) return
+
+    const res = await api()
+      .patch(`/api/moderation/reports/${reportId}`)
+      .set(...auth(token.admin))
+      .send({ status: 'ямар_нэг' })
+
+    expect(res.status).toBe(400)
+  })
+})
+
+// ------------------------------
+// Мэдэгдэл (FR-8, NFR-6)
+// ------------------------------
+describe.runIf(hasSupabase)('Мэдэгдэл', () => {
+  it('өөрийн мэдэгдлийг уншина', async () => {
+    if (!available) return
+
+    const res = await api().get('/api/notifications').set(...auth(token.worker))
+    expect(res.status).toBe(200)
+    expect(Array.isArray(res.body.data.items)).toBe(true)
+    expect(typeof res.body.data.unread).toBe('number')
+  })
+
+  it('нэвтрэлтгүйгээр хандаж чадахгүй', async () => {
+    const res = await api().get('/api/notifications')
+    expect(res.status).toBe(401)
+  })
+
+  it('өөр хүний мэдэгдэл ХОЛИЛДОХГҮЙ', async () => {
+    if (!available) return
+
+    const mine = await api().get('/api/notifications').set(...auth(token.worker))
+    const theirs = await api().get('/api/notifications').set(...auth(token.employer))
+
+    const myIds = new Set(mine.body.data.items.map(n => n.id))
+    const overlap = theirs.body.data.items.filter(n => myIds.has(n.id))
+    expect(overlap).toHaveLength(0)
+  })
+
+  it('уншсан гэж тэмдэглэнэ', async () => {
+    if (!available) return
+
+    const before = await api().get('/api/notifications').set(...auth(token.worker))
+    const unread = before.body.data.items.find(n => !n.isRead)
+    if (!unread) return
+
+    const marked = await api()
+      .post(`/api/notifications/${unread.id}/read`)
+      .set(...auth(token.worker))
+    expect(marked.status).toBe(200)
+
+    const after = await api().get('/api/notifications').set(...auth(token.worker))
+    expect(after.body.data.unread).toBe(before.body.data.unread - 1)
+    expect(after.body.data.items.find(n => n.id === unread.id).isRead).toBe(true)
+  })
+
+  it('бүгдийг уншсан болгоно', async () => {
+    if (!available) return
+
+    const res = await api().post('/api/notifications/read-all').set(...auth(token.worker))
+    expect(res.status).toBe(200)
+
+    const after = await api().get('/api/notifications').set(...auth(token.worker))
+    expect(after.body.data.unread).toBe(0)
+  })
+
+  it('буруу ID-г татгалзана', async () => {
+    if (!available) return
+
+    const res = await api().post('/api/notifications/u1/read').set(...auth(token.worker))
+    expect(res.status).toBe(400)
+  })
+
+  it('мэдэгдэл ҮҮСГЭХ зам БАЙХГҮЙ — зөвхөн систем үүсгэнэ', async () => {
+    if (!available) return
+
+    // Хэрэглэгч бусдад дурын мэдэгдэл илгээж чадах ёсгүй
+    const res = await api()
+      .post('/api/notifications')
+      .set(...auth(token.worker))
+      .send({ message: 'спам', userId: 'хэн нэгэн' })
+
+    expect(res.status).toBe(404)
   })
 })
 
