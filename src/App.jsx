@@ -13,6 +13,9 @@ import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 
+const TermsPage = lazy(() => import('./pages/TermsPage'))
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
+
 // ============================================================
 // Дүрээр нь хуваасан ачаалалт (NFR-1)
 // ============================================================
@@ -86,6 +89,8 @@ export default function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         {/* MainLayout шаардлагатай нийтийн хуудсууд */}
         <Route element={<MainLayout />}>

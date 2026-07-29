@@ -25,7 +25,9 @@ import { supabase } from '../lib/supabase'
 // ------------------------------
 export const fetchShifts = () => apiGet('/shifts')
 
-export const fetchShift = id => apiGet(`/shifts/${id}`)
+// Нэг зарын дэлгэрэнгүйг тусад нь татахгүй — JobDetail нь жагсаалтаас
+// олдог тул нэмэлт хүсэлт хэрэггүй. Серверийн `GET /shifts/:id` зам нь
+// нийтийн зарын хуваалцсан холбоосыг шууд нээхэд хэрэгтэй хэвээр.
 
 export const createShift = shift =>
   apiPost('/shifts', {
@@ -112,8 +114,6 @@ export const toggleSavedJob = (_userId, shiftId, currentlySaved) =>
 // ------------------------------
 // Чат (FR-6.4)
 // ------------------------------
-export const openChat = applicationId => apiPost('/chat/threads', { applicationId })
-
 export const fetchMyThreads = () => apiGet('/chat/threads')
 
 export const fetchMessages = threadId => apiGet(`/chat/threads/${threadId}/messages`)

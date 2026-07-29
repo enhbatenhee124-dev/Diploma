@@ -1,8 +1,63 @@
 import { useState, useRef, useEffect } from 'react'
-import { Send, X, MessageSquare, Loader2 } from 'lucide-react'
+import { Send, X, MessageSquare, Loader2, Phone } from 'lucide-react'
 import { format, isToday, isYesterday } from 'date-fns'
 import { useAuth } from '../hooks/useAuth'
 import { useChat } from '../hooks/useData'
+import { fetchContactInfo } from '../data/queries'
+
+/**
+ * Нөгөө талын утасны дугаар (NFR-3).
+ *
+ * Өгөгдлийн сангийн `contact_info` функц нь дуудагчийг шалгаж, зөвхөн
+ * ӨӨРТӨӨ, админд, эсвэл ЗӨВШӨӨРӨГДСӨН ажлын нөгөө талд л дугаарыг өгнө.
+ * Эрхгүй үед хоосон буцаах тул энд нэмэлт шалгалт хийх шаардлагагүй —
+ * шийдвэрийг өгөгдлийн сан гаргана.
+ *
+ * Яагаад хэрэгтэй вэ: ээлжийн ажилд ирээд "хаалган дээр ирлээ" гэж
+ * залгах шаардлага гардаг. Чат л байхад практикт хангалтгүй.
+ */
+function ContactReveal({ userId }) {
+  const [state, setState] = useState({ status: 'idle', phone: null })
+
+  const reveal = async () => {
+    setState({ status: 'loading', phone: null })
+    const result = await fetchContactInfo(userId)
+
+    if (!result.ok || !result.data?.phone) {
+      setState({ status: 'denied', phone: null })
+      return
+    }
+    setState({ status: 'shown', phone: result.data.phone })
+  }
+
+  if (state.status === 'shown') {
+    return (
+      <a
+        href={`tel:${state.phone}`}
+        className="flex items-center gap-1.5 text-xs text-emerald-300 hover:text-emerald-200"
+      >
+        <Phone className="w-3.5 h-3.5" /> {state.phone}
+      </a>
+    )
+  }
+
+  if (state.status === 'denied') {
+    return <span className="text-xs text-white/35">Дугаар нээлттэй биш</span>
+  }
+
+  return (
+    <button
+      onClick={reveal}
+      disabled={state.status === 'loading'}
+      className="flex items-center gap-1.5 text-xs text-white/55 hover:text-white disabled:opacity-50"
+    >
+      {state.status === 'loading'
+        ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+        : <Phone className="w-3.5 h-3.5" />}
+      Утас харах
+    </button>
+  )
+}
 
 /** Мессежийн цагийг товч харуулна. */
 function stamp(iso) {
@@ -17,7 +72,7 @@ function stamp(iso) {
  * Утасны дугаар солилцохгүйгээр холбогдох арга — зөвшөөрөгдсөн
  * хүсэлт дээр л нээгдэнэ.
  */
-export default function ChatPanel({ threadId, title, subtitle, onClose }) {
+export default function ChatPanel({ threadId, title, subtitle, partnerId, onClose }) {
   const { user } = useAuth()
   const { messages, loading, error, send } = useChat(threadId)
   const [text, setText] = useState('')
@@ -56,6 +111,7 @@ export default function ChatPanel({ threadId, title, subtitle, onClose }) {
           <div className="min-w-0">
             <p className="font-medium text-white truncate">{title}</p>
             {subtitle && <p className="text-xs text-white/55 truncate">{subtitle}</p>}
+            {partnerId && <ContactReveal userId={partnerId} />}
           </div>
         </div>
         {onClose && (

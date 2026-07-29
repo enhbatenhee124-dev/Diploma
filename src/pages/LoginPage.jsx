@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useNotification } from '../hooks/useNotification';
+import { signInWithGoogle, requestPasswordReset } from '../services/authService';
 const bgImage = new URL('../assets/hero-bg.jpg', import.meta.url).href;
 
 // Inline SVG icons
@@ -52,10 +54,47 @@ export default function LoginPage() {
   const [showPass, setShowPass] = useState(false);
   const [method, setMethod] = useState("phone"); // "phone" | "email"
   const [form, setForm] = useState({ phone: "", email: "", password: "", role: "employee" });
-  const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const { login } = useAuth();
+  const { notify } = useNotification();
   const navigate = useNavigate();
+
+  /** Google-ээр нэвтрэх. Тохируулаагүй бол шалтгааныг нь хэлнэ. */
+  const handleGoogle = async () => {
+    const result = await signInWithGoogle();
+    if (!result.ok) {
+      notify({ type: 'error', message: 'Google-ээр нэвтэрч чадсангүй', description: result.error });
+    }
+    // Амжилттай бол браузер Google руу шилжинэ
+  };
+
+  /** Нууц үг сэргээх захиа илгээнэ. Зөвхөн и-мэйлээр боломжтой. */
+  const handleForgotPassword = async () => {
+    const email = method === 'email'
+      ? form.email.trim()
+      : prompt('Бүртгэлтэй и-мэйл хаягаа оруулна уу:')?.trim();
+
+    if (!email) return;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      notify({ type: 'error', message: 'И-мэйл хаяг буруу байна' });
+      return;
+    }
+
+    setResetting(true);
+    const result = await requestPasswordReset(email);
+    setResetting(false);
+
+    // Тухайн хаяг бүртгэлтэй эсэхийг ЗАДРУУЛАХГҮЙ — амжилттай эсэхээс үл
+    // хамааран ижил мессеж. Эс тэгвээс хэн бүртгэлтэйг таах боломжтой.
+    notify({
+      type: result.ok ? 'success' : 'error',
+      message: result.ok ? 'Захиа илгээгдлээ' : 'Илгээж чадсангүй',
+      description: result.ok
+        ? 'Хэрэв энэ хаяг бүртгэлтэй бол нууц үг сэргээх холбоос очно. Ирсэн захиагаа шалгана уу.'
+        : result.error,
+    });
+  };
 
   const getRedirectPath = (role) => {
     switch (role) {
@@ -219,18 +258,17 @@ export default function LoginPage() {
             </div>
 
             {/* Remember + Forgot */}
-            <div className="flex items-center justify-between">
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={remember}
-                  onChange={(e) => setRemember(e.target.checked)}
-                  className="w-5 h-5 rounded border-white/20 bg-white/5 text-violet-500 focus:ring-violet-500/50"
-                />
-                <span className="text-sm text-slate-400">Намайг сана</span>
-              </label>
-              <button type="button" className="text-sm text-violet-400 hover:text-violet-300 transition-colors font-medium">
-                Нууц үгээ мартсан уу?
+            {/* "Намайг сана" сонголтыг АВСАН: Supabase нь сешнийг үргэлж
+                localStorage-д хадгалдаг тул чагт нь ямар ч нөлөөгүй байсан.
+                Ажиллахгүй тохиргоо харуулахаас хэлэхгүй нь дээр. */}
+            <div className="flex items-center justify-end">
+              <button
+                type="button"
+                onClick={handleForgotPassword}
+                disabled={resetting}
+                className="text-sm text-violet-400 hover:text-violet-300 transition-colors font-medium disabled:opacity-50"
+              >
+                {resetting ? 'Илгээж байна…' : 'Нууц үгээ мартсан уу?'}
               </button>
             </div>
 
@@ -257,7 +295,11 @@ export default function LoginPage() {
           </div>
 
           {/* Social */}
-          <button className="w-full py-4 rounded-xl bg-white/5 border border-white/10 text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-all flex items-center justify-center gap-3">
+          <button
+            type="button"
+            onClick={handleGoogle}
+            className="w-full py-4 rounded-xl bg-white/5 border border-white/10 text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-all flex items-center justify-center gap-3"
+          >
             <svg width={20} height={20} viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.07 5.07 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
               <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.67l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />

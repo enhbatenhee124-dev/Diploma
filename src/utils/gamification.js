@@ -74,10 +74,6 @@ export const BANNERS = [
 ]
 
 /** Сонголтын жагсаалтыг нээгдсэн эсэхээр нь тэмдэглэж буцаана. */
-export function withLockState(items, level) {
-  return items.map(item => ({ ...item, unlocked: level >= item.minLevel }))
-}
-
 /** Сонгосон утга нээгдээгүй бол хамгийн ойрын нээлттэйг буцаана. */
 export function resolveChoice(items, selectedId, level) {
   const selected = items.find(i => i.id === selectedId)
@@ -160,7 +156,7 @@ const WAGE_GATES = [
 ]
 
 /** Тухайн цалинтай ажилд орохын тулд шаардагдах level. */
-export function requiredLevelForWage(hourlyWage) {
+function requiredLevelForWage(hourlyWage) {
   const wage = Number(hourlyWage) || 0
   return WAGE_GATES.find(g => wage >= g.minWage)?.level ?? 1
 }

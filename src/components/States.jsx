@@ -48,12 +48,3 @@ export function Empty({ title, description, action }) {
 }
 
 /** Мөр бүхий жагсаалтын ачаалалтын хий үзэгдэл. */
-export function SkeletonRows({ count = 3 }) {
-  return (
-    <div className="space-y-3">
-      {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="h-16 rounded-xl bg-white/[0.04] border border-white/10 animate-pulse" />
-      ))}
-    </div>
-  )
-}

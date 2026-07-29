@@ -354,7 +354,8 @@ export function useWorkerProfile(userId) {
   return { profile: data, loading, error, save, refresh }
 }
 
-export function useWorkerProfiles() {
+/** Зөвхөн `useWorkerDirectory` дотор хэрэглэгдэнэ. */
+function useWorkerProfiles() {
   return useFetch(q.fetchWorkerProfiles, [], empty)
 }
 

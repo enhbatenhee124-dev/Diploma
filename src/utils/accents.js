@@ -8,7 +8,7 @@
 // Утгыг "R G B" хэлбэрээр бичнэ — Tailwind-ийн <alpha-value> ажиллахын тулд.
 // ------------------------------
 
-export const ACCENTS = [
+const ACCENTS = [
   { id: 'violet', label: 'Нил ягаан', rgb: '168 85 247', hoverRgb: '147 51 234', swatch: '#A855F7' },
   { id: 'pink', label: 'Цайвар ягаан', rgb: '244 114 182', hoverRgb: '236 72 153', swatch: '#F472B6' },
   { id: 'rose', label: 'Сарнай', rgb: '253 164 175', hoverRgb: '251 113 133', swatch: '#FDA4AF' },
@@ -17,7 +17,7 @@ export const ACCENTS = [
   { id: 'amber', label: 'Хув', rgb: '251 191 36', hoverRgb: '245 158 11', swatch: '#FBBF24' },
 ]
 
-export const DEFAULT_ACCENT = ACCENTS[0]
+const DEFAULT_ACCENT = ACCENTS[0]
 
 export const getAccent = id => ACCENTS.find(a => a.id === id) || DEFAULT_ACCENT
 

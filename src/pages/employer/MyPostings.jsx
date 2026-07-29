@@ -6,7 +6,7 @@ import { format } from 'date-fns';
 import { useAuth } from '../../hooks/useAuth';
 import { useNotification } from '../../hooks/useNotification';
 import { useShifts, useApplications, useReviews, useProfiles, useWorkerDirectory, combine } from '../../hooks/useData';
-import { createShift, setApplicationStatus, createReview } from '../../data/queries';
+import { createShift, updateShift, setApplicationStatus, createReview } from '../../data/queries';
 import { Loading, ErrorBox } from '../../components/States';
 
 const tabs = ['Бүгд', 'Идэвхтэй', 'Дүүрсэн', 'Хаагдсан'];
@@ -33,6 +33,28 @@ const statusColors = {
   'in-progress': 'text-amber-400 bg-amber-400/10 border-amber-400/20',
   'completed': 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20',
   'cancelled': 'text-red-400 bg-red-400/10 border-red-400/20',
+};
+
+// Зарын төлөв (FR-4.2)
+const STATUS_LABELS = {
+  Active: 'Идэвхтэй',
+  Filled: 'Дүүрсэн',
+  Closed: 'Хаагдсан',
+};
+
+/** Тухайн төлвөөс ажил олгогч ямар үйлдэл хийж болох вэ. */
+const STATUS_ACTIONS = {
+  Active: [
+    { to: 'Filled', label: 'Дүүрсэн', hint: 'Хүн бүрдсэн — шинэ хүсэлт хүлээж авахгүй' },
+    { to: 'Closed', label: 'Хаах', hint: 'Зарыг бүрмөсөн хаах' },
+  ],
+  Filled: [
+    { to: 'Active', label: 'Дахин нээх', hint: 'Дахин хүсэлт хүлээж авах' },
+    { to: 'Closed', label: 'Хаах', hint: 'Зарыг бүрмөсөн хаах' },
+  ],
+  Closed: [
+    { to: 'Active', label: 'Дахин нээх', hint: 'Зарыг дахин идэвхжүүлэх' },
+  ],
 };
 
 const statusLabels = {
@@ -85,6 +107,7 @@ export default function MyPostings() {
   const users = profilesQ.data;
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [expandedShift, setExpandedShift] = useState(null);
+  const [statusBusy, setStatusBusy] = useState(null);
   const [newShift, setNewShift] = useState({
     title: '',
     category: 'food',
@@ -213,6 +236,20 @@ export default function MyPostings() {
     setNewComment('');
   };
 
+  /** Зарын төлөв солих (FR-4.2). */
+  const changeShiftStatus = async (shift, status) => {
+    setStatusBusy(shift.id);
+    const result = await updateShift(shift.id, { status });
+    setStatusBusy(null);
+
+    if (!result.ok) {
+      notify({ type: 'error', message: 'Төлөв өөрчилж чадсангүй', description: result.error });
+      return;
+    }
+    notify({ type: 'success', message: `"${shift.title}" → ${STATUS_LABELS[status]}` });
+    shiftsQ.refresh();
+  };
+
   const updateApplicationStatus = async (applicationId, status) => {
     const result = await setApplicationStatus(applicationId, status, user?.id);
     if (!result.ok) {
@@ -281,9 +318,26 @@ export default function MyPostings() {
                       </span>
                     </div>
                   </div>
-                  <span className={`wrk-badge border flex items-center gap-1 ${getStatusColor(shift.status)}`}>
-                    {shift.status}
-                  </span>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className={`wrk-badge border flex items-center gap-1 ${getStatusColor(shift.status)}`}>
+                      {STATUS_LABELS[shift.status] || shift.status}
+                    </span>
+                    {/* FR-4.2 — ажил олгогч зарынхаа төлвийг өөрөө удирдана.
+                        Өмнө нь зөвхөн хугацаа дуусахыг хүлээх эсвэл админд
+                        хандахаас өөр арга байгаагүй. */}
+                    {STATUS_ACTIONS[shift.status]?.map(action => (
+                      <button
+                        key={action.to}
+                        onClick={() => changeShiftStatus(shift, action.to)}
+                        disabled={statusBusy === shift.id}
+                        title={action.hint}
+                        className="px-2.5 py-1 rounded-lg text-xs border border-wrk-border
+                                   wrk-text-body hover:bg-wrk-card-hover disabled:opacity-50 transition-colors"
+                      >
+                        {action.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-4 text-sm wrk-text-body mb-3">
                   <span className="flex items-center gap-1"><DollarSign className="w-4 h-4" /> {shift.hourlyWage} ₮/цаг</span>

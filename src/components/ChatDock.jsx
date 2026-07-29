@@ -63,6 +63,7 @@ export default function ChatDock() {
               threadId={activeThread.id}
               title={partnerName(activeThread)}
               subtitle={activeThread.shiftTitle}
+              partnerId={isEmployer ? activeThread.workerId : activeThread.employerId}
               onClose={() => setActiveThread(null)}
             />
           ) : (

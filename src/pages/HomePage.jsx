@@ -141,6 +141,35 @@ const Icons = {
   ),
 };
 
+// ------------------------------
+// Дээд цэс
+// ------------------------------
+// Нүүр хуудас нэг урт хуудас тул цэс нь тухайн хэсэг рүү гүйлгэнэ.
+// `id` нь доорх <section>-уудтай таарна.
+const NAV_SECTIONS = [
+  { label: 'Нүүр', id: null },              // хамгийн дээш
+  { label: 'Ажил олгогчид', id: 'employers' },
+  { label: 'Алдартай Ажил', id: 'popular-jobs' },
+  { label: 'Статистик', id: 'stats' },
+  { label: 'Холбоо барих', id: 'contact' },
+]
+
+/**
+ * Хэсэг рүү гүйлгэнэ. `id` байхгүй бол хуудасны эхэнд.
+ *
+ * Хөдөлгөөн багасгах тохиргоотой хэрэглэгчид анимацгүй шууд шилжинэ.
+ */
+function scrollToSection(id) {
+  const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const behavior = smooth ? 'smooth' : 'auto'
+
+  if (!id) {
+    window.scrollTo({ top: 0, behavior })
+    return
+  }
+  document.getElementById(id)?.scrollIntoView({ behavior, block: 'start' })
+}
+
 export default function HomePage() {
   const navigate = useNavigate();
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -273,11 +302,15 @@ export default function HomePage() {
             </div>
 
             <div className="hidden md:flex items-center gap-8">
-              <button className="text-slate-300 hover:text-white transition-colors font-medium">Нүүр</button>
-              <button className="text-slate-300 hover:text-white transition-colors font-medium">Ажил олгогчид</button>
-              <button className="text-slate-300 hover:text-white transition-colors font-medium">Алдартай Ажил</button>
-              <button className="text-slate-300 hover:text-white transition-colors font-medium">Статистик</button>
-              <button className="text-slate-300 hover:text-white transition-colors font-medium">Холбоо барих</button>
+              {NAV_SECTIONS.map(item => (
+                <button
+                  key={item.label}
+                  onClick={() => scrollToSection(item.id)}
+                  className="text-slate-300 hover:text-white transition-colors font-medium"
+                >
+                  {item.label}
+                </button>
+              ))}
             </div>
 
             <div className="flex items-center gap-4">
@@ -354,7 +387,7 @@ export default function HomePage() {
         </section>
 
         {/* Popular Jobs Section */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <section id="popular-jobs" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center mb-12">
             <h2 className="text-4xl sm:text-5xl font-extrabold mb-4">
               Алдартай <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-cyan-400">Цагийн Ажил</span>
@@ -412,7 +445,7 @@ export default function HomePage() {
         </section>
 
         {/* For Employers Section */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <section id="employers" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/20 mb-6">
               <span className="text-violet-300 font-medium text-sm">Ажил Олгогчид</span>
@@ -563,7 +596,7 @@ export default function HomePage() {
         </section>
 
         {/* Statistics Section */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <section id="stats" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/20 mb-6">
               <span className="text-violet-300 font-medium text-sm">Мэдээлэл ба Үзүүлэлт</span>
@@ -666,7 +699,7 @@ export default function HomePage() {
         </section>
 
         {/* Contact Section */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 pb-24">
+        <section id="contact" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 pb-24">
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 mb-6">
               <span className="text-cyan-300 font-medium text-sm">Холбоо барих</span>

@@ -85,7 +85,7 @@ export function AvatarWithFrame({ user, level, frame, size = 'md', showLevel = t
 // ------------------------------
 // EXP явцын мөр
 // ------------------------------
-export function LevelProgress({ progress, theme, compact = false }) {
+function LevelProgress({ progress, theme, compact = false }) {
   const { level, exp, intoLevel, neededForNext, progress: pct, nextLevelExp, currentLevelExp } = progress
   const span = nextLevelExp - currentLevelExp
 

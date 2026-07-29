@@ -1,14 +1,3 @@
-export function formatDate(dateString) {
-  if (!dateString) return '—'
-  const date = new Date(dateString)
-  if (Number.isNaN(date.getTime())) return '—'
-  return date.toLocaleDateString('mn-MN', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  })
-}
-
 /** Мөнгөн дүнг төгрөгөөр форматлана. */
 export function formatCurrency(amount) {
   const value = Number(amount) || 0
@@ -38,11 +27,3 @@ export function timeAgo(dateString) {
   return 'Дөнгөж сая'
 }
 
-export function truncateText(text, maxLength = 100) {
-  if (!text || text.length <= maxLength) return text
-  return text.substring(0, maxLength).trim() + '...'
-}
-
-export function generateId() {
-  return Math.random().toString(36).substring(2, 11)
-}

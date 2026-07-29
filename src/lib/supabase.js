@@ -44,7 +44,7 @@ const PHONE_DOMAIN = 'phone.mongolajil.mn'
 export const normalizePhone = phone => String(phone || '').replace(/\D/g, '')
 
 /** Утасны дугаарыг Supabase-д ойлгогдох и-мэйл болгоно. */
-export const phoneToEmail = phone => `${normalizePhone(phone)}@${PHONE_DOMAIN}`
+const phoneToEmail = phone => `${normalizePhone(phone)}@${PHONE_DOMAIN}`
 
 /** Тухайн и-мэйл нь утаснаас үүссэн эсэх. */
 export const isPhoneEmail = email => String(email || '').endsWith(`@${PHONE_DOMAIN}`)

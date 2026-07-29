@@ -102,6 +102,11 @@ export default function JobListings() {
   const canRank = canMatch(workerProfile)
 
   const filtered = jobs.filter(job => {
+    // ⚠ Ажилтан ӨӨРИЙН хүсэлт илгээсэн зарыг хаагдсаны дараа ч хардаг
+    //   (ажлын түүхэд хэрэгтэй). Гэхдээ ХАЙЛТАД зөвхөн идэвхтэй зар гарна —
+    //   эс тэгвээс өнгөрсөн ажилд хүсэлт илгээх гэж оролдоно.
+    if (job.status !== 'Active') return false
+
     const matchSearch = search === '' ||
       job.title.toLowerCase().includes(search.toLowerCase()) ||
       job.description.toLowerCase().includes(search.toLowerCase())

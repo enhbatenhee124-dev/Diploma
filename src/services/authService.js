@@ -134,6 +134,31 @@ export async function signUp({ name, phone, email, password, role }) {
   return { ok: true, data: profile.data }
 }
 
+/**
+ * Google-ээр нэвтрэх.
+ *
+ * ⚠ Supabase Dashboard → Authentication → Providers → Google-г асааж,
+ *   Google Cloud Console дээр OAuth client үүсгэсэн байх шаардлагатай.
+ *   Тохируулаагүй үед Supabase алдаа буцаах бөгөөд бид түүнийг хэрэглэгчид
+ *   ойлгомжтой хэлнэ — чимээгүй юу ч болохгүй байснаас хамаагүй дээр.
+ *
+ * Амжилттай үед браузер Google руу шилжих тул энэ функц буцаж ирэхгүй.
+ */
+export async function signInWithGoogle() {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: `${window.location.origin}/` },
+  })
+
+  if (error) {
+    if (/provider is not enabled|Unsupported provider/i.test(error.message)) {
+      return { ok: false, error: 'Google-ээр нэвтрэх боломж одоогоор идэвхжээгүй байна. Утас эсвэл и-мэйлээрээ нэвтэрнэ үү.' }
+    }
+    return { ok: false, error: translateError(error) }
+  }
+  return { ok: true }
+}
+
 export async function signOut() {
   const { error } = await supabase.auth.signOut()
   if (error) return { ok: false, error: translateError(error) }

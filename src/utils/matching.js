@@ -33,7 +33,7 @@ const CATEGORY_SKILLS = {
  *
  * @returns {{score:number, reasons:string[]}} 0–100 оноо, тайлбартай
  */
-export function matchScore(shift, { skills = [], availability = {}, district } = {}) {
+function matchScore(shift, { skills = [], availability = {}, district } = {}) {
   const reasons = []
   let score = 0
 

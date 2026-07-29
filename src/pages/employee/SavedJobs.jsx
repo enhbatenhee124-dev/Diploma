@@ -34,7 +34,16 @@ export default function SavedJobs() {
             <div key={job.id} className="emp-card animate-slide-up">
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <h3 className="text-lg font-semibold emp-text-heading">{job.title}</h3>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-lg font-semibold emp-text-heading">{job.title}</h3>
+                    {/* Хаагдсан зарыг тодорхой тэмдэглэнэ — эс тэгвээс хэрэглэгч
+                        дарж ороод "Оролцох" товч ажиллахгүйд гайхна */}
+                    {job.status !== 'Active' && (
+                      <span className="emp-badge bg-white/10 text-white/60 border border-white/15">
+                        {job.status === 'Filled' ? 'Дүүрсэн' : 'Хаагдсан'}
+                      </span>
+                    )}
+                  </div>
                   <p className="emp-text-body">{employerName(job.employerId)}</p>
                 </div>
                 <button

@@ -33,9 +33,6 @@ export const DISTRICTS = [
   'Налайх',
 ]
 
-/** Боломжит цагийн хуваарийн багана (FR-2.3). */
-export const TIME_SLOTS = ['morning', 'afternoon', 'evening']
-
 /**
  * Дүүргийн төвийн ойролцоо солбицол (FR-5.3).
  *

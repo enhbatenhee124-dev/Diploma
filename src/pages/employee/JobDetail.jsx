@@ -52,6 +52,32 @@ export default function JobDetail() {
   // Хуудас нь /jobs/:id болон /employee/jobs/:id хоёуланд ажилладаг.
   const listUrl = user?.role === 'employee' ? '/employee/jobs' : '/jobs'
 
+  /**
+   * Ажлыг хуваалцах.
+   * Утсан дээр системийн хуваалцах цонхыг нээнэ; компьютер дээр холбоосыг
+   * хуулна. Нийтийн `/jobs/:id` хаягийг хуваалцана — хүлээн авагч нэвтрээгүй
+   * байж болзошгүй тул дүрийн доторх зам тохирохгүй.
+   */
+  const handleShare = async () => {
+    const url = `${window.location.origin}/jobs/${shift.id}`
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: shift.title, text: `${shift.title} — ${shift.district}`, url })
+        return
+      } catch {
+        // Хэрэглэгч цуцалсан эсвэл дэмжигдээгүй — доорх хуулах руу шилжинэ
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(url)
+      notify({ type: 'success', message: 'Холбоос хуулагдлаа', description: url })
+    } catch {
+      notify({ type: 'error', message: 'Хуулж чадсангүй', description: url })
+    }
+  }
+
   if (loading) return <Loading label="Ажлын мэдээлэл ачаалж байна…" />
   if (error) return <ErrorBox message={error} onRetry={refreshAll} />
 
@@ -118,7 +144,11 @@ export default function JobDetail() {
             <button onClick={() => toggleSaved(shift.id)} className="p-3 border border-emp-border rounded-xl hover:bg-emp-card-hover transition-colors">
               {saved ? <Bookmark className="w-5 h-5 text-emp-accent fill-emp-accent" /> : <Bookmark className="w-5 h-5 text-emp-muted" />}
             </button>
-            <button className="p-3 border border-emp-border rounded-xl hover:bg-emp-card-hover transition-colors">
+            <button
+              onClick={handleShare}
+              title="Хуваалцах"
+              className="p-3 border border-emp-border rounded-xl hover:bg-emp-card-hover transition-colors"
+            >
               <Share2 className="w-5 h-5 text-emp-muted" />
             </button>
           </div>
