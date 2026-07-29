@@ -1,100 +1,130 @@
+import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
 
-// Layouts
+// Layouts — бүх хуудсанд хэрэгтэй тул шууд ачаална
 import MainLayout from './layouts/MainLayout'
 import EmployeeLayout from './layouts/EmployeeLayout'
-import WorkerLayout from './layouts/WorkerLayout'
+import EmployerLayout from './layouts/EmployerLayout'
 import AdminLayout from './layouts/AdminLayout'
 
-// Auth pages
+// Эхний ачаалалтад хэрэгтэй хуудсууд
+import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 
-// Public pages
-import HomePage from './pages/HomePage'
+// ============================================================
+// Дүрээр нь хуваасан ачаалалт (NFR-1)
+// ============================================================
+// Ажилтан админы хуудсуудыг ХЭЗЭЭ Ч нээхгүй. Тэднийг эхний ачаалалтад
+// оруулах нь утасны сүлжээнд дэмий хүлээлт үүсгэнэ. `lazy` нь дүр бүрийн
+// кодыг тусдаа файл болгож, хэрэгтэй үед нь татна.
+// ============================================================
 
-// Employee pages
-import EmployeeDashboard from './pages/employee/EmployeeDashboard'
-import JobListings from './pages/employee/JobListings'
-import JobDetail from './pages/employee/JobDetail'
-import MyApplications from './pages/employee/MyApplications'
-import EmployeeProfile from './pages/employee/EmployeeProfile'
-import SavedJobs from './pages/employee/SavedJobs'
+const RankingPage = lazy(() => import('./pages/RankingPage'))
 
-// Worker pages
-import WorkerDashboard from './pages/worker/WorkerDashboard'
-import MyJobs from './pages/worker/MyJobs'
-import WorkerProfile from './pages/worker/WorkerProfile'
-import WorkerEarnings from './pages/worker/WorkerEarnings'
+// Ажилтан
+const EmployeeDashboard = lazy(() => import('./pages/employee/EmployeeDashboard'))
+const JobListings = lazy(() => import('./pages/employee/JobListings'))
+const JobDetail = lazy(() => import('./pages/employee/JobDetail'))
+const MyApplications = lazy(() => import('./pages/employee/MyApplications'))
+const EmployeeProfile = lazy(() => import('./pages/employee/EmployeeProfile'))
+const SavedJobs = lazy(() => import('./pages/employee/SavedJobs'))
 
-// Admin pages
-import AdminDashboard from './pages/admin/AdminDashboard'
-import ManageUsers from './pages/admin/ManageUsers'
-import ManageJobs from './pages/admin/ManageJobs'
-import AdminAnalytics from './pages/admin/AdminAnalytics'
+// Ажил олгогч
+const EmployerDashboard = lazy(() => import('./pages/employer/EmployerDashboard'))
+const MyPostings = lazy(() => import('./pages/employer/MyPostings'))
+const EmployerProfile = lazy(() => import('./pages/employer/EmployerProfile'))
+const EmployerEarnings = lazy(() => import('./pages/employer/EmployerEarnings'))
+const Subscription = lazy(() => import('./pages/employer/Subscription'))
+const FindWorkers = lazy(() => import('./pages/employer/FindWorkers'))
+
+// Админ
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
+const ManageUsers = lazy(() => import('./pages/admin/ManageUsers'))
+const ManageJobs = lazy(() => import('./pages/admin/ManageJobs'))
+const AdminAnalytics = lazy(() => import('./pages/admin/AdminAnalytics'))
+const Payments = lazy(() => import('./pages/admin/Payments'))
+
+function Spinner() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-950">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-500" />
+    </div>
+  )
+}
 
 function RoleGuard({ role, children }) {
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
+
+  // Сешн уншиж дуустал хүлээнэ. Үгүй бол хуудсыг сэргээх бүрд /login руу хаяна.
+  if (loading) return <Spinner />
+
   if (!user) return <Navigate to="/login" replace />
   if (user.role !== role) return <Navigate to="/" replace />
   return children
 }
 
 export default function App() {
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
 
   const getDefaultRedirect = () => {
-    if (!user) return '/'
+    if (loading || !user) return '/'
     switch (user.role) {
       case 'employee': return '/employee/dashboard'
-      case 'worker': return '/worker/dashboard'
+      case 'employer': return '/employer/dashboard'
       case 'admin': return '/admin/dashboard'
       default: return '/'
     }
   }
 
   return (
-    <Routes>
-      {/* Public routes without MainLayout (Home, Login, Register already have their own UI) */}
-      <Route path="/" element={<HomePage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
+    <Suspense fallback={<Spinner />}>
+      <Routes>
+        {/* Нийтийн хуудсууд — өөрсдийн UI-тай */}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
 
-      {/* Other public routes that DO need MainLayout (job listings etc) */}
-      <Route element={<MainLayout />}>
-        <Route path="/jobs" element={<JobListings />} />
-        <Route path="/jobs/:id" element={<JobDetail />} />
-      </Route>
+        {/* MainLayout шаардлагатай нийтийн хуудсууд */}
+        <Route element={<MainLayout />}>
+          <Route path="/jobs" element={<JobListings />} />
+          <Route path="/jobs/:id" element={<JobDetail />} />
+        </Route>
 
-      {/* Employee Routes with Employee Layout */}
-      <Route path="/employee" element={<RoleGuard role="employee"><EmployeeLayout /></RoleGuard>}>
-        <Route path="dashboard" element={<EmployeeDashboard />} />
-        <Route path="jobs" element={<JobListings />} />
-        <Route path="jobs/:id" element={<JobDetail />} />
-        <Route path="applications" element={<MyApplications />} />
-        <Route path="profile" element={<EmployeeProfile />} />
-        <Route path="saved" element={<SavedJobs />} />
-      </Route>
+        {/* Ажилтан */}
+        <Route path="/employee" element={<RoleGuard role="employee"><EmployeeLayout /></RoleGuard>}>
+          <Route path="dashboard" element={<EmployeeDashboard />} />
+          <Route path="jobs" element={<JobListings />} />
+          <Route path="jobs/:id" element={<JobDetail />} />
+          <Route path="applications" element={<MyApplications />} />
+          <Route path="profile" element={<EmployeeProfile />} />
+          <Route path="saved" element={<SavedJobs />} />
+          <Route path="ranking" element={<RankingPage />} />
+        </Route>
 
-      {/* Worker Routes with Worker Layout */}
-      <Route path="/worker" element={<RoleGuard role="worker"><WorkerLayout /></RoleGuard>}>
-        <Route path="dashboard" element={<WorkerDashboard />} />
-        <Route path="jobs" element={<MyJobs />} />
-        <Route path="earnings" element={<WorkerEarnings />} />
-        <Route path="profile" element={<WorkerProfile />} />
-      </Route>
+        {/* Ажил олгогч */}
+        <Route path="/employer" element={<RoleGuard role="employer"><EmployerLayout /></RoleGuard>}>
+          <Route path="dashboard" element={<EmployerDashboard />} />
+          <Route path="postings" element={<MyPostings />} />
+          <Route path="workers" element={<FindWorkers />} />
+          <Route path="earnings" element={<EmployerEarnings />} />
+          <Route path="subscription" element={<Subscription />} />
+          <Route path="profile" element={<EmployerProfile />} />
+          <Route path="ranking" element={<RankingPage />} />
+        </Route>
 
-      {/* Admin Routes with Admin Layout */}
-      <Route path="/admin" element={<RoleGuard role="admin"><AdminLayout /></RoleGuard>}>
-        <Route path="dashboard" element={<AdminDashboard />} />
-        <Route path="users" element={<ManageUsers />} />
-        <Route path="jobs" element={<ManageJobs />} />
-        <Route path="analytics" element={<AdminAnalytics />} />
-      </Route>
+        {/* Админ */}
+        <Route path="/admin" element={<RoleGuard role="admin"><AdminLayout /></RoleGuard>}>
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="users" element={<ManageUsers />} />
+          <Route path="jobs" element={<ManageJobs />} />
+          <Route path="analytics" element={<AdminAnalytics />} />
+          <Route path="payments" element={<Payments />} />
+        </Route>
 
-      {/* Fallback redirect */}
-      <Route path="*" element={<Navigate to={getDefaultRedirect()} replace />} />
-    </Routes>
+        <Route path="*" element={<Navigate to={getDefaultRedirect()} replace />} />
+      </Routes>
+    </Suspense>
   )
 }

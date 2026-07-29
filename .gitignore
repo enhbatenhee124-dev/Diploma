@@ -12,6 +12,14 @@ dist
 dist-ssr
 *.local
 
+# Орчны хувьсагч (Supabase service_role, QPay нууц үг) — git-д бүү оруул
+.env
+.env.*
+!.env.example
+
+# Supabase CLI-ийн локал төлөв (холбогдсон төслийн мэдээлэл)
+supabase/.temp
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

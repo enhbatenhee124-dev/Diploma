@@ -1,43 +1,41 @@
 export function formatDate(dateString) {
-  if (!dateString) return 'N/A'
+  if (!dateString) return '—'
   const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
+  if (Number.isNaN(date.getTime())) return '—'
+  return date.toLocaleDateString('mn-MN', {
     year: 'numeric',
     month: 'short',
     day: 'numeric'
   })
 }
 
+/** Мөнгөн дүнг төгрөгөөр форматлана. */
 export function formatCurrency(amount) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(amount)
+  const value = Number(amount) || 0
+  return `${value.toLocaleString('mn-MN')} ₮`
 }
+
+const intervals = [
+  ['жилийн', 31536000],
+  ['сарын', 2592000],
+  ['долоо хоногийн', 604800],
+  ['өдрийн', 86400],
+  ['цагийн', 3600],
+  ['минутын', 60],
+]
 
 export function timeAgo(dateString) {
   const date = new Date(dateString)
-  const now = new Date()
-  const seconds = Math.floor((now - date) / 1000)
+  if (Number.isNaN(date.getTime())) return '—'
+  const seconds = Math.floor((Date.now() - date.getTime()) / 1000)
 
-  const intervals = {
-    year: 31536000,
-    month: 2592000,
-    week: 604800,
-    day: 86400,
-    hour: 3600,
-    minute: 60
-  }
-
-  for (const [unit, secondsInUnit] of Object.entries(intervals)) {
+  for (const [unit, secondsInUnit] of intervals) {
     const interval = Math.floor(seconds / secondsInUnit)
     if (interval >= 1) {
-      return `${interval} ${unit}${interval > 1 ? 's' : ''} ago`
+      return `${interval} ${unit} өмнө`
     }
   }
-  return 'Just now'
+  return 'Дөнгөж сая'
 }
 
 export function truncateText(text, maxLength = 100) {

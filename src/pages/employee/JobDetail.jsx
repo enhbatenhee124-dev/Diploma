@@ -1,132 +1,213 @@
 import { useParams, Link } from 'react-router-dom'
-import { jobs } from '../../data/mockData'
-import { formatCurrency, timeAgo } from '../../utils/helpers'
 import {
   ArrowLeft, MapPin, DollarSign, Clock, Briefcase,
-  Share2, Bookmark, CheckCircle, Building2, Users
+  Share2, Bookmark, CheckCircle, Building2, Users, Star, Info, Zap
 } from 'lucide-react'
-import { useState } from 'react'
+import { format } from 'date-fns'
+import { useAuth } from '../../hooks/useAuth'
+import { useNotification } from '../../hooks/useNotification'
+import {
+  useShifts, useApplications, useSavedJobs, useEmployerProfiles, useMyProgress, combine,
+} from '../../hooks/useData'
+import { applyToShift, withdrawApplication } from '../../data/queries'
+import { levelAdvice, shiftHours, EMPTY_STATS } from '../../utils/gamification'
+import { Loading, ErrorBox } from '../../components/States'
+
+const StarRating = ({ rating, size = "w-4 h-4" }) => {
+  return (
+    <div className="flex items-center gap-1">
+      {[1, 2, 3, 4, 5].map(star => (
+        <Star
+          key={star}
+          className={`${size} ${star <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-400'}`}
+        />
+      ))}
+    </div>
+  )
+}
 
 export default function JobDetail() {
   const { id } = useParams()
-  const [applied, setApplied] = useState(false)
-  const [saved, setSaved] = useState(false)
-  const job = jobs.find(j => j.id === id)
+  const { user } = useAuth()
+  const { notify } = useNotification()
+  const shiftsQ = useShifts()
+  const appsQ = useApplications()
+  const orgsQ = useEmployerProfiles()
+  const progressQ = useMyProgress()
+  const { toggleSaved, isSaved } = useSavedJobs()
+  const { loading, error, refreshAll } = combine(shiftsQ, appsQ, progressQ)
 
-  if (!job) {
+  const localShifts = shiftsQ.data
+  const localApplications = appsQ.data
+  const myProgress = progressQ.data || EMPTY_STATS
+
+  const shift = localShifts.find(s => s.id === id)
+  const employerProfile = shift ? orgsQ.data.find(p => p.userId === shift.employerId) : null
+  const employer = employerProfile ? { name: employerProfile.orgName } : null
+  const getUserApplication = (shiftId) => localApplications.find(app => app.shiftId === shiftId && app.workerId === user?.id)
+  const applied = !!getUserApplication(shift?.id)
+  const saved = isSaved(shift?.id)
+
+  // Хуудас нь /jobs/:id болон /employee/jobs/:id хоёуланд ажилладаг.
+  const listUrl = user?.role === 'employee' ? '/employee/jobs' : '/jobs'
+
+  if (loading) return <Loading label="Ажлын мэдээлэл ачаалж байна…" />
+  if (error) return <ErrorBox message={error} onRetry={refreshAll} />
+
+  if (!shift) {
     return (
-      <div className="card text-center py-12">
-        <p className="text-gray-500">Job not found.</p>
-        <Link to="/jobs" className="btn-primary mt-4 inline-block">Back to Jobs</Link>
+      <div className="emp-card text-center py-16">
+        <p className="emp-text-body">Ажил олдсонгүй эсвэл хаагдсан байна.</p>
+        <Link to={listUrl} className="emp-btn-primary mt-4 inline-block">Ажлын жагсаалт руу буцах</Link>
       </div>
     )
   }
 
-  const handleApply = () => {
-    setApplied(true)
+  const { recommendedLevel, meetsRecommendation } = levelAdvice(shift.hourlyWage, myProgress.level)
+  const showAdvice = !meetsRecommendation && !applied
+
+  const toggleApply = async (shiftId) => {
+    const existing = getUserApplication(shiftId)
+    const result = existing
+      ? await withdrawApplication(existing.id)
+      : await applyToShift(shiftId, user.id)
+
+    if (!result.ok) {
+      notify({ type: 'error', message: 'Амжилтгүй', description: result.error })
+      return
+    }
+    notify({ type: 'success', message: existing ? 'Хүсэлт цуцлагдлаа' : 'Хүсэлт илгээгдлээ' })
+    appsQ.refresh()
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <Link to="/jobs" className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-700 mb-6">
-        <ArrowLeft className="w-4 h-4" /> Back to jobs
+    <div className="max-w-4xl mx-auto space-y-6">
+      <Link to={listUrl} className="inline-flex items-center gap-2 text-emp-muted hover:text-emp-text mb-6">
+        <ArrowLeft className="w-4 h-4" /> Буцах
       </Link>
 
-      <div className="card mb-6">
+      <div className="emp-card mb-6">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
           <div className="flex items-start gap-4">
-            <img src={job.logo} alt={job.company} className="w-16 h-16 rounded-2xl" />
+            <div className="w-16 h-16 rounded-xl bg-emp-accent/20 flex items-center justify-center flex-shrink-0">
+              <Building2 className="w-8 h-8 text-emp-accent" />
+            </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">{job.title}</h1>
-              <p className="text-gray-500">{job.company}</p>
-              <div className="flex flex-wrap gap-3 mt-2 text-sm text-gray-500">
-                <span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {job.location}</span>
-                <span className="flex items-center gap-1"><DollarSign className="w-4 h-4" />
-                  {job.salaryType === 'hourly'
-                    ? `$${job.salary.min}-$${job.salary.max}/hr`
-                    : `${formatCurrency(job.salary.min)} - ${formatCurrency(job.salary.max)}`
-                  }
-                </span>
-                <span className="flex items-center gap-1"><Clock className="w-4 h-4" /> {timeAgo(job.postedAt)}</span>
-                <span className="px-2 py-0.5 bg-primary-50 text-primary-700 text-xs font-medium rounded">{job.type}</span>
+              <h1 className="text-2xl font-bold emp-text-heading">{shift.title}</h1>
+              <div className="flex flex-wrap items-center gap-2 text-emp-text mt-2">
+                <span>{employerProfile?.orgName || employer?.name}</span>
+                {employerProfile?.isVerified && <CheckCircle className="w-4 h-4 text-green-500" />}
+                {employerProfile?.ratingAvg && (
+                  <div className="flex items-center gap-1">
+                    <StarRating rating={employerProfile.ratingAvg} />
+                    <span className="text-emp-muted">({employerProfile.ratingAvg})</span>
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-3 mt-3 text-sm text-emp-muted">
+                <span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {shift.district}</span>
+                <span className="flex items-center gap-1"><DollarSign className="w-4 h-4" /> {shift.hourlyWage} ₮/цаг</span>
+                <span className="flex items-center gap-1"><Clock className="w-4 h-4" /> {format(new Date(shift.startAt), 'yyyy-MM-dd HH:mm')}</span>
+                <span className="flex items-center gap-1"><Users className="w-4 h-4" /> {shift.slots} суваг</span>
+                <span className="emp-badge bg-emp-accent/10 text-emp-accent border border-emp-accent/20">{shift.category}</span>
               </div>
             </div>
           </div>
           <div className="flex gap-2">
-            <button onClick={() => setSaved(!saved)} className="p-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
-              {saved ? <Bookmark className="w-5 h-5 text-primary-600 fill-primary-600" /> : <Bookmark className="w-5 h-5 text-gray-400" />}
+            <button onClick={() => toggleSaved(shift.id)} className="p-3 border border-emp-border rounded-xl hover:bg-emp-card-hover transition-colors">
+              {saved ? <Bookmark className="w-5 h-5 text-emp-accent fill-emp-accent" /> : <Bookmark className="w-5 h-5 text-emp-muted" />}
             </button>
-            <button className="p-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
-              <Share2 className="w-5 h-5 text-gray-400" />
+            <button className="p-3 border border-emp-border rounded-xl hover:bg-emp-card-hover transition-colors">
+              <Share2 className="w-5 h-5 text-emp-muted" />
             </button>
           </div>
         </div>
 
         <div className="flex flex-wrap gap-2 mb-6">
-          {job.tags.map(tag => (
-            <span key={tag} className="px-3 py-1 bg-gray-100 text-gray-600 text-sm font-medium rounded-full">{tag}</span>
-          ))}
+          <span className="emp-badge bg-emp-accent/10 text-emp-accent border border-emp-accent/20">{shift.category}</span>
+          {recommendedLevel > 1 && (
+            <span
+              className={`emp-badge border ${
+                meetsRecommendation
+                  ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/25'
+                  : 'bg-white/5 text-white/70 border-white/15'
+              }`}
+            >
+              Lv.{recommendedLevel} санал болгож байна
+            </span>
+          )}
+        </div>
+
+        {/* Энэ ажлыг дуусгавал хэдэн EXP авахыг урьдчилан харуулна */}
+        <div className="flex items-center gap-3 p-4 mb-4 rounded-xl bg-emp-accent/10 border border-emp-accent/20">
+          <Zap className="w-5 h-5 text-emp-accent flex-shrink-0" />
+          <p className="text-sm emp-text-body">
+            Энэ ажлыг дуусгавал{' '}
+            <strong className="emp-text-heading">
+              +{(25 + Math.round(shiftHours(shift) * 10)).toLocaleString('mn-MN')} EXP
+            </strong>{' '}
+            авна ({shiftHours(shift).toFixed(1)} цаг). Сайн үнэлгээ авбал нэмэлт EXP.
+          </p>
         </div>
 
         {applied ? (
-          <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700">
+          <div className="flex items-center gap-3 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400">
             <CheckCircle className="w-5 h-5" />
-            <span className="font-medium">Application submitted successfully!</span>
+            <span className="font-medium">Оролцсон!</span>
           </div>
         ) : (
-          <button onClick={handleApply} className="btn-primary w-full sm:w-auto">
-            Apply Now
-          </button>
+          <div className="space-y-3">
+            {showAdvice && (
+              <div className="flex items-start gap-3 p-4 bg-white/[0.04] border border-white/10 rounded-xl">
+                <Info className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium text-white">Lv.{recommendedLevel} санал болгож байна</p>
+                  <p className="text-sm emp-text-body mt-0.5">
+                    Та одоо Lv.{myProgress.level}. Хүсэлт илгээх боломжтой — сонголтыг ажил
+                    олгогч хийнэ. Ажил дуусгах тусам түвшин ахина.
+                  </p>
+                </div>
+              </div>
+            )}
+            <button
+              onClick={() => toggleApply(shift.id)}
+              className="bg-emp-accent text-white rounded-xl px-6 py-3 hover:bg-emp-accent-hover transition-colors"
+            >
+              Оролцох
+            </button>
+          </div>
         )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <div className="card">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Job Description</h2>
-            <p className="text-gray-600 leading-relaxed">{job.description}</p>
-          </div>
-
-          <div className="card">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Requirements</h2>
-            <ul className="space-y-3">
-              {job.requirements.map((req, i) => (
-                <li key={i} className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-primary-600 flex-shrink-0 mt-0.5" />
-                  <span className="text-gray-600">{req}</span>
-                </li>
-              ))}
-            </ul>
+          <div className="emp-card">
+            <h2 className="text-lg font-semibold emp-text-heading mb-4">Тайлбар</h2>
+            <p className="emp-text-body">{shift.description}</p>
           </div>
         </div>
 
         <div className="space-y-6">
-          <div className="card">
-            <h3 className="font-semibold text-gray-900 mb-4">Company Overview</h3>
+          <div className="emp-card">
+            <h3 className="font-semibold emp-text-heading mb-4">Ажлын мэдээлэл</h3>
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <Building2 className="w-5 h-5 text-gray-400" />
-                <span className="text-gray-600">{job.company}</span>
+                <Building2 className="w-5 h-5 text-emp-muted" />
+                <span className="emp-text-body">{employerProfile?.orgName || employer?.name}</span>
               </div>
               <div className="flex items-center gap-3">
-                <MapPin className="w-5 h-5 text-gray-400" />
-                <span className="text-gray-600">{job.location}</span>
+                <MapPin className="w-5 h-5 text-emp-muted" />
+                <span className="emp-text-body">{shift.district}</span>
               </div>
               <div className="flex items-center gap-3">
-                <Users className="w-5 h-5 text-gray-400" />
-                <span className="text-gray-600">{job.applicants} applicants</span>
+                <Users className="w-5 h-5 text-emp-muted" />
+                <span className="emp-text-body">{shift.slots} суваг</span>
               </div>
               <div className="flex items-center gap-3">
-                <Briefcase className="w-5 h-5 text-gray-400" />
-                <span className="text-gray-600">{job.type}</span>
+                <Briefcase className="w-5 h-5 text-emp-muted" />
+                <span className="emp-text-body">{shift.category}</span>
               </div>
             </div>
-          </div>
-
-          <div className="card bg-primary-50 border-primary-100">
-            <h3 className="font-semibold text-primary-900 mb-2">Need help?</h3>
-            <p className="text-sm text-primary-700 mb-3">Our team is here to assist you with your application.</p>
-            <a href="#" className="text-sm text-primary-600 font-medium hover:underline">Contact Support</a>
           </div>
         </div>
       </div>

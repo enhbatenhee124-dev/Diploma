@@ -118,7 +118,7 @@ export default function Sidebar({ role }) {
         <div className={`p-4 border-t ${t.headerBorder}`}>
           {!collapsed && (
             <div className="flex items-center gap-3 mb-4">
-              <img src={user?.avatar} alt={user?.name} className="w-9 h-9 rounded-full" />
+              <img src={user?.avatarUrl} alt={user?.name} className="w-9 h-9 rounded-full" />
               <div className="overflow-hidden">
                 <p className={`text-sm font-medium ${t.userText} truncate`}>{user?.name}</p>
                 <p className={`text-xs ${t.userMuted} capitalize`}>{user?.role}</p>

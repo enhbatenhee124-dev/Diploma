@@ -12,22 +12,28 @@ export default {
         'home-purple': '#7C3AED',
 
         // Employee dark theme
+        // Тайлбар: dashboard-ийн текстийг цагаан болгохын тулд `-text` нь цэвэр
+        // цагаан, `-muted` нь бараг цагаан (хоёрдогч текст, icon-д) болгосон.
         'emp-bg': '#0F0A1A',
         'emp-card': '#1A1433',
         'emp-card-hover': '#231B45',
         'emp-border': '#2D2454',
-        'emp-text': '#F5F3FF',
-        'emp-muted': '#A89BCC',
-        'emp-accent': '#A855F7',
-        'emp-accent-hover': '#9333EA',
+        'emp-text': '#FFFFFF',
+        'emp-muted': '#E8E4F5',
+        // Accent нь CSS хувьсагчаас уншина — хэрэглэгч мэндчилгээн дээр дарж
+        // өнгөө солиход `text-emp-accent`, `bg-emp-accent/15` гэх мэт БҮХ класс
+        // автоматаар шинэ өнгө рүү шилжинэ. <alpha-value> нь /15 гэх мэт
+        // тунгалаг байдлыг ажиллуулна.
+        'emp-accent': 'rgb(var(--emp-accent) / <alpha-value>)',
+        'emp-accent-hover': 'rgb(var(--emp-accent-hover) / <alpha-value>)',
 
-        // Worker dark theme
+        // Worker / Employer dark theme
         'wrk-bg': '#0A0F1A',
         'wrk-card': '#111827',
         'wrk-card-hover': '#1A2332',
         'wrk-border': '#1E293B',
-        'wrk-text': '#F0F4F8',
-        'wrk-muted': '#94A3B8',
+        'wrk-text': '#FFFFFF',
+        'wrk-muted': '#E3E9F2',
         'wrk-accent': '#3B82F6',
         'wrk-accent-hover': '#2563EB',
 
@@ -36,8 +42,8 @@ export default {
         'adm-card': '#111A11',
         'adm-card-hover': '#1A261A',
         'adm-border': '#1E331E',
-        'adm-text': '#F0FFF0',
-        'adm-muted': '#88AA88',
+        'adm-text': '#FFFFFF',
+        'adm-muted': '#E4F0E4',
         'adm-accent': '#22C55E',
         'adm-accent-hover': '#16A34A',
 

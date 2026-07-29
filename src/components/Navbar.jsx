@@ -43,7 +43,7 @@ export default function Navbar() {
                   Хянах самбар
                 </Link>
                 <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
-                  <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full" />
+                  <img src={user.avatarUrl} alt={user.name} className="w-8 h-8 rounded-full" />
                   <span className="text-sm font-medium text-gray-700">{user.name}</span>
                   <button onClick={handleLogout} className="text-gray-400 hover:text-red-500 transition-colors">
                     <LogOut className="w-4 h-4" />

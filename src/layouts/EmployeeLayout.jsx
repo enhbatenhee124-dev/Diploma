@@ -1,72 +1,47 @@
-import { Link, useLocation, Outlet } from 'react-router-dom'
-import { LayoutDashboard, Briefcase, FileText, Bookmark, User, LogOut } from 'lucide-react'
+import { Outlet } from 'react-router-dom'
+import { LayoutDashboard, Briefcase, FileText, Bookmark, User, Trophy } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
+import { useCosmetics } from '../hooks/useData'
+import { accentStyle } from '../utils/accents'
+import RailSidebar from '../components/RailSidebar'
+import ChatDock from '../components/ChatDock'
 
 const navItems = [
-  { path: '/employee/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/employee/jobs', label: 'Find Jobs', icon: Briefcase },
-  { path: '/employee/applications', label: 'Applications', icon: FileText },
-  { path: '/employee/saved', label: 'Saved Jobs', icon: Bookmark },
-  { path: '/employee/profile', label: 'Profile', icon: User },
+  { path: '/employee/dashboard', label: 'Хянах самбар', icon: LayoutDashboard },
+  { path: '/employee/jobs', label: 'Ажил хайх', icon: Briefcase },
+  { path: '/employee/applications', label: 'Миний хүсэлтүүд', icon: FileText },
+  { path: '/employee/saved', label: 'Хадгалсан ажлууд', icon: Bookmark },
+  { path: '/employee/ranking', label: 'Тэргүүлэгчид', icon: Trophy },
+  { path: '/employee/profile', label: 'Профайл', icon: User },
 ]
 
 export default function EmployeeLayout() {
-  const location = useLocation()
-  const { logout } = useAuth()
+  const { user, logout } = useAuth()
+  const [cosmetics] = useCosmetics(user?.id)
 
   return (
-    <div className="emp-page">
-      <div className="flex h-screen overflow-hidden">
-        {/* Sidebar */}
-        <aside className="emp-sidebar w-64 flex-shrink-0 hidden lg:flex flex-col">
-          <div className="p-6 border-b border-emp-border">
-            <Link to="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emp-accent/20 flex items-center justify-center">
-                <Briefcase className="w-5 h-5 text-emp-accent" />
-              </div>
-              <div>
-                <span className="text-lg font-bold text-emp-text">JobConnect</span>
-                <p className="text-xs text-emp-muted">Employee Portal</p>
-              </div>
-            </Link>
-          </div>
-          <nav className="flex-1 p-4 space-y-1">
-            {navItems.map(item => {
-              const Icon = item.icon
-              const isActive = location.pathname === item.path
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={isActive ? 'emp-nav-link-active' : 'emp-nav-link'}
-                >
-                  <Icon className="w-5 h-5" />
-                  {item.label}
-                </Link>
-              )
-            })}
-          </nav>
-          <div className="p-4 border-t border-emp-border">
-            <button onClick={logout} className="emp-nav-link w-full text-left">
-              <LogOut className="w-5 h-5" /> Sign Out
-            </button>
-          </div>
-        </aside>
+    // Сонгосон accent-ийг эндээс тарааж өгнө — доорх бүх хуудас, зурвас,
+    // чатын товч нэг өнгөтэй болно.
+    <div className="emp-page" style={accentStyle(cosmetics.accentId)}>
+      <div className="flex flex-col lg:flex-row h-screen overflow-hidden">
+        <RailSidebar
+          theme="emp"
+          items={navItems}
+          brand="МонголАжил"
+          caption="Ажил хайгчийн портал"
+          logoIcon={Briefcase}
+          onLogout={logout}
+        />
 
-        {/* Main Content */}
         <main className="flex-1 overflow-y-auto">
-          {/* Mobile Header */}
-          <div className="lg:hidden emp-sidebar border-b p-4">
-            <Link to="/" className="flex items-center gap-2">
-              <Briefcase className="w-5 h-5 text-emp-accent" />
-              <span className="font-bold text-emp-text">JobConnect</span>
-            </Link>
-          </div>
-          <div className="p-6 lg:p-8">
+          {/* Доод талд чатын товчны зай үлдээнэ */}
+          <div className="p-6 lg:p-8 pb-28">
             <Outlet />
           </div>
         </main>
       </div>
+
+      <ChatDock />
     </div>
   )
 }

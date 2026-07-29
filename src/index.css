@@ -55,6 +55,10 @@
 
   /* ==================== EMPLOYEE DARK THEME ==================== */
   .emp-page {
+    /* Accent-ийн анхдагч утга. Хэрэглэгч мэндчилгээн дээр дарж солиход
+       энэ хувьсагчийг inline style-аар дарж бичнэ. */
+    --emp-accent: 168 85 247;
+    --emp-accent-hover: 147 51 234;
     @apply bg-emp-bg text-emp-text min-h-screen;
   }
   .emp-card {
@@ -79,8 +83,8 @@
     @apply bg-emp-card text-emp-text font-medium py-2.5 px-5 rounded-xl
            border border-emp-border hover:bg-emp-card-hover transition-all;
   }
-  .emp-text-heading { @apply text-emp-text; }
-  .emp-text-body { @apply text-emp-muted; }
+  .emp-text-heading { @apply text-white; }
+  .emp-text-body { @apply text-white/90; }
   .emp-badge {
     @apply px-2.5 py-1 rounded-full text-xs font-medium;
   }
@@ -123,8 +127,8 @@
     @apply bg-wrk-card text-wrk-text font-medium py-2.5 px-5 rounded-xl
            border border-wrk-border hover:bg-wrk-card-hover transition-all;
   }
-  .wrk-text-heading { @apply text-wrk-text; }
-  .wrk-text-body { @apply text-wrk-muted; }
+  .wrk-text-heading { @apply text-white; }
+  .wrk-text-body { @apply text-white/90; }
   .wrk-badge {
     @apply px-2.5 py-1 rounded-full text-xs font-medium;
   }
@@ -167,8 +171,8 @@
     @apply bg-adm-card text-adm-text font-medium py-2.5 px-5 rounded-xl
            border border-adm-border hover:bg-adm-card-hover transition-all;
   }
-  .adm-text-heading { @apply text-adm-text; }
-  .adm-text-body { @apply text-adm-muted; }
+  .adm-text-heading { @apply text-white; }
+  .adm-text-body { @apply text-white/90; }
   .adm-badge {
     @apply px-2.5 py-1 rounded-full text-xs font-medium;
   }

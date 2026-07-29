@@ -1,64 +1,132 @@
-import { createContext, useState, useEffect } from 'react'
+import { createContext, useState, useEffect, useCallback } from 'react'
+import * as auth from '../services/authService'
+import { isSupabaseConfigured } from '../lib/supabase'
+import { useNotification } from '../hooks/useNotification'
 
 export const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const { notify } = useNotification()
 
+  // ------------------------------
+  // Эхлэхэд сешн сэргээх + өөрчлөлт сонсох
+  // ------------------------------
   useEffect(() => {
-    const stored = localStorage.getItem('jobconnect_user')
-    if (stored) {
-      try {
-        setUser(JSON.parse(stored))
-      } catch (e) {
-        localStorage.removeItem('jobconnect_user')
-      }
+    let active = true
+
+    if (!isSupabaseConfigured) {
+      setLoading(false)
+      return
     }
-    setLoading(false)
+
+    auth.getCurrentUser().then(result => {
+      if (!active) return
+      if (result.ok) setUser(result.data)
+      setLoading(false)
+    })
+
+    // Өөр таб дээр гарах/нэвтрэх, токен сэргээгдэх зэргийг барина
+    const unsubscribe = auth.onAuthChange(async (event, session) => {
+      if (!active) return
+
+      if (event === 'SIGNED_OUT' || !session?.user) {
+        setUser(null)
+        return
+      }
+      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+        const result = await auth.fetchProfile(session.user.id)
+        if (active && result.ok) setUser(result.data)
+      }
+    })
+
+    return () => {
+      active = false
+      unsubscribe()
+    }
   }, [])
 
-  const login = (email, password, role) => {
-    const mockUser = {
-      id: Math.random().toString(36).substr(2, 9),
-      email,
-      name: email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-      role,
-      avatar: `https://ui-avatars.com/api/?name=${email.split('@')[0]}&background=3b82f6&color=fff`,
-      createdAt: new Date().toISOString()
-    }
-    setUser(mockUser)
-    localStorage.setItem('jobconnect_user', JSON.stringify(mockUser))
-    return mockUser
-  }
+  const roleLabel = role =>
+    ({ employee: 'ажил хайгч', employer: 'ажил олгогч', admin: 'админ' }[role] || role)
 
-  const register = (name, email, password, role) => {
-    const mockUser = {
-      id: Math.random().toString(36).substr(2, 9),
-      email,
-      name,
-      role,
-      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3b82f6&color=fff`,
-      createdAt: new Date().toISOString()
-    }
-    setUser(mockUser)
-    localStorage.setItem('jobconnect_user', JSON.stringify(mockUser))
-    return mockUser
-  }
+  /**
+   * Нэвтрэх.
+   * @returns {Promise<{ok: boolean, data?: object, error?: string}>}
+   */
+  const login = useCallback(
+    async (identifier, password, _role, method = 'phone') => {
+      const result = await auth.signIn(identifier, password, method)
 
-  const logout = () => {
+      if (!result.ok) {
+        notify({ type: 'error', message: 'Нэвтэрч чадсангүй', description: result.error })
+        return result
+      }
+
+      setUser(result.data)
+      notify({
+        type: 'success',
+        message: `Тавтай морил, ${result.data.name}!`,
+        description: `Та ${roleLabel(result.data.role)} эрхээр нэвтэрлээ.`,
+        userId: result.data.id,
+      })
+      return result
+    },
+    [notify]
+  )
+
+  const register = useCallback(
+    async ({ name, phone, email, password, role }) => {
+      const result = await auth.signUp({ name, phone, email, password, role })
+
+      if (!result.ok) {
+        notify({ type: 'error', message: 'Бүртгүүлж чадсангүй', description: result.error })
+        return result
+      }
+
+      // И-мэйл баталгаажуулалт шаардлагатай үед сешн үүсэхгүй
+      if (result.needsConfirmation) {
+        notify({ type: 'info', message: 'Бүртгэл үүслээ', description: result.message })
+        return result
+      }
+
+      setUser(result.data)
+      notify({
+        type: 'success',
+        message: `Тавтай морил, ${result.data.name}!`,
+        description: 'Бүртгэл амжилттай үүслээ.',
+        userId: result.data.id,
+      })
+      return result
+    },
+    [notify]
+  )
+
+  const logout = useCallback(async () => {
+    await auth.signOut()
     setUser(null)
-    localStorage.removeItem('jobconnect_user')
-  }
+  }, [])
 
-  const updateProfile = (updates) => {
-    const updated = { ...user, ...updates }
-    setUser(updated)
-    localStorage.setItem('jobconnect_user', JSON.stringify(updated))
-  }
+  const updateProfile = useCallback(
+    async updates => {
+      if (!user) return { ok: false, error: 'Нэвтрээгүй байна.' }
+
+      const result = await auth.updateProfile(user.id, updates)
+      if (!result.ok) {
+        notify({ type: 'error', message: 'Хадгалж чадсангүй', description: result.error })
+        return result
+      }
+
+      setUser(result.data)
+      return result
+    },
+    [user, notify]
+  )
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, updateProfile }}>
+    <AuthContext.Provider
+      value={{ user, loading, login, register, logout, updateProfile, configured: isSupabaseConfigured }}
+    >
       {children}
     </AuthContext.Provider>
   )

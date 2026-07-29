@@ -17,9 +17,14 @@ const Icons = {
       <circle cx="12" cy="7" r="4" />
     </svg>
   ),
+  Phone: ({ className = "", size = 24 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+    </svg>
+  ),
   Mail: ({ className = "", size = 24 }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
-      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+      <rect x="2" y="4" width="20" height="16" rx="2" />
       <polyline points="22,6 12,13 2,6" />
     </svg>
   ),
@@ -58,29 +63,53 @@ const Icons = {
 export default function RegisterPage() {
   const [showPass, setShowPass] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [role, setRole] = useState("employee"); // "employee" or "worker"
-  const [form, setForm] = useState({ fullName: "", email: "", password: "", confirm: "" });
+  const [role, setRole] = useState("employee"); // "employee" or "employer"
+  const [form, setForm] = useState({ fullName: "", phone: "", email: "", password: "", confirm: "" });
   const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+
     if (form.password !== form.confirm) {
-      alert("Нууц үг таарахгүй байна");
+      setError('Нууц үг таарахгүй байна.');
+      return;
+    }
+    if (form.password.length < 6) {
+      setError('Нууц үг хамгийн багадаа 6 тэмдэгт байх ёстой.');
       return;
     }
     if (!agreed) {
-      alert("Үйлчилгээний нөхцөлд зөвшөөрөх шаардлагатай");
+      setError('Үйлчилгээний нөхцөлд зөвшөөрөх шаардлагатай.');
       return;
     }
+
     setLoading(true);
-    setTimeout(() => {
-      register(form.fullName, form.email, form.password, role);
-      navigate(`/${role}/dashboard`);
-      setLoading(false);
-    }, 800);
+    const result = await register({
+      name: form.fullName,
+      phone: form.phone,
+      email: form.email,
+      password: form.password,
+      role,
+    });
+    setLoading(false);
+
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
+
+    // И-мэйл баталгаажуулалт асаалттай бол сешн үүсээгүй тул нэвтрэх хуудас руу
+    if (result.needsConfirmation) {
+      navigate('/login');
+      return;
+    }
+
+    navigate(`/${result.data.role}/dashboard`);
   };
 
   return (
@@ -124,14 +153,14 @@ export default function RegisterPage() {
             </button>
             <button
               type="button"
-              onClick={() => setRole("worker")}
+              onClick={() => setRole("employer")}
               className={`flex-1 py-3 rounded-lg text-sm font-bold transition-all ${
-                role === "worker"
+                role === "employer"
                   ? "bg-gradient-to-r from-violet-600 to-violet-500 text-white shadow-xl shadow-violet-500/20"
                   : "text-slate-400 hover:text-white"
               }`}
             >
-              Фрилансер
+              Ажил Олгогч
             </button>
           </div>
 
@@ -154,9 +183,25 @@ export default function RegisterPage() {
               </div>
             </div>
 
+            {/* Phone */}
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-3">Утасны дугаар</label>
+              <div className="relative">
+                <Icons.Phone size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+                <input
+                  type="tel"
+                  required
+                  value={form.phone}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                  placeholder="99112233"
+                  className="w-full pl-12 pr-5 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all"
+                />
+              </div>
+            </div>
+
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-3">И-мэйл</label>
+              <label className="block text-sm font-medium text-slate-300 mb-3">И-мэйл хаяг</label>
               <div className="relative">
                 <Icons.Mail size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
                 <input
@@ -164,10 +209,13 @@ export default function RegisterPage() {
                   required
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  placeholder="ta@example.com"
+                  placeholder="bolor.erdene@example.mn"
                   className="w-full pl-12 pr-5 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all"
                 />
               </div>
+              <p className="text-xs text-slate-500 mt-2">
+                Нэвтрэх бүрд энэ хаяг руу сэрэмжлүүлэг илгээнэ.
+              </p>
             </div>
 
             {/* Password */}
@@ -254,9 +302,16 @@ export default function RegisterPage() {
               </span>
             </label>
 
+            {/* Алдааны мэдээлэл */}
+            {error && (
+              <div className="px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/25 text-sm text-red-200">
+                {error}
+              </div>
+            )}
+
             {/* Submit */}
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={loading} 
               className="w-full px-6 py-4 rounded-xl bg-gradient-to-r from-violet-600 to-violet-500 text-white font-bold text-lg hover:shadow-xl hover:shadow-violet-500/40 transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3"
             >
