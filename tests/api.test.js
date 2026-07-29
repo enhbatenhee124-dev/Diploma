@@ -395,6 +395,19 @@ describe.runIf(hasSupabase)('Гол урсгал', () => {
     expect(done.body.data.status).toBe('completed')
   })
 
+  it('8b. Дууссан ажлыг буцаан татаж ЧАДАХГҮЙ (FR-6.5)', async () => {
+    if (!available || !applicationId) return
+
+    // Түүх устгах боломжтой бол no-show хамгаалалт утгагүй болно:
+    // ажилтан муу үнэлгээ авахаас өмнө мөрөө арчиж чадна.
+    const res = await api()
+      .delete(`/api/applications/${applicationId}`)
+      .set(...auth(token.worker))
+
+    expect(res.status).toBe(400)
+    expect(res.body.error).toMatch(/буцаан татах боломжгүй/)
+  })
+
   it('9. Хоёр тал бие биеэ үнэлнэ (FR-7.1)', async () => {
     if (!available || !applicationId) return
 
@@ -800,6 +813,237 @@ describe.runIf(hasSupabase)('Хувийн мэдээлэл', () => {
     const res = await api().get('/api/profiles/admin').set(...auth(token.admin))
     expect(res.status).toBe(200)
     expect(res.body.data.some(p => p.phone)).toBe(true)
+  })
+})
+
+// ------------------------------
+// Утасны дугаарын хил (NFR-3)
+// ------------------------------
+// Платформын хамгийн мэдрэмтгий дүрэм: утасны дугаар зөвхөн зөвшөөрөгдсөн
+// ажлын хоёр талд нээгдэнэ. Энэ эвдэрвэл хэн ч бүх хэрэглэгчийн дугаарыг
+// цуглуулж чадна.
+describe.runIf(hasSupabase)('Холбоо барих мэдээллийн хил', () => {
+  it('өөрийн дугаараа харна', async () => {
+    if (!available) return
+
+    const me = await api().get('/api/gamification/me').set(...auth(token.worker))
+    const res = await api()
+      .get(`/api/profiles/${me.body.data.userId}/contact`)
+      .set(...auth(token.worker))
+
+    expect(res.status).toBe(200)
+    expect(res.body.data?.phone).toBeTruthy()
+  })
+
+  it('ХАМААРАЛГҮЙ хүний дугаарыг харахгүй', async () => {
+    if (!available) return
+
+    // Хоёр ажилтан хоорондоо ямар ч ажлаар холбогдоогүй
+    const profiles = await api().get('/api/profiles').set(...auth(token.worker))
+    const me = await api().get('/api/gamification/me').set(...auth(token.worker))
+    const stranger = profiles.body.data.find(p => p.role === 'employee' && p.id !== me.body.data.userId)
+    if (!stranger) return
+
+    const res = await api()
+      .get(`/api/profiles/${stranger.id}/contact`)
+      .set(...auth(token.worker))
+
+    // Хүсэлт амжилттай ч утга нь ХООСОН байх ёстой
+    expect(res.status).toBe(200)
+    expect(res.body.data?.phone).toBeFalsy()
+  })
+
+  it('админ хэнийхийг ч харна', async () => {
+    if (!available) return
+
+    const profiles = await api().get('/api/profiles').set(...auth(token.admin))
+    const someone = profiles.body.data.find(p => p.role === 'employee')
+    if (!someone) return
+
+    const res = await api().get(`/api/profiles/${someone.id}/contact`).set(...auth(token.admin))
+    expect(res.status).toBe(200)
+    expect(res.body.data?.phone).toBeTruthy()
+  })
+
+  it('нэвтрэлтгүйгээр хандахгүй', async () => {
+    if (!available) return
+    const me = await api().get('/api/gamification/me').set(...auth(token.worker))
+    const res = await api().get(`/api/profiles/${me.body.data.userId}/contact`)
+    expect(res.status).toBe(401)
+  })
+})
+
+// ------------------------------
+// Ажил олгогч баталгаажуулах (FR-3.2, FR-9.1)
+// ------------------------------
+describe.runIf(hasSupabase)('Ажил олгогч баталгаажуулах', () => {
+  it('ажилтан баталгаажуулж чадахгүй', async () => {
+    if (!available) return
+
+    const queue = await api().get('/api/employers/queue').set(...auth(token.admin))
+    const target = queue.body.data[0]
+    if (!target) return
+
+    const res = await api()
+      .post(`/api/employers/${target.userId}/verify`)
+      .set(...auth(token.worker))
+
+    expect(res.status).toBe(403)
+  })
+
+  it('ажил олгогч өөрийгөө баталгаажуулж чадахгүй', async () => {
+    if (!available) return
+
+    const me = await api().get('/api/gamification/me').set(...auth(token.employer))
+    const res = await api()
+      .post(`/api/employers/${me.body.data.userId}/verify`)
+      .set(...auth(token.employer))
+
+    expect(res.status).toBe(403)
+  })
+
+  it('татгалзахад шалтгаан ЗААВАЛ шаардана', async () => {
+    if (!available) return
+
+    const queue = await api().get('/api/employers/queue').set(...auth(token.admin))
+    const target = queue.body.data[0]
+    if (!target) return
+
+    // Шалтгаангүй татгалзвал ажил олгогч юуг засахаа мэдэхгүй
+    const res = await api()
+      .post(`/api/employers/${target.userId}/reject`)
+      .set(...auth(token.admin))
+      .send({})
+
+    expect(res.status).toBe(400)
+  })
+})
+
+// ------------------------------
+// Ажилтныг ажилд урих (FR-13)
+// ------------------------------
+describe.runIf(hasSupabase)('Урилга', () => {
+  it('ажилтан урилга илгээж чадахгүй', async () => {
+    if (!available) return
+
+    const shifts = await api().get('/api/shifts').set(...auth(token.worker))
+    const me = await api().get('/api/gamification/me').set(...auth(token.worker))
+
+    const res = await api()
+      .post('/api/applications/invite')
+      .set(...auth(token.worker))
+      .send({ shiftId: shifts.body.data[0]?.id, workerId: me.body.data.userId })
+
+    expect(res.status).toBe(403)
+  })
+
+  it('ӨӨРИЙН биш зар дээр урьж чадахгүй', async () => {
+    if (!available) return
+
+    // Ажил олгогч №1 нь ажил олгогч №2-ын зар дээр урилга илгээх гэж оролдоно.
+    // Шалгалтыг `invite_worker` функц auth.uid()-ээр хийнэ.
+    const shifts = await api().get('/api/shifts').set(...auth(token.employer))
+    const me = await api().get('/api/gamification/me').set(...auth(token.employer))
+    const notMine = shifts.body.data.find(s => s.employerId !== me.body.data.userId)
+    if (!notMine) return
+
+    const workers = await api().get('/api/profiles').set(...auth(token.employer))
+    const worker = workers.body.data.find(p => p.role === 'employee')
+
+    const res = await api()
+      .post('/api/applications/invite')
+      .set(...auth(token.employer))
+      .send({ shiftId: notMine.id, workerId: worker.id })
+
+    expect(res.status).toBeGreaterThanOrEqual(400)
+  })
+})
+
+// ------------------------------
+// Ажилтны ур чадвар (FR-2.2, FR-2.3)
+// ------------------------------
+describe.runIf(hasSupabase)('Ур чадвар ба боломжит цаг', () => {
+  it('хадгалж, буцааж уншина', async () => {
+    if (!available) return
+
+    const before = await api().get('/api/gamification/me').set(...auth(token.worker))
+    const userId = before.body.data.userId
+
+    const original = await api().get(`/api/profiles/${userId}/worker`).set(...auth(token.worker))
+
+    const saved = await api()
+      .put('/api/profiles/me/worker')
+      .set(...auth(token.worker))
+      .send({ skills: ['barista', 'cashier'], availability: { 0: [0, 1] } })
+    expect(saved.status).toBe(200)
+
+    const after = await api().get(`/api/profiles/${userId}/worker`).set(...auth(token.worker))
+    expect(after.body.data.skills).toEqual(['barista', 'cashier'])
+    expect(after.body.data.availability).toEqual({ 0: [0, 1] })
+
+    // Анхны утгыг сэргээнэ — тест өгөгдлийг өөрчилж үлдээхгүй
+    await api()
+      .put('/api/profiles/me/worker')
+      .set(...auth(token.worker))
+      .send({ skills: original.body.data.skills, availability: original.body.data.availability })
+  })
+
+  it('ур чадвар хэт олон бол татгалзана', async () => {
+    if (!available) return
+
+    const res = await api()
+      .put('/api/profiles/me/worker')
+      .set(...auth(token.worker))
+      .send({ skills: Array.from({ length: 40 }, (_, i) => `s${i}`) })
+
+    expect(res.status).toBe(400)
+  })
+
+  it('хоосон хүсэлтийг татгалзана', async () => {
+    if (!available) return
+    const res = await api().put('/api/profiles/me/worker').set(...auth(token.worker)).send({})
+    expect(res.status).toBe(400)
+  })
+})
+
+// ------------------------------
+// Тэргүүлэгчид
+// ------------------------------
+describe.runIf(hasSupabase)('Тэргүүлэгчид', () => {
+  it('дүрээр эрэмбэлж буцаана', async () => {
+    if (!available) return
+
+    const res = await api().get('/api/gamification/ranking?role=employee').set(...auth(token.worker))
+    expect(res.status).toBe(200)
+    expect(Array.isArray(res.body.data)).toBe(true)
+    expect(res.body.data.every(r => r.role === 'employee')).toBe(true)
+  })
+
+  it('мэдэгдэхгүй дүрийг татгалзана', async () => {
+    if (!available) return
+    const res = await api().get('/api/gamification/ranking?role=хакер').set(...auth(token.worker))
+    expect(res.status).toBe(400)
+  })
+})
+
+// ------------------------------
+// QPay webhook (нээлттэй зам)
+// ------------------------------
+describe.runIf(hasSupabase)('QPay webhook', () => {
+  it('нэвтрэлтгүйгээр хүлээж авна', async () => {
+    // QPay токен явуулдаггүй — 401 буцаавал төлбөрийн мэдэгдэл алдагдана
+    const res = await api().post('/api/billing/qpay/callback').send({})
+    expect(res.status).toBe(200)
+    expect(res.body.ok).toBe(true)
+  })
+
+  it('танихгүй invoice_id-д ч 200 буцаана', async () => {
+    // QPay 200-аас өөр хариу авбал дахин дахин дуудна
+    const res = await api()
+      .post('/api/billing/qpay/callback?invoice_id=not-a-uuid')
+      .send({ sender_invoice_no: 'хог' })
+
+    expect(res.status).toBe(200)
   })
 })
 

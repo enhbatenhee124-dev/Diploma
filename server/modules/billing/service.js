@@ -199,20 +199,33 @@ export async function confirmInvoice(req, invoiceId, note) {
 export async function handleCallback(query, body) {
   const invoiceId = query?.invoice_id || body?.sender_invoice_no
 
-  // Юу ирснийг ҮРГЭЛЖ бүртгэнэ — маргаан гарвал энэ бол баримт
+  // ⚠ Танихгүй дуудлагыг өгөгдлийн санд БИЧИХГҮЙ. Энэ зам нээлттэй тул
+  //   бүгдийг бүртгэвэл хэн ч `payment_events`-ийг хязгааргүй өсгөж чадна.
+  //   Аудитын мөр нь БОДИТ нэхэмжлэлд хамаарах үед л утга учиртай.
+  if (!isUuid(invoiceId)) {
+    console.warn('[qpay] танихгүй callback — invoice_id буруу:', invoiceId)
+    return
+  }
+
+  // Нэхэмжлэлийг ЭХЛЭЭД шалгана. Байхгүй бол бүртгэл ч хийхгүй — санамсаргүй
+  // UUID илгээгээд хүснэгт дүүргэх боломжийг хаана.
+  const { data: invoice } = await admin
+    .from('invoices').select('*').eq('id', invoiceId).maybeSingle()
+
+  if (!invoice) {
+    console.warn('[qpay] танихгүй нэхэмжлэлийн callback:', invoiceId)
+    return
+  }
+
+  // Юу ирснийг бүртгэнэ — маргаан гарвал энэ бол баримт
   await admin.from('payment_events').insert({
-    invoice_id: isUuid(invoiceId) ? invoiceId : null,
+    invoice_id: invoiceId,
     provider: 'qpay',
     event_type: 'callback',
     raw_payload: { query, body },
   })
 
-  if (!isUuid(invoiceId)) return
-
-  const { data: invoice } = await admin
-    .from('invoices').select('*').eq('id', invoiceId).maybeSingle()
-
-  if (!invoice || invoice.status === 'paid' || !invoice.qpay_invoice_id) return
+  if (invoice.status === 'paid' || !invoice.qpay_invoice_id) return
 
   const result = await checkPayment(invoice.qpay_invoice_id)
   if (result.paid && result.paidAmount >= invoice.amount_mnt) {

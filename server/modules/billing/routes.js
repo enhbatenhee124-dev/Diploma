@@ -8,7 +8,12 @@ const router = Router()
 
 // ⚠ Webhook нь нэвтрэлтгүй — requireAuth-ээс ӨМНӨ бүртгэнэ.
 //   QPay-д ҮРГЭЛЖ 200 буцаана, эс тэгвээс дахин дахин дуудна.
-router.post('/qpay/callback', asyncHandler(async (req, res) => {
+//
+// ⚠ Энэ бол аппын ЦОРЫН ГАНЦ нээлттэй бичих цэг. Хэн ч дуудаж чадах тул
+//   хязгаарлана: эс тэгвээс `payment_events` хүснэгтийг хогоор дүүргэх,
+//   эсвэл QPay руу чиглэсэн дуудлагыг үржүүлэх боломжтой.
+//   Бодит QPay нэг нэхэмжлэлд цөөн удаа л дууддаг тул энэ хязгаар өгөөмөр.
+router.post('/qpay/callback', rateLimit({ name: 'qpay-callback', windowMs: 60_000, max: 60 }), asyncHandler(async (req, res) => {
   res.json({ ok: true })
 
   // Хариу илгээсний дараа боловсруулна — QPay хүлээхгүй
