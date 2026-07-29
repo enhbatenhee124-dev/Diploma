@@ -13,10 +13,20 @@ import { toShift } from './mapper.js'
 
 const STATUSES = ['Active', 'Filled', 'Closed']
 
+/**
+ * Аль хүснэгтээс уншихыг сонгоно.
+ *
+ * Нэвтрээгүй зочин `shifts`-д хандах эрхгүй (RLS нь `to authenticated`).
+ * Түүнд зориулж зөвхөн 'Active' зарыг агуулсан `public_shifts` view бий —
+ * ингэснээр зочин ажил хайж чадах ба хаагдсан зар, ажилтнуудын өгөгдөл
+ * нээгдэхгүй.
+ */
+const sourceFor = req => (req.user ? 'shifts' : 'public_shifts')
+
 export async function list(req) {
   const sb = clientFor(req)
   const rows = unwrap(
-    await sb.from('shifts').select('*').order('start_at', { ascending: true })
+    await sb.from(sourceFor(req)).select('*').order('start_at', { ascending: true })
   )
   return rows.map(toShift)
 }
@@ -24,7 +34,9 @@ export async function list(req) {
 export async function getOne(req, id) {
   requireUuid(id, 'Зарын ID')
   const sb = clientFor(req)
-  const row = unwrap(await sb.from('shifts').select('*').eq('id', id).maybeSingle())
+  const row = unwrap(
+    await sb.from(sourceFor(req)).select('*').eq('id', id).maybeSingle()
+  )
   if (!row) throw notFound('Ийм зар олдсонгүй.')
   return toShift(row)
 }

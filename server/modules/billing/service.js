@@ -64,13 +64,33 @@ export async function plan(req) {
   return { id: row.id, name: row.name, priceMnt: row.price_mnt, intervalDays: row.interval_days }
 }
 
-/** Нэхэмжлэлүүд. RLS нь ажил олгогчид өөрийнх, админд бүгдийг харуулна. */
+/**
+ * Нэхэмжлэлүүд. RLS нь ажил олгогчид өөрийнх, админд бүгдийг харуулна.
+ *
+ * `invoice_overview` view нь ажил олгогчийн нэрийг агуулдаг ч QR-ийн
+ * баганагүй. Хүлээгдэж буй нэхэмжлэлийн QR-ийг `invoices`-оос тусад нь
+ * авч нэгтгэнэ — эс тэгвээс хэрэглэгч QR-ээ харахын тулд "Нэхэмжлэл
+ * үүсгэх" товчийг дахин дарах шаардлагатай болно.
+ */
 export async function listInvoices(req) {
   const sb = asUser(req.accessToken)
+
   const rows = unwrap(
     await sb.from('invoice_overview').select('*').order('created_at', { ascending: false })
   )
-  return rows.map(toInvoice)
+
+  const pendingIds = rows.filter(r => r.status === 'pending').map(r => r.id)
+  if (!pendingIds.length) return rows.map(toInvoice)
+
+  const qr = unwrap(
+    await sb
+      .from('invoices')
+      .select('id, qpay_qr_text, qpay_qr_image')
+      .in('id', pendingIds)
+  )
+  const byId = new Map(qr.map(r => [r.id, r]))
+
+  return rows.map(r => toInvoice({ ...r, ...byId.get(r.id) }))
 }
 
 /**
@@ -144,6 +164,10 @@ export async function checkInvoice(req, invoiceId) {
 
   if (invoice.status === 'paid') return { paid: true, invoice: toInvoice(invoice) }
   if (!invoice.qpay_invoice_id) return { paid: false, invoice: toInvoice(invoice) }
+
+  // QPay-ийн тохиргоо байхгүй үед шалгах боломжгүй. Хуучин нэхэмжлэл дээр
+  // qpay_invoice_id үлдсэн байж болзошгүй тул энд барихгүй бол 500 өгнө.
+  if (!isQpayConfigured()) return { paid: false, invoice: toInvoice(invoice) }
 
   const result = await checkPayment(invoice.qpay_invoice_id)
   if (result.paid && result.paidAmount >= invoice.amount_mnt) {

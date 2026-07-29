@@ -51,8 +51,24 @@ export function useShifts() {
   return useFetch(q.fetchShifts, [], empty)
 }
 
+/**
+ * Хүсэлтүүд. Нэвтрээгүй үед хоосон буцаана — АЛДАА БИШ.
+ *
+ * `/jobs` хуудас нь нийтэд нээлттэй бөгөөд энэ hook-ийг ашигладаг. Хэрэв
+ * нэвтрээгүй үед 401 алдаа өгвөл зочинд зарын жагсаалтын оронд алдааны
+ * хайрцаг харагдана — зарын самбарыг нээсэн ч утгагүй болно.
+ */
 export function useApplications() {
-  return useFetch(q.fetchApplications, [], empty)
+  const { user } = useAuth()
+  const id = user?.id
+  return useFetch(
+    useCallback(
+      () => (id ? q.fetchApplications() : Promise.resolve({ ok: true, data: [] })),
+      [id]
+    ),
+    [id],
+    empty
+  )
 }
 
 export function useReviews() {

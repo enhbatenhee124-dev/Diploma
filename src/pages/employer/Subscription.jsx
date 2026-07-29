@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { format } from 'date-fns'
-import { CreditCard, Copy, Check, Building2, Hash, Info, RefreshCw } from 'lucide-react'
+import { CreditCard, Copy, Check, Building2, Hash, Info, RefreshCw, QrCode, Smartphone } from 'lucide-react'
 import { useSubscription, usePlan, useInvoices, combine } from '../../hooks/useData'
-import { requestInvoice } from '../../data/queries'
+import { requestInvoice, checkInvoice } from '../../data/queries'
 import { useNotification } from '../../hooks/useNotification'
 import { Loading, ErrorBox } from '../../components/States'
 import { BANK_ACCOUNT, paymentReference, SUBSCRIPTION_STATUS, INVOICE_STATUS } from '../../config/billing'
@@ -48,6 +48,7 @@ export default function Subscription() {
   const invQ = useInvoices()
   const { loading, error, refreshAll } = combine(subQ, planQ, invQ)
   const [creating, setCreating] = useState(false)
+  const [checking, setChecking] = useState(false)
 
   const sub = subQ.data
   const plan = planQ.data
@@ -63,8 +64,35 @@ export default function Subscription() {
       notify({ type: 'error', message: 'Нэхэмжлэл үүсгэж чадсангүй', description: result.error })
       return
     }
-    notify({ type: 'success', message: 'Нэхэмжлэл бэлэн', description: 'Доорх данс руу шилжүүлнэ үү.' })
+    notify({ type: 'success', message: 'Нэхэмжлэл бэлэн', description: 'Доорх заавраар төлнө үү.' })
     invQ.refresh()
+  }
+
+  /**
+   * "Төлсөн, шалгана уу" — QPay-ээс шууд баталгаажуулна.
+   * Webhook саатсан эсвэл ирээгүй ч хэрэглэгч хүлээж суухгүй.
+   */
+  const handleCheck = async () => {
+    if (!pending) return
+    setChecking(true)
+    const result = await checkInvoice(pending.id)
+    setChecking(false)
+
+    if (!result.ok) {
+      notify({ type: 'error', message: 'Шалгаж чадсангүй', description: result.error })
+      return
+    }
+
+    if (result.data?.paid) {
+      notify({ type: 'success', message: 'Төлбөр баталгаажлаа', description: 'Захиалга сунгагдлаа.' })
+      refreshAll()
+    } else {
+      notify({
+        type: 'info',
+        message: 'Төлбөр хараахан ороогүй байна',
+        description: 'Банкнаас баталгаажихад 1-2 минут шаардаж болно. Дахин шалгана уу.',
+      })
+    }
   }
 
   if (loading) return <Loading label="Захиалгын мэдээлэл ачаалж байна…" />
@@ -140,16 +168,57 @@ export default function Subscription() {
         </p>
 
         {pending ? (
-          <div className="space-y-3">
-            <CopyRow label="Банк" value={BANK_ACCOUNT.bank} icon={Building2} />
-            <CopyRow label="Дансны дугаар" value={BANK_ACCOUNT.number} icon={CreditCard} />
-            <CopyRow label="Хүлээн авагч" value={BANK_ACCOUNT.holder} icon={Building2} />
-            <CopyRow label="Дүн" value={`${pending.amountMnt.toLocaleString('mn-MN')} ₮`} icon={Hash} />
-            <CopyRow label="Гүйлгээний утга" value={paymentReference(pending)} icon={Hash} />
+          <div className="space-y-5">
+            {/* QPay — QR байвал энэ нь хамгийн хурдан зам */}
+            {pending.qrImage && (
+              <div className="p-4 rounded-xl bg-wrk-bg/50 border border-wrk-border">
+                <div className="flex items-center gap-2 mb-3">
+                  <QrCode className="w-4 h-4 text-white" />
+                  <span className="text-sm font-medium wrk-text-heading">QPay-ээр төлөх</span>
+                </div>
 
-            <p className="text-xs wrk-text-body pt-2">
-              Нэхэмжлэлийн хугацаа: {format(new Date(pending.dueAt), 'yyyy-MM-dd HH:mm')} хүртэл
-            </p>
+                <div className="flex flex-col sm:flex-row gap-4 items-center sm:items-start">
+                  <img
+                    src={`data:image/png;base64,${pending.qrImage}`}
+                    alt="QPay QR код"
+                    className="w-40 h-40 rounded-lg bg-white p-2 flex-shrink-0"
+                  />
+                  <div className="text-sm wrk-text-body space-y-2">
+                    <p className="flex items-start gap-2">
+                      <Smartphone className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                      Банкны апп (Хаан, Голомт, ХХБ, Төрийн банк) эсвэл Monpay/SocialPay-ээр
+                      QR-ыг уншуулна уу.
+                    </p>
+                    <p>Төлсний дараа доорх товчийг дарж баталгаажуулна.</p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleCheck}
+                  disabled={checking}
+                  className="wrk-btn-primary mt-4 flex items-center gap-2 disabled:opacity-60"
+                >
+                  {checking ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                  {checking ? 'Шалгаж байна…' : 'Төлсөн, шалгана уу'}
+                </button>
+              </div>
+            )}
+
+            {/* Дансаар шилжүүлэх — QPay байхгүй үед ганц зам, байсан ч нөөц зам */}
+            <div className="space-y-3">
+              {pending.qrImage && (
+                <p className="text-sm font-medium wrk-text-heading">Эсвэл дансаар шилжүүлэх</p>
+              )}
+              <CopyRow label="Банк" value={BANK_ACCOUNT.bank} icon={Building2} />
+              <CopyRow label="Дансны дугаар" value={BANK_ACCOUNT.number} icon={CreditCard} />
+              <CopyRow label="Хүлээн авагч" value={BANK_ACCOUNT.holder} icon={Building2} />
+              <CopyRow label="Дүн" value={`${pending.amountMnt.toLocaleString('mn-MN')} ₮`} icon={Hash} />
+              <CopyRow label="Гүйлгээний утга" value={paymentReference(pending)} icon={Hash} />
+
+              <p className="text-xs wrk-text-body pt-2">
+                Нэхэмжлэлийн хугацаа: {format(new Date(pending.dueAt), 'yyyy-MM-dd HH:mm')} хүртэл
+              </p>
+            </div>
           </div>
         ) : (
           <button
@@ -162,9 +231,12 @@ export default function Subscription() {
           </button>
         )}
 
-        <p className="text-xs wrk-text-body mt-5 pt-4 border-t border-wrk-border">
-          QPay-ээр шууд төлөх боломжийг мерчант гэрээ байгуулсны дараа нэмнэ.
-        </p>
+        {pending && !pending.qrImage && (
+          <p className="text-xs wrk-text-body mt-5 pt-4 border-t border-wrk-border">
+            QPay-ийн QR идэвхжээгүй байна. Дансаар шилжүүлээд админд мэдэгдэнэ үү —
+            баталгаажмагц захиалга сунгагдана.
+          </p>
+        )}
       </div>
 
       {/* Түүх */}

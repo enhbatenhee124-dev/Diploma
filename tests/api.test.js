@@ -99,6 +99,55 @@ describe('Сервер амьд эсэх', () => {
   })
 })
 
+// ------------------------------
+// Нийтийн зарын самбар — нэвтрээгүй зочин
+// ------------------------------
+// Зочин ажил хараагүй бол бүртгүүлэх шалтгаангүй. Гэхдээ түүнд ЗӨВХӨН
+// зар харагдах ёстой — ажилтнуудын профайл, хүсэлт, чат хаалттай хэвээр.
+describe.runIf(hasSupabase)('Зочин — нийтийн зарын самбар', () => {
+  it('идэвхтэй зарыг харна', async () => {
+    const res = await api().get('/api/shifts')
+    expect(res.status).toBe(200)
+    expect(Array.isArray(res.body.data)).toBe(true)
+  })
+
+  it('ЗӨВХӨН идэвхтэй зар харагдана', async () => {
+    const res = await api().get('/api/shifts')
+    // Хаагдсан/дүүрсэн зар зочинд харагдвал хуучирсан мэдээлэл тарна
+    expect(res.body.data.every(s => s.status === 'Active')).toBe(true)
+  })
+
+  it('байгууллагын нэрийг харна (зарын карт дээр хэрэгтэй)', async () => {
+    const res = await api().get('/api/profiles/employers')
+    expect(res.status).toBe(200)
+    expect(res.body.data.length).toBeGreaterThan(0)
+    expect(res.body.data[0].orgName).toBeTruthy()
+  })
+
+  it('ажил олгогчийн РЕГИСТР, ХАЯГ зочинд ГАРАХГҮЙ', async () => {
+    const res = await api().get('/api/profiles/employers')
+    for (const e of res.body.data) {
+      expect(e.regNumber).toBeNull()
+      expect(e.address).toBeNull()
+    }
+  })
+
+  it('ажилтнуудын профайл зочинд хаалттай', async () => {
+    const res = await api().get('/api/profiles')
+    expect(res.status).toBeGreaterThanOrEqual(400)
+  })
+
+  it('ажилтнуудын ур чадвар зочинд харагдахгүй', async () => {
+    const res = await api().get('/api/profiles/workers')
+    expect(res.body.data).toEqual([])
+  })
+
+  it('зочин зар нийтэлж чадахгүй', async () => {
+    const res = await api().post('/api/shifts').send({ title: 'x' })
+    expect(res.status).toBe(401)
+  })
+})
+
 describe('Нэвтрэлтийн хамгаалалт', () => {
   it('токенгүйгээр хүсэлт харах боломжгүй', async () => {
     const res = await api().get('/api/applications')

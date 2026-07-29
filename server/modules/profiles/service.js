@@ -101,13 +101,18 @@ export async function saveWorker(req, body) {
 // ------------------------------
 export async function listEmployers(req) {
   const sb = clientFor(req)
-  const rows = unwrap(await sb.from('employer_profiles').select('*'))
+
+  // Зочинд зөвхөн `public_employers` нээлттэй — зарын карт дээр байгууллагын
+  // нэр, лого харуулахад хангалттай. Регистр, хаяг нь нэвтэрсэн хэрэглэгчид л.
+  const source = req.user ? 'employer_profiles' : 'public_employers'
+  const rows = unwrap(await sb.from(source).select('*'))
+
   return rows.map(r => ({
     userId: r.user_id,
     orgName: r.org_name,
     logoUrl: r.logo_url,
-    regNumber: r.reg_number,
-    address: r.address,
+    regNumber: r.reg_number ?? null,
+    address: r.address ?? null,
     isVerified: r.is_verified,
   }))
 }
