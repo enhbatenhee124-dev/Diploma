@@ -35,14 +35,36 @@ export function createApp() {
     next()
   })
 
+  // ------------------------------
+  // CORS
+  // ------------------------------
+  // Frontend болон API нь ижил домэйн дээр байрладаг (Vercel). Браузер нь
+  // GET-ээс бусад бүх хүсэлтэд, ижил домэйн байсан ч `Origin` толгой
+  // илгээдэг. Тиймээс "ижил домэйн" тохиолдлыг ЗААВАЛ зөвшөөрөх ёстой —
+  // үгүй бол апп уншиж чадах ч БИЧИЖ ЧАДАХГҮЙ болно.
+  //
+  // Ижил домэйныг хүсэлтийн `Host`-той тулгаж таньдаг тул шинэ домэйн
+  // (preview deploy, өөрийн домэйн) нэмэхэд тохиргоо өөрчлөх шаардлагагүй.
+  // `CORS_ORIGINS` нь ӨӨР домэйнөөс хандахыг зөвшөөрөхөд л хэрэгтэй.
   app.use(
-    cors({
-      origin(origin, callback) {
-        // Origin байхгүй = curl, mobile app, server-to-server. Зөвшөөрнө.
-        if (!origin || CORS_ORIGINS.includes(origin)) return callback(null, true)
-        callback(new ApiError(403, 'Энэ домэйноос хандах эрхгүй.'))
-      },
-      credentials: true,
+    cors((req, callback) => {
+      const origin = req.headers.origin
+
+      // Origin алга = curl, mobile app, server-to-server
+      if (!origin) return callback(null, { origin: true, credentials: true })
+
+      let sameOrigin = false
+      try {
+        sameOrigin = new URL(origin).host === req.headers.host
+      } catch {
+        sameOrigin = false
+      }
+
+      if (sameOrigin || CORS_ORIGINS.includes(origin)) {
+        return callback(null, { origin: true, credentials: true })
+      }
+
+      callback(new ApiError(403, 'Энэ домэйноос хандах эрхгүй.'))
     })
   )
 

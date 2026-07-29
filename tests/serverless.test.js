@@ -38,6 +38,62 @@ describe('Vercel serverless орц', () => {
     expect(res.status).toBe(401)
   })
 
+  // ============================================================
+  // CORS
+  // ============================================================
+  // Продакшнд илэрсэн алдаа: браузер нь GET-ээс бусад хүсэлтэд ижил
+  // домэйн байсан ч `Origin` илгээдэг. Тэр үед CORS шалгалт унаж, апп
+  // уншиж чаддаг ч БИЧИЖ ЧАДАХГҮЙ байсан.
+  //
+  // curl-ээр хийсэн тест үүнийг олоогүй — curl `Origin` илгээдэггүй.
+  describe('CORS', () => {
+    it('Origin-гүй хүсэлтийг нэвтрүүлнэ (curl, server-to-server)', async () => {
+      const res = await request(handler).get('/api/health')
+      expect(res.status).toBe(200)
+    })
+
+    it('ИЖИЛ домэйнөөс ирсэн бичих хүсэлтийг нэвтрүүлнэ', async () => {
+      const host = 'ajil-iota.vercel.app'
+      const res = await request(handler)
+        .post('/api/notifications/read-all')
+        .set('Host', host)
+        .set('Origin', `https://${host}`)
+
+      // CORS-д баригдвал 403. Нэвтрэлтийн 401 хүрсэн нь CORS өнгөрсний баталгаа.
+      expect(res.status).toBe(401)
+    })
+
+    it('ИЖИЛ домэйнөөс ирсэн GET-ийг нэвтрүүлнэ', async () => {
+      const host = 'ajil-iota.vercel.app'
+      const res = await request(handler)
+        .get('/api/health')
+        .set('Host', host)
+        .set('Origin', `https://${host}`)
+
+      expect(res.status).toBe(200)
+    })
+
+    it('ӨӨР домэйнөөс ирсэн хүсэлтийг ТАТГАЛЗАНА', async () => {
+      const res = await request(handler)
+        .post('/api/notifications/read-all')
+        .set('Host', 'ajil-iota.vercel.app')
+        .set('Origin', 'https://hakerin-site.example')
+
+      expect(res.status).toBe(403)
+      expect(res.body.error).toMatch(/домэйноос хандах эрхгүй/)
+    })
+
+    it('гажуудсан Origin-ыг татгалзана', async () => {
+      const res = await request(handler)
+        .post('/api/notifications/read-all')
+        .set('Host', 'ajil-iota.vercel.app')
+        // HTTP толгойд зөвхөн ASCII орно
+        .set('Origin', 'not-a-valid-origin')
+
+      expect(res.status).toBe(403)
+    })
+  })
+
   it('аюулгүй байдлын толгойнууд байна', async () => {
     const res = await request(handler).get('/api/health')
     expect(res.headers['x-content-type-options']).toBe('nosniff')
