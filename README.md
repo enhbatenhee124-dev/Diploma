@@ -54,10 +54,16 @@ npm run dev
 | `npm test` | Unit + integration тест |
 | `npm run build` | Frontend production build |
 | `npm run db:seed` | Демо өгөгдөл |
+| `npm run db:refresh` | Демо зарын хугацааг шинэчилнэ (үзүүлбэрийн өмнө) |
 | `npm run account -- --email … --role admin` | Бүртгэл үүсгэх / шинэчлэх |
 
 Демо бүртгэл: ажилтан `99112233`, ажил олгогч `70112233`, админ `99001122`
 (нууц үг бүгд `demo1234`).
+
+> ⚠ **Демо өгөгдөл хугацаатай.** Зарууд seed хийсэн мөчөөс хойших огноотой
+> үүсдэг тул хэдэн хоногийн дараа хугацаа хэтэрч, автомат хаалт (FR-4.3)
+> тэднийг хаана — зарын самбар хоосорно. Үзүүлбэрийн өмнө `npm run db:refresh`
+> ажиллуулна уу. Энэ нь юу ч устгахгүй, зөвхөн огноог урагшлуулна.
 
 ## Deploy (Vercel)
 
@@ -113,7 +119,7 @@ src/                  React frontend
 
 server/               Modular monolith — server/README.md үзнэ үү
   core/                 Хуваалцсан суурь (auth, http, validate, rateLimit)
-  modules/              9 домэйн модуль
+  modules/              11 домэйн модуль
 
 supabase/migrations/  Өгөгдлийн сангийн схем, RLS, функцууд
 tests/                Integration тест (бүтэн урсгал)

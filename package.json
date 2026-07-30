@@ -12,6 +12,7 @@
     "dev:api": "node --env-file-if-exists=.env --watch server/index.js",
     "start": "node server/index.js",
     "db:seed": "node --env-file-if-exists=.env server/scripts/seed.js",
+    "db:refresh": "node --env-file-if-exists=.env server/scripts/refreshDemo.mjs",
     "account": "node --env-file-if-exists=.env server/scripts/createAccount.mjs",
     "build": "vite build",
     "preview": "vite preview",
