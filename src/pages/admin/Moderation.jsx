@@ -86,7 +86,19 @@ export default function Moderation() {
 
   const blockUser = async group => {
     const reasons = group.reports.map(r => r.reason).join(' | ')
-    if (!confirm('Энэ хэрэглэгчийн бүртгэлийг хаах уу? Тэр нэвтэрч чадахаа болино.')) return
+
+    // ⚠ Сануулга нь `ManageUsers`-тэй ижил дэлгэрэнгүй байх ёстой.
+    //   Өмнө нь зөвхөн "нэвтэрч чадахаа болино" гэдэг байсан бөгөөд админ
+    //   утас, и-мэйл, нэр нь БҮРМӨСӨН арчигдахыг мэдэлгүй дардаг байв.
+    const { title } = describe(group.latest)
+    const ok = confirm(
+      `${title}-н бүртгэлийг хаах уу?\n\n` +
+      '• Утас, и-мэйл, нэр, танилцуулга нь УСТАНА\n' +
+      '• Идэвхтэй зар, хүсэлт нь хаагдана\n' +
+      '• Ажлын түүх, үнэлгээ нь баримт болж үлдэнэ\n\n' +
+      'Энэ үйлдлийг БУЦААХ БОЛОМЖГҮЙ.'
+    )
+    if (!ok) return
 
     setBusy(group.key)
     const result = await deactivateUser(group.targetId, reasons.slice(0, 500))
