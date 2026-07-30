@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import {
   Briefcase, ArrowRight, Sparkles, PlusCircle, Inbox,
   Moon, Sun, CloudSun, Sunset, ClipboardList, Flag, Star, Megaphone,
+  Search, Palette, CheckCircle2,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { useAuth } from '../../hooks/useAuth'
@@ -208,9 +209,15 @@ export default function EmployerDashboard() {
                           style={{ width: `${pct}%` }}
                         />
                       </div>
-                      <p className="text-xs wrk-text-body">
-                        {filled}/{shift.slots} суваг дүүрсэн · {shift.hourlyWage.toLocaleString('mn-MN')} ₮/цаг
-                        {pct >= 100 && ' · 🎉 дүүрсэн!'}
+                      <p className="text-xs wrk-text-body flex items-center gap-1 flex-wrap">
+                        <span>
+                          {filled}/{shift.slots} суваг дүүрсэн · {shift.hourlyWage.toLocaleString('mn-MN')} ₮/цаг
+                        </span>
+                        {pct >= 100 && (
+                          <span className="inline-flex items-center gap-1 text-emerald-400">
+                            · <CheckCircle2 className="w-3.5 h-3.5" /> дүүрсэн!
+                          </span>
+                        )}
                       </p>
                     </div>
                   )
@@ -258,9 +265,18 @@ export default function EmployerDashboard() {
           <div className="wrk-card">
             <h2 className="text-lg font-semibold wrk-text-heading mb-4">Хурдан үйлдлүүд</h2>
             <div className="space-y-3">
-              <Link to="/employer/postings" className="wrk-btn-primary block text-center">📋 Зар удирдах</Link>
-              <Link to="/employer/workers" className="wrk-btn-secondary block text-center">🔍 Ажилтан хайх</Link>
-              <Link to="/employer/profile" className="wrk-btn-secondary block text-center">✨ Профайл гоёох</Link>
+              {/* Дүрсийг lucide-ээс авна — аппын бусад хэсэгтэй нэг загвартай
+                  байх ёстой. Emoji нь үйлдлийн систем бүр дээр өөр харагддаг
+                  бөгөөд өнгө нь сэдэвт тохирдоггүй. */}
+              <Link to="/employer/postings" className="wrk-btn-primary flex items-center justify-center gap-2">
+                <ClipboardList className="w-4 h-4" /> Зар удирдах
+              </Link>
+              <Link to="/employer/workers" className="wrk-btn-secondary flex items-center justify-center gap-2">
+                <Search className="w-4 h-4" /> Ажилтан хайх
+              </Link>
+              <Link to="/employer/profile" className="wrk-btn-secondary flex items-center justify-center gap-2">
+                <Palette className="w-4 h-4" /> Профайл гоёох
+              </Link>
             </div>
           </div>
         </div>
