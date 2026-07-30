@@ -817,6 +817,77 @@ describe.runIf(hasSupabase)('Хувийн мэдээлэл', () => {
 })
 
 // ------------------------------
+// SECURITY DEFINER view-үүд
+// ------------------------------
+// `invoice_overview` болон `employer_queue` нь ЗОРИУД `security_invoker = off`
+// (эзэмшигчийн эрхээр ажиллана). Шалтгаан: тэдгээр нь `profiles`-оос уншдаг
+// бөгөөд тэнд RLS хатуу тул invoker горимд АДМИНД Ч хоосон харагдана.
+//
+// Оронд нь мөрийн шүүлтийг view-ийн `WHERE`-т `auth.uid()` / `is_admin()`-ээр
+// хийсэн. Энэ нь ажилладаг ч ЭМЗЭГ: хэн нэгэн view-г засахдаа тэр нөхцөлийг
+// орхивол бүх нэхэмжлэл, регистрийн дугаар задарна.
+//
+// Supabase-ийн шалгагч энэ загварыг анхааруулдаг. Доорх тестүүд нь тухайн
+// анхааруулгыг "шалгасан, аюулгүй" болгож бэхжүүлнэ.
+describe.runIf(hasSupabase)('Definer view-үүдийн мөрийн шүүлт', () => {
+  it('ажилтан НЭГ Ч нэхэмжлэл харахгүй', async () => {
+    if (!available) return
+
+    const res = await api().get('/api/billing/invoices').set(...auth(token.worker))
+    // Дүрийн шалгалтад баригдана; баригдаагүй ч хоосон байх ёстой
+    if (res.status === 200) expect(res.body.data).toHaveLength(0)
+    else expect(res.status).toBe(403)
+  })
+
+  it('ажил олгогч ЗӨВХӨН өөрийн нэхэмжлэлийг харна', async () => {
+    if (!available) return
+
+    const me = await api().get('/api/gamification/me').set(...auth(token.employer))
+    const res = await api().get('/api/billing/invoices').set(...auth(token.employer))
+
+    expect(res.status).toBe(200)
+    const foreign = res.body.data.filter(i => i.employerId !== me.body.data.userId)
+    expect(foreign).toHaveLength(0)
+  })
+
+  it('админ бүх нэхэмжлэлийг харна', async () => {
+    if (!available) return
+
+    const res = await api().get('/api/billing/invoices').set(...auth(token.admin))
+    expect(res.status).toBe(200)
+    // Админд харагдахгүй бол баталгаажуулах ажлаа хийж чадахгүй
+    expect(res.body.data.length).toBeGreaterThan(0)
+  })
+
+  it('админ биш хүн баталгаажуулах дараалал харахгүй', async () => {
+    if (!available) return
+
+    for (const who of ['worker', 'employer']) {
+      const res = await api().get('/api/employers/queue').set(...auth(token[who]))
+      if (res.status === 200) expect(res.body.data).toHaveLength(0)
+      else expect(res.status).toBe(403)
+    }
+  })
+
+  it('нийтийн view-үүд эмзэг багана АГУУЛАХГҮЙ', async () => {
+    if (!available) return
+
+    // Эдгээр нь зочинд нээлттэй тул багана нэмэхэд болгоомжтой байх ёстой
+    const employers = await api().get('/api/profiles/employers')
+    for (const e of employers.body.data) {
+      expect(e.regNumber).toBeNull()
+      expect(e.address).toBeNull()
+    }
+
+    const profiles = await api().get('/api/profiles').set(...auth(token.worker))
+    for (const p of profiles.body.data) {
+      expect(p.phone == null || p.phone === '').toBe(true)
+      expect(p.email == null || p.email === '').toBe(true)
+    }
+  })
+})
+
+// ------------------------------
 // Утасны дугаарын хил (NFR-3)
 // ------------------------------
 // Платформын хамгийн мэдрэмтгий дүрэм: утасны дугаар зөвхөн зөвшөөрөгдсөн
