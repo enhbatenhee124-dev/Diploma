@@ -31,9 +31,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # `@capacitor/cli` нь Node >= 22 шаарддаг. Node 20 дээр `npm ci` шууд
+      # унана — package.json-ий `engines`-тэй ижил байлгана.
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       # Capacitor 8 нь JDK 21 шаарддаг
