@@ -49,4 +49,12 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!--
+        Android 13 (API 33)-аас мэдэгдэл харуулахад ЗӨВШӨӨРӨЛ шаардана.
+        Зарлаагүй бол `PushNotifications.requestPermissions()` шууд
+        татгалзсан хариу өгч, push чимээгүй ажиллахгүй болно.
+        Хэрэглэгчээс `src/lib/push.js` дотор ажиллах үед асууна.
+    -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 </manifest>

@@ -59,6 +59,39 @@ if (IS_PROD && !process.env.CORS_ORIGINS) {
   )
 }
 
+// ------------------------------
+// Push мэдэгдэл (FCM)
+// ------------------------------
+// `FCM_SERVICE_ACCOUNT` нь Firebase-ийн service account JSON-ыг БҮТНЭЭР нь
+// агуулсан мөр. Энэ нь хувийн түлхүүр агуулдаг тул SUPABASE_SERVICE_ROLE_KEY
+// шиг НУУЦ — зөвхөн серверийн орчинд.
+//
+// Тохируулаагүй үед push нь чимээгүй унтарна: in-app мэдэгдэл (`notifications`
+// хүснэгт) хэвээр ажиллах тул апп эвдрэхгүй (NFR-6).
+export const FCM = (() => {
+  const raw = process.env.FCM_SERVICE_ACCOUNT
+  if (!raw) return null
+
+  try {
+    const key = JSON.parse(raw)
+    if (!key.project_id || !key.client_email || !key.private_key) {
+      console.warn('[тохиргоо] FCM_SERVICE_ACCOUNT дутуу талбартай — push унтраалаа.')
+      return null
+    }
+    return key
+  } catch {
+    console.warn('[тохиргоо] FCM_SERVICE_ACCOUNT нь зөв JSON биш — push унтраалаа.')
+    return null
+  }
+})()
+
+// Supabase-ийн Database Webhook нь нэвтрэлтгүй ирдэг тул хуваалцсан нууцаар
+// таньна. Хоосон бол webhook цэг БҮРЭН хаагдана — задгай орхивол хэн ч
+// дурын хэрэглэгч рүү мэдэгдэл илгээж чадна.
+export const PUSH_HOOK_SECRET = process.env.PUSH_HOOK_SECRET || ''
+
+export const isPushConfigured = () => Boolean(FCM && PUSH_HOOK_SECRET)
+
 export const QPAY = {
   baseUrl: process.env.QPAY_BASE_URL || '',
   username: process.env.QPAY_USERNAME || '',

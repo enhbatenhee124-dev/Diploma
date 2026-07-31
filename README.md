@@ -146,6 +146,62 @@ npm run app:icons    # лого дахин зурж, бүх хэмжээний i
 `main` руу push хийх эсвэл Actions хуудаснаас гараар ажиллуулаад,
 дууссаны дараа `ajil-debug-apk` артефактыг татна.
 
+### Push мэдэгдэл (FCM)
+
+Аппаа хаасан хэрэглэгчид утсаар нь мэдэгдэнэ. Загвар нь энгийн:
+**`notifications` хүснэгтэд мөр ормогц** Supabase webhook дуудаж, серверээс
+push илгээнэ. Ингэснээр мэдэгдэл үүсгэдэг БҮХ эх сурвалж (триггер,
+төлбөрийн модуль, админ) автоматаар хамрагдана — шинэ төрөл нэмэхэд
+push талд юу ч засах шаардлагагүй.
+
+```
+DB триггер → notifications INSERT → Supabase webhook
+           → POST /api/notifications/hook → FCM → утас
+```
+
+Тохируулаагүй үед push **чимээгүй унтарна** — хонхны дотоод мэдэгдэл
+хэвээр ажиллана (NFR-6). Апп ч, вэб ч эвдрэхгүй.
+
+**1. Firebase төсөл**
+
+Firebase Console → төсөл үүсгэх → Android апп нэмэх, package нэр
+`mn.ajil.app`. Татсан **`google-services.json`**-г `android/app/` дотор
+тавина. (Энэ файл нууц биш — APK дотор шууд явдаг тул git-д оруулж болно.)
+
+**2. Серверийн орчны хувьсагч** (`.env` болон Vercel дээр)
+
+Firebase Console → Project settings → Service accounts → **Generate new
+private key**. Татсан JSON-ыг нэг мөрөнд буулгаад:
+
+```
+FCM_SERVICE_ACCOUNT={"type":"service_account","project_id":"...",...}
+PUSH_HOOK_SECRET=<санамсаргүй урт мөр>
+```
+
+Нууцыг ингэж үүсгэнэ:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+**3. Supabase Database Webhook**
+
+Supabase → Database → Webhooks → Create:
+
+| Талбар | Утга |
+|---|---|
+| Table | `public.notifications` |
+| Events | `Insert` |
+| Type | HTTP Request → `POST` |
+| URL | `https://ajil-iota.vercel.app/api/notifications/hook` |
+| HTTP Headers | `x-webhook-secret` → 2-р алхмын `PUSH_HOOK_SECRET` |
+
+**4. Миграц**
+
+`supabase/migrations/20260801000100_device_tokens.sql` — утасны токен
+хадгалах хүснэгт. `npx supabase db push` эсвэл Supabase-ийн SQL editor-оор
+ажиллуулна.
+
 ### Нэг удаагийн тохиргоо
 
 1. **GitHub → Settings → Secrets and variables → Actions**

@@ -1,6 +1,7 @@
 import { asUser } from '../../core/supabase.js'
 import { unwrap } from '../../core/http.js'
-import { requireUuid, requireInt } from '../../core/validate.js'
+import { requireUuid, requireInt, requireText, requireOneOf } from '../../core/validate.js'
+import { sendToUser } from './push.js'
 
 // ============================================================
 // Мэдэгдэл (FR-8, NFR-6)
@@ -69,4 +70,71 @@ export async function markAllRead(req) {
       .eq('is_read', false),
     'Тэмдэглэж чадсангүй.'
   )
+}
+
+// ============================================================
+// Push — төхөөрөмжийн бүртгэл
+// ============================================================
+
+/**
+ * Утасны FCM токеныг бүртгэнэ. Апп нээгдэх бүрд дуудагдана: FCM нь токеныг
+ * үе үе солидог тул давтан бүртгэх нь хэвийн.
+ *
+ * `upsert` нь санаатай — ижил утсанд өөр хэрэглэгч нэвтэрвэл мөр нь шинэ
+ * эзэн рүү шилжиж, хуучин эзэнд нь мэдэгдэл очихоо болино.
+ */
+export async function registerDevice(req, { token, platform = 'android' } = {}) {
+  // FCM токен ~160 тэмдэгт байдаг ч тогтмол биш тул өгөөмөр хязгаар
+  const value = requireText(token, 'Төхөөрөмжийн токен', { min: 20, max: 400 })
+  const os = requireOneOf(platform, ['android', 'ios', 'web'], 'Платформ')
+
+  const sb = asUser(req.accessToken)
+  unwrap(
+    await sb
+      .from('device_tokens')
+      .upsert({ token: value, user_id: req.user.id, platform: os }, { onConflict: 'token' }),
+    'Төхөөрөмжийг бүртгэж чадсангүй.'
+  )
+}
+
+/**
+ * Токеныг устгана — гарах үед дуудна.
+ * Эс тэгвээс дараагийн хэрэглэгчийн мэдэгдэл өмнөх эзэн рүү очно.
+ */
+export async function unregisterDevice(req, token) {
+  const value = requireText(token, 'Төхөөрөмжийн токен', { min: 20, max: 400 })
+
+  const sb = asUser(req.accessToken)
+  unwrap(
+    await sb.from('device_tokens').delete().eq('token', value),
+    'Төхөөрөмжийг устгаж чадсангүй.'
+  )
+}
+
+/**
+ * Supabase-ийн Database Webhook-ийн биетийг боловсруулна.
+ *
+ * `notifications` хүснэгтэд мөр ОРМОГЦ дуудагдана. Ингэснээр push нь
+ * мэдэгдэл үүсгэдэг БҮХ эх сурвалжийг (триггер, төлбөрийн модуль, админ)
+ * автоматаар хамарна — шинэ төрөл нэмэхэд энд юу ч засах шаардлагагүй.
+ *
+ * Алдаа гаргахгүй: push унасан ч in-app мэдэгдэл үлдэнэ (NFR-6).
+ */
+export async function handleNotificationEvent(payload) {
+  if (payload?.type !== 'INSERT' || payload?.table !== 'notifications') {
+    return { sent: 0, removed: 0, skipped: true }
+  }
+
+  const row = payload.record
+  if (!row?.user_id || !row?.message) return { sent: 0, removed: 0, skipped: true }
+
+  return sendToUser(row.user_id, {
+    title: row.message,
+    body: row.description || '',
+    // FCM-ийн `data` нь зөвхөн мөр утга авна
+    data: {
+      type: String(row.type || 'info'),
+      notificationId: String(row.id || ''),
+    },
+  })
 }

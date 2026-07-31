@@ -2,6 +2,7 @@ import { createContext, useState, useEffect, useCallback } from 'react'
 import * as auth from '../services/authService'
 import { isSupabaseConfigured } from '../lib/supabase'
 import { useNotification } from '../hooks/useNotification'
+import { disablePush } from '../lib/push'
 
 export const AuthContext = createContext(null)
 
@@ -103,6 +104,11 @@ export function AuthProvider({ children }) {
   )
 
   const logout = useCallback(async () => {
+    // Push токеныг нэвтрэлт тасрахААС ӨМНӨ устгана — устгах хүсэлт нь
+    // хэрэглэгчийн токеноор баталгаажих тул дараа нь боломжгүй болно.
+    // Үгүй бол энэ утсанд дараа нэвтэрсэн хүн өмнөх эзний мэдэгдлийг авна.
+    await disablePush()
+
     await auth.signOut()
     setUser(null)
   }, [])

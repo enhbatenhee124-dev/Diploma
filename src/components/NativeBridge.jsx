@@ -5,6 +5,8 @@ import { Browser } from '@capacitor/browser'
 import { SplashScreen } from '@capacitor/splash-screen'
 import { StatusBar, Style } from '@capacitor/status-bar'
 import { supabase } from '../lib/supabase'
+import { enablePush } from '../lib/push'
+import { useAuth } from '../hooks/useAuth'
 import { isNative, APP_SCHEME } from '../config/runtime'
 
 // ============================================================
@@ -17,6 +19,7 @@ import { isNative, APP_SCHEME } from '../config/runtime'
 //   2. `mn.ajil.app://` deep link → OAuth-ийн `code`-ыг сешн болгож солих
 //   3. Splash дэлгэц → апп бэлэн болмогц нуух
 //   4. Статус мөрийн өнгө → аппын бараан дэвсгэртэй тааруулах
+//   5. Push мэдэгдэл → нэвтэрсэн хэрэглэгчийн токеныг бүртгэх
 //
 // Бүх listener нь `unmount`-д цэвэрлэгддэг — эс тэгвээс hot reload/StrictMode
 // давхар бүртгэл үүсгэж, буцах товч нэг дарахад хоёр алхам ухарна.
@@ -24,6 +27,7 @@ import { isNative, APP_SCHEME } from '../config/runtime'
 
 export default function NativeBridge() {
   const navigate = useNavigate()
+  const { user } = useAuth()
 
   useEffect(() => {
     if (!isNative) return
@@ -89,6 +93,30 @@ export default function NativeBridge() {
       pending.forEach(p => p.then(handle => handle.remove()).catch(() => {}))
     }
   }, [navigate])
+
+  // ------------------------------
+  // 5. Push мэдэгдэл
+  // ------------------------------
+  // Хэрэглэгч нэвтэрсний ДАРАА л идэвхжинэ: токен бүртгэх хүсэлт нь
+  // хэрэглэгчийн эрхээр явдаг. Гарах үед устгахыг `AuthContext.logout`
+  // хариуцна — тэнд нэвтрэлт тасрахаас өмнө хийх боломжтой.
+  useEffect(() => {
+    if (!isNative || !user) return
+
+    enablePush(() => {
+      // Мэдэгдлийн төрөл бүрд тусдаа зам зурахгүй: төрлүүд нь өгөгдлийн
+      // сангийн триггерүүдээс ирдэг тул шинэ төрөл нэмэгдэхэд энэ жагсаалт
+      // чимээгүй хоцрох болно. Оронд нь хонх байрлах хянах самбар руу
+      // аваачна — хэрэглэгч тэндээс бүх мэдэгдлээ хардаг.
+      const home = {
+        employee: '/employee/dashboard',
+        employer: '/employer/dashboard',
+        admin: '/admin/dashboard',
+      }[user.role]
+
+      if (home) navigate(home)
+    })
+  }, [user, navigate])
 
   // ------------------------------
   // 3–4. Splash ба статус мөр — нэг л удаа

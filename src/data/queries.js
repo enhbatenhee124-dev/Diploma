@@ -176,6 +176,16 @@ export const markNotificationRead = id => apiPost(`/notifications/${id}/read`)
 export const markAllNotificationsRead = () => apiPost('/notifications/read-all')
 
 /**
+ * Утасны push токеныг бүртгэнэ (зөвхөн Android апп).
+ * FCM токен үе үе шинэчлэгддэг тул апп нээгдэх бүрд дуудна.
+ */
+export const registerDevice = (token, platform = 'android') =>
+  apiPost('/notifications/devices', { token, platform })
+
+/** Гарах үед токеныг устгана — эс тэгвээс дараагийн эзэнд нь мэдэгдэл очно. */
+export const unregisterDevice = token => apiPost('/notifications/devices/remove', { token })
+
+/**
  * Шинэ мэдэгдэл ирэхэд шууд сонсох. Салгах функц буцаана.
  *
  * Чаттай ижил шалтгаанаар Supabase Realtime руу ШУУД холбогдоно —

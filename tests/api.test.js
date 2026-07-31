@@ -175,6 +175,50 @@ describe('Нэвтрэлтийн хамгаалалт', () => {
 })
 
 // ------------------------------
+// Push webhook
+// ------------------------------
+// Энэ бол `qpay/callback`-аас гадна аппын ЦОРЫН ГАНЦ нэвтрэлтгүй цэг.
+// Задгай үлдвэл хэн ч дурын хэрэглэгчийн утас руу хуурамч мэдэгдэл
+// илгээж чадна — тиймээс хамгаалалтыг тестээр бэхлэв.
+//
+// `PUSH_HOOK_SECRET` тохируулаагүй тестийн орчинд ч, тохируулсан үед ч
+// ЗӨВШӨӨРӨГДӨХГҮЙ байх ёстой — хоёуланд нь 403.
+describe('Push webhook', () => {
+  const payload = {
+    type: 'INSERT',
+    table: 'notifications',
+    record: { id: '00000000-0000-0000-0000-000000000001', user_id: 'dur-baidlaar', message: 'hog' },
+  }
+
+  it('нууц толгойгүйгээр татгалзана', async () => {
+    const res = await api().post('/api/notifications/hook').send(payload)
+    expect(res.status).toBe(403)
+  })
+
+  it('буруу нууцтай татгалзана', async () => {
+    const res = await api()
+      .post('/api/notifications/hook')
+      .set('x-webhook-secret', 'buruu-nuuts-utga')
+      .send(payload)
+
+    expect(res.status).toBe(403)
+  })
+
+  it('нэвтэрсэн хэрэглэгчийн токен ч нууцыг орлохгүй', async () => {
+    if (!available) return
+
+    // Жирийн хэрэглэгч webhook-ийг дуудаж чадах ёсгүй — өөр хүн рүү
+    // мэдэгдэл илгээх зам болно
+    const res = await api()
+      .post('/api/notifications/hook')
+      .set(...auth(token.worker))
+      .send(payload)
+
+    expect(res.status).toBe(403)
+  })
+})
+
+// ------------------------------
 // Дүрийн эрх
 // ------------------------------
 describe.runIf(hasSupabase)('Дүрийн эрх', () => {
