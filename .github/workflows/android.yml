@@ -31,11 +31,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # `@capacitor/cli` нь Node >= 22 шаарддаг. Node 20 дээр `npm ci` шууд
-      # унана — package.json-ий `engines`-тэй ижил байлгана.
+      # ⚠ Node 24 нь ЗААВАЛ — зөвхөн `@capacitor/cli`-ийн `engines: >=22`
+      #   учраас БИШ, харин Node 24-тэй хамт ирдэг **npm 11**-ийн улмаас.
+      #
+      #   `package-lock.json`-г npm 11 бичсэн бөгөөд тэр нь esbuild-ийн
+      #   платформ бүрийн хоёртын файлыг (`@esbuild/linux-x64` г.м.) лок
+      #   дотор үлдээдэггүй. Node 22-той ирдэг npm 10 нь тэдгээрийг ЗААВАЛ
+      #   шаарддаг тул `npm ci` "Missing: @esbuild/linux-x64 from lock file"
+      #   гэж шууд унана.
+      #
+      #   Хөгжүүлэгчийн орчинтой ижил хувилбар барих нь локд гар хүрэхээс
+      #   найдвартай. Node-оо шинэчилбэл ЭНЭ мөрийг ч мөн шинэчил.
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
 
       # Capacitor 8 нь JDK 21 шаарддаг
