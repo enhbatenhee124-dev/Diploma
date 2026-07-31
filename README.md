@@ -128,11 +128,16 @@ Vercel
 ```bash
 npm run app:sync     # vite build → android руу хуулах
 npm run app:open     # Android Studio нээх (суулгасан бол)
-npm run app:icons    # assets/*.png → бүх хэмжээний icon/splash
+npm run app:icons    # лого дахин зурж, бүх хэмжээний icon/splash үүсгэх
 ```
 
-`assets/` доторх эх зургийг `node scripts/generate-app-assets.mjs` үүсгэнэ
-(лого солих бол тэр файлыг засна).
+Лого солих бол [`scripts/generate-app-assets.mjs`](scripts/generate-app-assets.mjs)-г
+засна — тэр нь `assets/*.svg` эхийг бичдэг.
+
+`app:icons` нь `@capacitor/assets`-ыг **npx-ээр** дуудна, төслийн хамаарал
+БИШ. Учир нь тэр сан `sharp` татдаг бөгөөд `sharp` нь Linux дээр эх кодоос
+эмхэтгэгдэж (node-gyp + libvips-dev) CI-гийн `npm ci`-г унагаадаг. Үүсгэсэн
+зургууд git-д ордог тул CI-д энэ хэрэгсэл огт шаардлагагүй.
 
 ### `.apk` бүтээх
 

@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
-    <rect width="64" height="64" fill="#0f172a" />
-    <g transform="translate(32, 32) scale(1.3333333333333333) translate(-12, -12)"
+<svg xmlns="http://www.w3.org/2000/svg" width="2732" height="2732" viewBox="0 0 2732 2732">
+    <rect width="2732" height="2732" fill="#0f172a" />
+    <g transform="translate(1366, 1366) scale(12.521666666666667) translate(-12, -12)"
        fill="none" stroke="#8b5cf6" stroke-width="1.6"
        stroke-linecap="round" stroke-linejoin="round">
       <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />

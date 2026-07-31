@@ -18,7 +18,7 @@
     "preview": "vite preview",
     "app:sync": "npm run build && cap sync android",
     "app:open": "cap open android",
-    "app:icons": "capacitor-assets generate --android",
+    "app:icons": "node scripts/generate-app-assets.mjs && npx --yes @capacitor/assets generate --android",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -43,7 +43,6 @@
     "recharts": "^2.10.0"
   },
   "devDependencies": {
-    "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^8.5.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
