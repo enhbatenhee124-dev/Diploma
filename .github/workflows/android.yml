@@ -1,0 +1,71 @@
+name: Android APK
+
+# ============================================================
+# Android аппыг ҮҮЛЭН дээр бүтээнэ
+# ============================================================
+# Компьютерт Android Studio, JDK суулгах шаардлагагүй — GitHub-ийн ubuntu
+# ажилтан дээр бүх зүйл байдаг. Дууссаны дараа Actions → тухайн ажиллагаа →
+# Artifacts хэсгээс `ajil-debug-apk` татаж, утсандаа суулгана.
+#
+# ⚠ Ажиллуулахаас ӨМНӨ Settings → Secrets and variables → Actions дотор
+#   дараах хоёрыг нэмнэ (`.env`-ийн адил утгууд):
+#     VITE_SUPABASE_URL
+#     VITE_SUPABASE_ANON_KEY
+#   Эдгээргүй бол апп бүтээгдэх ч нэвтрэлт ажиллахгүй.
+#
+#   VITE_PUBLIC_WEB_URL нь заавал биш — хоосон үед `config/runtime.js`-ийн
+#   анхдагч (https://ajil-iota.vercel.app) орно. Домэйн солигдвол
+#   Variables хэсэгт нэмнэ.
+# ============================================================
+
+on:
+  push:
+    branches: [main]
+  # Actions хуудаснаас гараар ажиллуулах товч
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # Capacitor 8 нь JDK 21 шаарддаг
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: android-actions/setup-android@v3
+
+      - run: npm ci
+
+      # ⚠ `npm test` энд ЗОРИУД байхгүй. Integration тестүүд БОДИТ Supabase
+      #   рүү бичдэг (`tests/api.test.js`) тул push бүрд продакшн өгөгдлийг
+      #   хөндөнө. Кодын алдааг доорх `npm run app:sync` доторх vite build
+      #   аль хэдийн барина.
+      - name: Вэб хэсгийг бүтээж Android руу хуулах
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_PUBLIC_WEB_URL: ${{ vars.VITE_PUBLIC_WEB_URL }}
+        run: npm run app:sync
+
+      - name: APK бүтээх
+        working-directory: android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ajil-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          # Артефактыг 30 хоног хадгална (GitHub-ийн анхдагч)
+          retention-days: 30

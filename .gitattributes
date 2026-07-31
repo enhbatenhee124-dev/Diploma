@@ -1,0 +1,7 @@
+# Gradle-ийн wrapper скрипт нь Linux дээр (GitHub Actions) ажилладаг тул
+# ЗААВАЛ LF мөр төгсгөлтэй байх ёстой. CRLF-тэй бол `bad interpreter: /bin/sh^M`
+# гэж унана — Windows дээр хөгжүүлж байгаа тул git автоматаар CRLF болгохыг
+# энд хориглоно.
+android/gradlew text eol=lf
+*.sh text eol=lf
+gradlew text eol=lf

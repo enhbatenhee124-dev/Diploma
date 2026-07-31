@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { isNative } from '../config/runtime'
 
 // ============================================================
 // Браузерын талын Supabase холболт
@@ -20,11 +21,23 @@ if (!isSupabaseConfigured) {
   )
 }
 
+// ------------------------------
+// Вэб vs. Android аппын ялгаа
+// ------------------------------
+// Вэб дээр OAuth-ийн хариу нь ижил цонхны URL-д ирдэг тул `detectSessionInUrl`
+// автоматаар барьж авна (implicit flow).
+//
+// Апп дотор нэвтрэлт нь ГАДНА браузерт (Custom Tab) явагдаж, `mn.ajil.app://`
+// deep link-ээр буцаж ирнэ. Аппын өөрийн URL нь хэзээ ч токен агуулахгүй тул
+// `detectSessionInUrl`-ийг унтраана. Оронд нь PKCE ашиглаж, буцаж ирсэн
+// `code`-ыг `NativeBridge` гараар солино — токен URL-д ил гарахгүй тул
+// гадаад браузераар дамжуулахад илүү аюулгүй.
 export const supabase = createClient(url || 'http://localhost', anonKey || 'anon-key-missing', {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: true,
+    detectSessionInUrl: !isNative,
+    flowType: isNative ? 'pkce' : 'implicit',
   },
 })
 

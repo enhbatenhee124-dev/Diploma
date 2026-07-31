@@ -38,7 +38,7 @@ export default function ChatDock() {
   }
 
   return (
-    <div className="fixed bottom-5 right-4 lg:right-8 z-50 flex flex-col items-end gap-3">
+    <div className="fixed bottom-5 right-4 lg:right-8 z-50 flex flex-col items-end gap-3 mb-safe">
       {/* ---------- AI самбар ---------- */}
       {open === 'ai' && (
         <div className="w-[min(20rem,calc(100vw-2rem))] rounded-2xl border border-white/15 bg-slate-900/95 backdrop-blur-xl shadow-2xl p-4 animate-slide-up">

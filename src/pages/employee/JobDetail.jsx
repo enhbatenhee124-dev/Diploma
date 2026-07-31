@@ -10,6 +10,7 @@ import {
   useShifts, useApplications, useSavedJobs, useEmployerProfiles, useMyProgress, combine,
 } from '../../hooks/useData'
 import { applyToShift, withdrawApplication } from '../../data/queries'
+import { WEB_ORIGIN } from '../../config/runtime'
 import ReportButton from '../../components/ReportButton'
 import { levelAdvice, shiftHours, EMPTY_STATS } from '../../utils/gamification'
 import { Loading, ErrorBox } from '../../components/States'
@@ -59,7 +60,9 @@ export default function JobDetail() {
    * байж болзошгүй тул дүрийн доторх зам тохирохгүй.
    */
   const handleShare = async () => {
-    const url = `${window.location.origin}/jobs/${shift.id}`
+    // Апп дотор `window.location.origin` нь `https://localhost` — хуваалцсан
+    // линк хүлээн авагчид ажиллахгүй. Тиймээс нийтийн вэб хаягийг ашиглана.
+    const url = `${WEB_ORIGIN}/jobs/${shift.id}`
 
     if (navigator.share) {
       try {

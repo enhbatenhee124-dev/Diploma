@@ -87,7 +87,7 @@ export default function NotificationBell({ iconCol, labelClass, idleClass, rail 
       {open && (
         <div
           ref={panelRef}
-          className="fixed left-2 lg:left-24 top-20 z-[60]
+          className="fixed left-2 lg:left-24 top-20 z-[60] mt-safe
                      w-[min(22rem,calc(100vw-1rem))] max-h-[70vh] flex flex-col
                      rounded-2xl border border-white/15 bg-slate-900/95 backdrop-blur-xl
                      shadow-2xl animate-slide-up"

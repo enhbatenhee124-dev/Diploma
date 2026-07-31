@@ -1,16 +1,19 @@
 import { supabase } from './supabase'
+import { API_BASE } from '../config/runtime'
 
 // ============================================================
 // API клиент — frontend ↔ modular monolith
 // ============================================================
 // Хөгжүүлэлтэд Vite нь `/api`-г http://localhost:3001 рүү дамжуулна
 // (vite.config.js). Продакшнд `VITE_API_URL`-ээр серверийн хаягийг заана.
+// Android апп дотор харьцангуй зам ажиллахгүй тул `config/runtime.js` нь
+// бүтэн хаяг руу шилжүүлнэ.
 //
 // Бүх функц `{ ok, data?, error? }` буцаана — throw хийхгүй. Ингэснээр
 // дуудаж буй компонент бүр try/catch бичих шаардлагагүй.
 // ============================================================
 
-const BASE = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '')
+const BASE = API_BASE
 
 /**
  * Одоогийн сешний токеныг авна.

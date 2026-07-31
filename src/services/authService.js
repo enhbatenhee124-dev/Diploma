@@ -1,4 +1,6 @@
 import { supabase, toAuthEmail, normalizePhone, isPhoneEmail } from '../lib/supabase'
+import { Browser } from '@capacitor/browser'
+import { WEB_ORIGIN, isNative, OAUTH_CALLBACK_URL } from '../config/runtime'
 
 // ============================================================
 // Supabase Auth дээр суурилсан нэвтрэлтийн үйлчилгээ
@@ -142,13 +144,28 @@ export async function signUp({ name, phone, email, password, role }) {
  *   Тохируулаагүй үед Supabase алдаа буцаах бөгөөд бид түүнийг хэрэглэгчид
  *   ойлгомжтой хэлнэ — чимээгүй юу ч болохгүй байснаас хамаагүй дээр.
  *
- * Амжилттай үед браузер Google руу шилжих тул энэ функц буцаж ирэхгүй.
+ * Вэб дээр браузер Google руу шилжих тул энэ функц буцаж ирэхгүй.
+ *
+ * Аппын хувьд Google нь WebView доторх нэвтрэлтийг блоклодог (disallowed_useragent)
+ * тул системийн браузерыг (Chrome Custom Tab) нээж, `mn.ajil.app://auth-callback`
+ * deep link-ээр буцаж ирнэ. Сешнийг `NativeBridge` дуусгана — энд `{ ok: true }`
+ * гэдэг нь "браузер нээгдлээ" гэсэн үг, "нэвтэрлээ" гэсэн үг БИШ.
  */
 export async function signInWithGoogle() {
-  const { error } = await supabase.auth.signInWithOAuth({
+  const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: `${window.location.origin}/` },
+    options: isNative
+      ? { redirectTo: OAUTH_CALLBACK_URL, skipBrowserRedirect: true }
+      : { redirectTo: `${WEB_ORIGIN}/` },
   })
+
+  if (!error && isNative) {
+    if (!data?.url) {
+      return { ok: false, error: 'Нэвтрэх хуудсыг нээж чадсангүй. Дахин оролдоно уу.' }
+    }
+    await Browser.open({ url: data.url, presentationStyle: 'popover' })
+    return { ok: true }
+  }
 
   if (error) {
     if (/provider is not enabled|Unsupported provider/i.test(error.message)) {
@@ -196,7 +213,7 @@ export async function updateProfile(userId, updates) {
 /** Нууц үг сэргээх захиа илгээх (зөвхөн жинхэнэ и-мэйлтэй хэрэглэгчид). */
 export async function requestPasswordReset(email) {
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${window.location.origin}/reset-password`,
+    redirectTo: `${WEB_ORIGIN}/reset-password`,
   })
   if (error) return { ok: false, error: translateError(error) }
   return { ok: true }

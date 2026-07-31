@@ -35,12 +35,23 @@ export const SUPABASE_URL = process.env.SUPABASE_URL
 export const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY
 export const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 
+// Android/iOS апп нь вэб контентоо файлын системээс ачаалдаг тул хүсэлтийн
+// `Origin` нь ҮРГЭЛЖ доорх тогтмол утгуудын нэг байна (Capacitor-ийн
+// androidScheme='https' → `https://localhost`; iOS → `capacitor://localhost`).
+// Эдгээрийг үргэлж зөвшөөрнө — шинэ домэйн биш, зөвхөн манай аппын бүрхүүл.
+// Халдагч энэ origin-ыг хуурамчаар үүсгэхийн тулд хохирогчийн утсан дээр
+// аль хэдийн код ажиллуулж байх шаардлагатай тул нэмэлт эрсдэл үүсгэхгүй.
+const NATIVE_APP_ORIGINS = ['https://localhost', 'capacitor://localhost']
+
 // Хөгжүүлэлтийн үед Vite (5173) хандана. Продакшнд домэйнээ заавал зааж өгнө —
 // эс тэгвээс дурын сайт хэрэглэгчийн нэрийн өмнөөс API дуудах эрсдэлтэй.
-export const CORS_ORIGINS = (process.env.CORS_ORIGINS || 'http://localhost:5173,http://localhost:4173')
-  .split(',')
-  .map(s => s.trim())
-  .filter(Boolean)
+export const CORS_ORIGINS = [
+  ...(process.env.CORS_ORIGINS || 'http://localhost:5173,http://localhost:4173')
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean),
+  ...NATIVE_APP_ORIGINS,
+]
 
 if (IS_PROD && !process.env.CORS_ORIGINS) {
   console.warn(

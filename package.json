@@ -16,10 +16,20 @@
     "account": "node --env-file-if-exists=.env server/scripts/createAccount.mjs",
     "build": "vite build",
     "preview": "vite preview",
+    "app:sync": "npm run build && cap sync android",
+    "app:open": "cap open android",
+    "app:icons": "capacitor-assets generate --android",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/app": "^8.1.1",
+    "@capacitor/browser": "^8.0.4",
+    "@capacitor/core": "^8.5.0",
+    "@capacitor/keyboard": "^8.0.5",
+    "@capacitor/splash-screen": "^8.0.2",
+    "@capacitor/status-bar": "^8.0.3",
     "@supabase/supabase-js": "^2.110.8",
     "cors": "^2.8.6",
     "date-fns": "^2.30.0",
@@ -33,6 +43,8 @@
     "recharts": "^2.10.0"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.5.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@vitejs/plugin-react": "^4.2.0",
