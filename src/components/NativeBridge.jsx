@@ -128,9 +128,10 @@ export default function NativeBridge() {
     StatusBar.setStyle({ style: Style.Dark }).catch(() => {})
     StatusBar.setBackgroundColor({ color: '#0f172a' }).catch(() => {})
 
-    // `launchAutoHide: false` (capacitor.config.json) тул гараар нуухгүй бол
-    // splash үүрд үлдэнэ. React ачаалагдсаны дараа нуух нь цагаан анивчилтыг
-    // арилгана.
+    // React бэлэн болмогц splash-ыг нуух нь цагаан анивчилтыг арилгана.
+    // `launchAutoHide: true` (capacitor.config.json) нь АЮУЛГҮЙН НӨӨЦ:
+    // JS огт ажиллахгүй болбол энэ мөр хүрэлцэхгүй бөгөөд splash үүрд
+    // үлдэж, хэрэглэгчид ямар ч мэдээлэл өгөхгүй.
     SplashScreen.hide().catch(() => {})
   }, [])
 
