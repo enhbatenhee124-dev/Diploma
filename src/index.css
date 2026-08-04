@@ -3,6 +3,22 @@
 @tailwind utilities;
 
 @layer base {
+  /* Хуудсууд өөрсдийн дэвсгэрээ зурдаг ч React ЗУРАГДАХААС ӨМНӨХ агшинд
+     дэвсгэр нь хөтчийн анхдагч ЦАГААН байдаг. Энэ нь:
+
+       • утсанд суулгасан PWA нээгдэхэд цагаан дэлгэц анивчина —
+         iOS нь launch дэлгэцдээ яг хуудасны дэвсгэрийг ашигладаг
+         (manifest-ийн `background_color`-ыг ҮЛ ТООМСОРЛОНО)
+       • `apple-mobile-web-app-status-bar-style: black-translucent` тул
+         статус мөрийн цагаан бичиг цагаан дээр унаж алга болно
+
+     Тиймээс аппын бараан өнгийг эхнээс нь тавина. `html`-д ч давхар өгөх
+     нь overscroll (уян татах) үед ирмэгээр цагаан гарахаас сэргийлнэ. */
+  html,
+  body {
+    background-color: #0f172a;
+  }
+
   body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
