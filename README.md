@@ -77,8 +77,28 @@ Vercel
 └── api/index.js     Express монолит бүхэлдээ (serverless)
 ```
 
-Нэг домэйн дээр байгаа тул **CORS шаардлагагүй**, `VITE_API_URL`-ыг
-хоосон орхино (`/api` руу харина).
+Нэг домэйн дээр байгаа тул вэбэд **CORS шаардлагагүй**, `VITE_API_URL`-ыг
+хоосон орхино (`/api` руу харина). Android апп нь өөр origin-оос ирдэг тул
+түүнийг `server/config.js` тусад нь зөвшөөрнө.
+
+### ⚠ Git холболт заавал
+
+Vercel төсөл нь GitHub агуулгатай **холбогдсон** байх ёстой:
+Project → Settings → Git → *Connected Git Repository* =
+`enhbatenhee124-dev/ajil`, production branch `main`.
+
+Холбоогүй үед push хийсэн ч **юу ч deploy болохгүй** бөгөөд ямар ч
+анхааруулга гарахгүй — сайт хуучин build дээрээ чимээгүй үлдэнэ. Ийм
+тохиолдол 2026-08-04-нд гарч, аппын API дуудлага бүхэлдээ 403 өгч
+байсан (шинэ CORS дүрэм deploy болоогүй байсан тул).
+
+Шалгах хамгийн хурдан арга:
+
+```bash
+curl -sI https://ajil-iota.vercel.app/ | grep -i last-modified
+```
+
+Сүүлийн commit-оос хуучин огноо гарвал deploy болоогүй байна.
 
 ### Алхмууд
 
