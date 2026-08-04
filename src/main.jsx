@@ -7,6 +7,7 @@ import App from './App'
 import NativeBridge from './components/NativeBridge'
 import { isNative } from './config/runtime'
 import { installCrashScreen, showCrash } from './lib/crashScreen'
+import { registerServiceWorker } from './lib/pwa'
 import './index.css'
 
 // Утсан дээр консол байхгүй тул алдааг дэлгэцэд гаргана. Бусад бүхнээс
@@ -40,3 +41,6 @@ try {
   showCrash('Апп эхлүүлэхэд алдаа гарлаа', err)
   throw err
 }
+
+// Утсанд суулгах (PWA) боломж. Аппын дотор болон хөгжүүлэлтэд алгасана.
+registerServiceWorker()

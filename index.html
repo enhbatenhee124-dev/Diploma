@@ -3,8 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>JobConnect - Find Your Next Opportunity</title>
+
+  <!-- `viewport-fit=cover` нь iPhone-ы notch хүртэл дэлгэцийг эзэлнэ.
+       Үүнгүй бол standalone горимд дээд/доод талд хар зурвас үлдэнэ.
+       Контентыг зурвасын ард орохоос `index.css`-ийн аюулгүй зай хамгаална. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+  <title>МонголАжил — цагийн ажлын зах зээл</title>
+
+  <!-- PWA: утсанд суулгах боломж -->
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <meta name="theme-color" content="#0f172a" />
+
+  <!-- iOS нь manifest-ийн icon-ыг ҮЛ ТООМСОРЛОДОГ бөгөөд зөвхөн PNG
+       хүлээж авдаг тул тусад нь зааж өгнө. -->
+  <link rel="apple-touch-icon" href="/icons/icon-180.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Ажил" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
