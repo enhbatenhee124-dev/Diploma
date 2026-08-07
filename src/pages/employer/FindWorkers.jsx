@@ -153,10 +153,14 @@ export default function FindWorkers() {
             <Search className="w-12 h-12 text-wrk-muted mx-auto mb-4" />
             <p className="text-lg wrk-text-heading">Ажилтан олдсонгүй</p>
           </div>
-        ) : filteredWorkers.map(worker => {
+        ) : filteredWorkers.map((worker, i) => {
           const profile = getWorkerProfile(worker.id)
           return (
-            <div key={worker.id} className="wrk-card animate-slide-up">
+            <div
+              key={worker.id}
+              className="wrk-card animate-fade-up hover-lift"
+              style={{ animationDelay: `${Math.min(i, 8) * 45}ms` }}
+            >
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 rounded-xl bg-wrk-accent/20 flex items-center justify-center flex-shrink-0">

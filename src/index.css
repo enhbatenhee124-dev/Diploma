@@ -91,6 +91,33 @@
   ::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
   }
+
+  /* Гараар шилжиж буй хэрэглэгчид фокус ХАРАГДАХ ёстой. Хулганаар дархад
+     ялгарах хүрээ гарахгүй (`:focus-visible` тул) — харагдац цэвэр хэвээр. */
+  :focus-visible {
+    outline: 2px solid rgb(255 255 255 / 0.75);
+    outline-offset: 2px;
+    border-radius: 0.5rem;
+  }
+
+  /* ==================== ХӨДӨЛГӨӨН БАГАСГАХ ====================
+     Вестибуляр эмзэг хэрэглэгч үйлдлийн системдээ «хөдөлгөөн багасга»
+     гэж тохируулдаг. Тэднийг бөөлжис хүрэхээс сэргийлж БҮХ анимац,
+     шилжилтийг бараг агшин зуурын болгоно — харагдах байдал нь хэвээр,
+     зөвхөн хөдөлгөөн нь алга болно.
+
+     `!important` нь Tailwind-ийн `animate-*`, `transition-*` классуудыг
+     дийлэхэд ЗААВАЛ хэрэгтэй. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
 @layer utilities {
@@ -100,19 +127,500 @@
      нөлөөгүй. */
   .mt-safe { margin-top: var(--sa-top); }
   .mb-safe { margin-bottom: var(--sa-bottom); }
+
+  /* ==================== ХУУДСЫН ӨРГӨН ====================
+     Өмнө нь бүх хэсэг `max-w-7xl` (1280px) байсан тул 1920px дэлгэцэнд
+     хажуугаараа 352px×2 буюу 37% нь хоосон үлддэг байв.
+
+     Одоо ХОЁР өргөн:
+
+       `.container-page` — 1600px. Карт, график, сүлжээ зэрэг өргөн зайд
+                           илүү сайн харагддаг агуулгад.
+       `.container-prose` — 65 тэмдэгт. Догол мөр, тайлбар текстэд.
+
+     Яагаад бүгдийг өргөсгөж болохгүй вэ: нэг мөрөнд 90+ тэмдэгт багтвал
+     нүд мөрийн эхлэлийг олоход хүндэрч, уншилт удаашардаг. Тиймээс
+     текстийг санаатайгаар нарийн үлдээв.
+
+     Хажуугийн зай нь дэлгэцтэй хамт томордог (`clamp`) — жижиг дэлгэцэнд
+     16px, том дэлгэцэнд 48px. */
+  /* 110rem = 1760px. 1920px дэлгэцэнд хажуугаараа ердөө 80px×2 үлдэнэ.
+     Үүнээс өргөсгөвөл 4 баганат сүлжээний карт хэт сунаж, хоорондын
+     хамаарал алдагдана. */
+  .container-page {
+    width: 100%;
+    max-width: 110rem;
+    margin-inline: auto;
+    padding-inline: clamp(1rem, 3.5vw, 3rem);
+  }
+
+  .container-prose {
+    max-width: 65ch;
+  }
+
+  /* ==================== ХӨДӨЛГӨӨНИЙ ТУСЛАХ КЛАСС ====================
+     Эдгээрийг бүх дүрийн (emp/wrk/adm) сэдэвт нийтлэг байдлаар хэрэглэнэ.
+     Өнгө агуулаагүй тул сэдвийн классуудтай зөрчилдөхгүй. */
+
+  /* Хулгана хүрэхэд карт бага зэрэг ХӨВНӨ. Зөвхөн `transform`, `box-shadow`
+     өөрчлөгддөг тул хөтөч дахин layout тооцохгүй — 60fps хэвээр. */
+  .hover-lift {
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.25s ease;
+    will-change: transform;
+  }
+  .hover-lift:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px -12px rgb(0 0 0 / 0.65);
+  }
+  /* Хуруугаар дархад «дарагдсан» мэдрэмж — гар утсанд hover байхгүй тул
+     энэ нь мэдрэгч дэлгэцийн ГОЛ эргэх холбоо болно. */
+  .press {
+    transition: transform 0.12s ease-out;
+  }
+  .press:active {
+    transform: scale(0.97);
+  }
+
+  /* Товчны гадаргуу дээгүүр нэг удаа гүйх гэрлийн туяа. Псевдо элементээр
+     хийсэн тул нэмэлт DOM хэрэггүй. */
+  .shine {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .shine::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      100deg,
+      transparent 25%,
+      rgb(255 255 255 / 0.22) 50%,
+      transparent 75%
+    );
+    transform: translateX(-100%);
+    pointer-events: none;
+  }
+  .shine:hover::after {
+    animation: shimmer 0.9s ease-out;
+  }
+
+  /* Хүрэхийг хүлээхгүй, ҮЕ ҮЕ өөрөө гялбана. Гол үйлдэл рүү анхаарал
+     татахад ашиглана. Гялбаа 1с, дараа нь 5с завсарлага — тасралтгүй
+     гялалзвал анхаарал сарниулна. */
+  .shine-auto::after {
+    animation: autoShimmer 6s ease-in-out infinite;
+  }
+
+  /* Ачаалалтын хий үзэгдэл (skeleton). Дэвсгэр нь бүдэг тэгш өнцөгт,
+     дээгүүр нь туяа гүйнэ — «энд удахгүй агуулга гарна» гэсэн дохио. */
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    background-color: rgb(255 255 255 / 0.07);
+    border-radius: 0.5rem;
+  }
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(255 255 255 / 0.1),
+      transparent
+    );
+    animation: shimmer 1.6s infinite;
+  }
+
+  /* Маршрут солигдоход агуулга зөөлөн орж ирнэ. Хуудсыг дахин ачаалахгүйгээр
+     анимацыг дахин эхлүүлэхийн тулд `PageTransition` энэ классыг авч
+     хаяад дахин нэмдэг. */
+  .page-in {
+    animation: fadeUp 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  /* Жагсаалтын элементүүд НЭГ ЗЭРЭГ бус, дараалан гарч ирнэ. Хүн нүд
+     дагаж уншихад амар болгодог. 10 дахиас хойш саатал нэмэхгүй — эс тэгвэл
+     урт жагсаалтын сүүл нь хэтэрхий удаж гарна. */
+  .stagger > * { animation-delay: 0ms; }
+  .stagger > *:nth-child(2) { animation-delay: 50ms; }
+  .stagger > *:nth-child(3) { animation-delay: 100ms; }
+  .stagger > *:nth-child(4) { animation-delay: 150ms; }
+  .stagger > *:nth-child(5) { animation-delay: 200ms; }
+  .stagger > *:nth-child(6) { animation-delay: 250ms; }
+  .stagger > *:nth-child(7) { animation-delay: 300ms; }
+  .stagger > *:nth-child(8) { animation-delay: 350ms; }
+  .stagger > *:nth-child(9) { animation-delay: 400ms; }
+  .stagger > *:nth-child(n + 10) { animation-delay: 450ms; }
+}
+
+/* ==================== ГҮЙЛГЭЛТЭД ХОЛБОГДСОН ХӨДӨЛГӨӨН ====================
+   `Reveal` нь «харагдмагц нэг удаа тоглуул» (scroll-trigger). Доорх нь өөр
+   зүйл — хөдөлгөөний ЯВЦ нь гүйлгэлтийн байрлалтай шууд холбогдоно
+   (scroll-linked): дээш гүйлгэвэл ухарна.
+
+   Энэ нь `scroll` эвент сонсох JS-ээс ЗАРЧМЫН ялгаатай: хөтөч үүнийг
+   композиторын урсгалд гүйцэтгэдэг тул үндсэн урсгал завгүй байсан ч
+   гүйлгэлт чирэгдэхгүй.
+
+   Бүхэлдээ `@supports` дотор тул дэмждэггүй хөтөч (Safari, хуучин WebView)
+   дээр огт хэрэгжихгүй — харагдац нь энгийн статик хэвээр үлдэнэ. */
+/* ==================== ХУУДАС ХООРОНДЫН ШИЛЖИЛТ ====================
+   Хөтөч анхдагчаар 250мс-ийн cross-fade хийдэг. Доор нь хэмнэлийг аппын
+   бусад хөдөлгөөнтэй нийцүүлж, холбогдсон элементэд илүү зөөлөн муруй өгөв.
+   Дэмждэггүй хөтөч эдгээр дүрмийг бүхэлд нь үл тоомсорлоно. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 260ms;
+}
+
+/* Жагсаалтын карт ↔ дэлгэрэнгүй хуудасны толгой хэсэг */
+::view-transition-group(shared-job-card) {
+  animation-duration: 380ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ==================== ТҮВШИН АХИХ БАЯР ====================
+   Цаас бүр өөрийн чиглэл, эргэлт, хугацаатай. Эдгээрийг CSS хувьсагчаар
+   JS-ээс дамжуулдаг тул анимац өөрөө хөтчийн композиторт үлдэж, 30+ хэсэг
+   зэрэг унасан ч гүйлгэлт чирэгдэхгүй. */
+.confetti-piece {
+  position: absolute;
+  top: -16px;
+  width: 8px;
+  height: 14px;
+  border-radius: 2px;
+  animation-name: confettiFall;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes confettiFall {
+  from {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  to {
+    transform: translate3d(var(--dx, 0px), 100vh, 0) rotate(var(--rot, 360deg));
+    opacity: 0;
+  }
+}
+
+/* ==================== ГҮЙЛГЭХЭД НЯГТАРДАГ ЦЭС ====================
+   Хуудсын дээд хэсэгт цэс задгай, том байна; гүйлгэж эхэлмэгц нягтарч,
+   агуулгад илүү зай өгнө. Гүйлгэлтийн эхний 240px-д шилжинэ.
+
+   JS-гүйгээр, `animation-timeline: scroll()`-оор хийсэн тул гүйлгэх бүрд
+   React дахин зурагдахгүй. */
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .nav-condense {
+      animation: navCondense linear both;
+      animation-timeline: scroll(root block);
+      /* Зөвхөн эхний 240px-д хэрэгжинэ — дараа нь нягтарсан хэвээр үлдэнэ */
+      animation-range: 0 240px;
+    }
+    .nav-condense-inner {
+      animation: navShrink linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 240px;
+    }
+  }
+}
+
+@keyframes navCondense {
+  from { background-color: rgb(2 6 23 / 0); border-color: rgb(255 255 255 / 0); }
+  to   { background-color: rgb(2 6 23 / 0.82); border-color: rgb(255 255 255 / 0.08); }
+}
+
+@keyframes navShrink {
+  from { height: 5rem; }
+  to   { height: 3.75rem; }
+}
+
+/* ==================== ХӨВӨГЧ БӨӨМС ====================
+   Доод ирмэгээс дээш хөвнө. Хугацаа, байрлал, хазайлт бүр өөр тул
+   давтагдсан хэв маяг үүсэхгүй.
+
+   `bottom: -10px`-ээс эхэлж `-110vh` хүртэл явна — дэлгэцээс бүрэн гараад
+   давталт эхлэх тул «үсрэх» агшин харагдахгүй. */
+.particle {
+  position: absolute;
+  bottom: -10px;
+  border-radius: 9999px;
+  background: rgb(196 181 253 / 0.9);
+  box-shadow: 0 0 6px rgb(167 139 250 / 0.8);
+  pointer-events: none;
+  animation-name: particleRise;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+
+/* Гялбаа хурдан гүйж өнгөрөөд, дараагийн эргэлт хүртэл далд хүлээнэ.
+   17% ≈ 1 секунд (6с-ийн мөчлөгт). */
+@keyframes autoShimmer {
+  0%   { transform: translateX(-100%); }
+  17%  { transform: translateX(100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes particleRise {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(var(--drift, 0px), -110vh, 0);
+  }
+}
+
+/* ==================== КУРСОР ДАГАДАГ ГЭРЭЛ ====================
+   Агуулгын ЦААНА (z-5), дэвсгэрийн ДЭЭР байрлана — картууд тунгалаг
+   (`bg-white/5`) тул гэрэл тэдгээрийн ард сүүмэлзэж харагдана.
+
+   Байрлалыг JS-ээс CSS хувьсагчаар өгнө; энд зөвхөн хэлбэр, өнгө. */
+.cursor-glow {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 500ms ease;
+  background: radial-gradient(
+    34rem 34rem at var(--cursor-x, 50%) var(--cursor-y, 50%),
+    rgb(139 92 246 / 0.18),
+    rgb(6 182 212 / 0.08) 42%,
+    transparent 70%
+  );
+}
+
+.cursor-glow.is-active {
+  opacity: 1;
+}
+
+/* Мэдрэгч дэлгэцэнд курсор байхгүй — гэрэл сүүлчийн хүрсэн газарт гацахаас
+   сэргийлж бүрмөсөн унтраана. */
+@media (pointer: coarse) {
+  .cursor-glow { display: none; }
+}
+
+/* ==================== ХУЛГАНА ДАГАДАГ КАРТ ====================
+   `transform`-ыг JS-ээс ШУУД бичдэг тул энд зөвхөн буцах шилжилтийг
+   тодорхойлно. 160мс нь хангалттай богино — хөдөлгөөн курсорын араас
+   чирэгдэхгүй, гэхдээ хулгана гармагц зөөлөн буцна. */
+.spotlight {
+  transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 250ms ease,
+              box-shadow 300ms ease;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.spotlight:hover {
+  box-shadow: 0 20px 44px -20px rgb(0 0 0 / 0.75);
+}
+
+.spotlight-glow {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 300ms ease;
+  background: radial-gradient(
+    circle at var(--spot-x, 50%) var(--spot-y, 50%),
+    var(--spot-glow, rgb(139 92 246 / 0.3)),
+    transparent 60%
+  );
+}
+
+.spotlight:hover .spotlight-glow {
+  opacity: 1;
+}
+
+/* ==================== ЭЦЭС ТӨГСГӨЛГҮЙ ЗУРВАС ====================
+   Хоёр ижил бүлгийг зэрэгцүүлж, замыг яг ТАЛААР нь гүйлгэнэ. Хоёр дахь
+   бүлэг эхнийхийн байрлалд яг таарч ирэх учир давталт мэдэгдэхгүй. */
+.marquee {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation-name: marqueeScroll;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+
+.marquee-group {
+  display: flex;
+  align-items: center;
+  gap: 3rem;
+  padding-right: 3rem;
+}
+
+@keyframes marqueeScroll {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
+}
+
+/* Хулгана дээр нь ирэхэд зогсоно — уншихыг хүсвэл боломж олгоно */
+.marquee:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+/* ==================== УРСАХ ГРАДИЕНТ ====================
+   Градиент текстийн өнгө аажим гүйнэ. `background-size`-ыг томсгосон тул
+   шилжих зай гарна. */
+.gradient-flow {
+  background-size: 220% auto;
+  animation: gradientFlow 7s linear infinite;
+}
+
+@keyframes gradientFlow {
+  to { background-position: 220% center; }
+}
+
+/* ==================== АМЬД ДЭВСГЭР ====================
+   Гэрлийн толбууд аажим хөвнө. Хугацаанууд нь ЗАРИМ ЗЭРЭГ АНХИ тоо
+   (26с, 31с, 37с) — ингэснээр гурав нь хэзээ ч давтагдсан хэв маяг
+   үүсгэхгүй, «давталттай» мэдрэмж төрөхгүй.
+
+   `filter: blur()` нь үнэтэй ч давхарга бүрд НЭГ л удаа тооцогдоно —
+   дараа нь зөвхөн `transform` өөрчлөгддөг тул хөтөч бэлэн текстурыг
+   зөөнө. */
+.aurora {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(80px);
+  will-change: transform;
+  pointer-events: none;
+}
+
+.aurora-1 {
+  width: 44rem;
+  height: 44rem;
+  top: -14rem;
+  left: -12rem;
+  background: radial-gradient(circle, rgb(124 58 237 / 0.55), transparent 68%);
+  animation: auroraDrift1 26s ease-in-out infinite alternate;
+}
+
+.aurora-2 {
+  width: 38rem;
+  height: 38rem;
+  top: 18%;
+  right: -14rem;
+  background: radial-gradient(circle, rgb(6 182 212 / 0.42), transparent 68%);
+  animation: auroraDrift2 31s ease-in-out infinite alternate;
+}
+
+.aurora-3 {
+  width: 34rem;
+  height: 34rem;
+  bottom: -12rem;
+  left: 28%;
+  background: radial-gradient(circle, rgb(236 72 153 / 0.34), transparent 68%);
+  animation: auroraDrift3 37s ease-in-out infinite alternate;
+}
+
+@keyframes auroraDrift1 {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to   { transform: translate3d(9rem, 7rem, 0) scale(1.18); }
+}
+@keyframes auroraDrift2 {
+  from { transform: translate3d(0, 0, 0) scale(1.1); }
+  to   { transform: translate3d(-8rem, 10rem, 0) scale(0.92); }
+}
+@keyframes auroraDrift3 {
+  from { transform: translate3d(0, 0, 0) scale(0.95); }
+  to   { transform: translate3d(7rem, -9rem, 0) scale(1.22); }
+}
+
+/* Гүйх техникийн сүлжээ. Дэлгэцээс нэг нүдээр том тул шилжихдээ ирмэгээр
+   хоосон зай гарахгүй. `mask` нь дээд талд тод, доошоо бүдгэрүүлж, сүлжээ
+   агуулгаас анхаарал сарниулахаас сэргийлнэ. */
+.bg-grid {
+  position: absolute;
+  inset: -72px;
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.05) 1px, transparent 1px);
+  background-size: 72px 72px;
+  -webkit-mask-image: radial-gradient(ellipse at 50% 20%, #000 25%, transparent 72%);
+  mask-image: radial-gradient(ellipse at 50% 20%, #000 25%, transparent 72%);
+  animation: gridDrift 22s linear infinite;
+  will-change: transform;
+}
+
+@keyframes gridDrift {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(72px, 72px, 0); }
+}
+
+@keyframes parallaxDrift {
+  from { transform: scale(1.12) translateY(2.5%); }
+  to   { transform: scale(1.12) translateY(-2.5%); }
+}
+
+/* Tailwind-ийн `growX`-аас ТУСДАА бичив: тэр нь `animate-grow-x` хэрэглэгдэж
+   байвал л гардаг тул график уствал энэ зурвас чимээгүй эвдэрнэ. */
+@keyframes scrollProgress {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* Зурвасны БҮХ загвар `@supports` дотор байгаа нь санаатай: дэмждэггүй
+   хөтөч дээр энэ нь ямар ч өндөр, дэвсгэргүй хоосон div болж үлдэнэ —
+   бүтэн дүүрсэн зурвас өлгөөтэй хоцрохгүй. */
+@supports (animation-timeline: scroll()) {
+  .scroll-progress {
+    position: fixed;
+    /* Утсанд суулгасан үед статус мөрийн ард орохгүйн тулд аюулгүй зай */
+    top: var(--sa-top);
+    left: 0;
+    right: 0;
+    height: 3px;
+    z-index: 60;
+    transform-origin: 0 50%;
+    background: linear-gradient(90deg, #8b5cf6, #22d3ee);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    /* Нүүр хуудасны дэвсгэр аажим гүйнэ. Ирмэг нь ил гарахгүйн тулд суурь
+       `scale`-ыг хоёр түлхүүр хүрээнд ч хадгална. */
+    .parallax-bg {
+      animation: parallaxDrift linear both;
+      animation-timeline: scroll(root block);
+    }
+
+    .scroll-progress {
+      animation: scrollProgress linear both;
+      animation-timeline: scroll(root block);
+    }
+  }
 }
 
 @layer components {
   /* Button styles */
   .btn-primary {
     @apply bg-home-blue text-white font-medium py-2.5 px-5 rounded-xl
-           hover:bg-[#1D4ED8] active:scale-[0.98] transition-all
-           disabled:opacity-50 disabled:cursor-not-allowed;
+           hover:bg-[#1D4ED8] active:scale-[0.98] transition-all duration-200
+           hover:shadow-lg hover:shadow-home-blue/30
+           disabled:opacity-50 disabled:cursor-not-allowed
+           disabled:hover:shadow-none shine;
   }
   .btn-secondary {
     @apply bg-white text-gray-700 font-medium py-2.5 px-5 rounded-xl
            border border-gray-200 hover:bg-gray-50 active:scale-[0.98]
-           transition-all;
+           transition-all duration-200;
   }
 
   /* Input styles */
@@ -125,8 +633,7 @@
 
   /* Card styles */
   .card {
-    @apply bg-white border border-gray-100 rounded-2xl p-6
-           hover:shadow-md transition-shadow;
+    @apply bg-white border border-gray-100 rounded-2xl p-6 hover-lift;
   }
 
   /* ==================== EMPLOYEE DARK THEME ==================== */

@@ -57,9 +57,11 @@ export default function RailSidebar({ theme = 'emp', items, brand, caption, logo
    * Нэрийн харагдац.
    * rail = true үед анхдагчаар нуугдаж, эцэг .group дээр хулгана хүрэхэд гарна.
    */
+  // `inline-block` нь transform ажиллуулахад ЗААВАЛ хэрэгтэй — жирийн inline
+  // элементэд `translate-x` огт нөлөөлдөггүй.
   const labelClass = rail =>
-    `whitespace-nowrap transition-opacity duration-200 ${
-      !rail || expanded ? 'opacity-100' : 'opacity-0'
+    `inline-block whitespace-nowrap transition-all duration-300 ease-smooth ${
+      !rail || expanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-3'
     }`
 
   const Body = ({ rail }) => (
@@ -92,11 +94,21 @@ export default function RailSidebar({ theme = 'emp', items, brand, caption, logo
               to={item.path}
               onClick={() => setMobileOpen(false)}
               title={rail ? item.label : undefined}
-              className={`flex items-center h-12 rounded-r-xl text-sm font-medium transition-colors
+              className={`group relative flex items-center h-12 rounded-r-xl text-sm font-medium
+                          transition-colors duration-200
                           ${isActive ? t.active : t.idle}`}
             >
+              {/* Идэвхтэй хуудсыг зүүн ирмэг дэх зурвасаар тэмдэглэнэ. Өндөр нь
+                  0-ээс ургаж гардаг тул нүд шинэ байрлал руу дагаж шилжинэ. */}
+              <span
+                className={`absolute left-0 w-1 rounded-r-full bg-current
+                            transition-all duration-300 ease-smooth
+                            ${isActive ? 'h-6 opacity-100' : 'h-0 opacity-0'}`}
+              />
               <span className={ICON_COL}>
-                <Icon className="w-5 h-5" />
+                {/* Дүрс нь хулгана хүрэхэд бага зэрэг томорно — эвхэгдсэн
+                    зурвасанд нэр харагдахгүй үед ганц эргэх холбоо болно. */}
+                <Icon className="w-5 h-5 transition-transform duration-200 ease-spring group-hover:scale-110" />
               </span>
               <span className={labelClass(rail)}>{item.label}</span>
             </Link>
@@ -115,10 +127,11 @@ export default function RailSidebar({ theme = 'emp', items, brand, caption, logo
         <button
           onClick={onLogout}
           title={rail ? 'Гарах' : undefined}
-          className={`flex items-center h-12 w-full rounded-r-xl text-sm font-medium transition-colors ${t.idle}`}
+          className={`group flex items-center h-12 w-full rounded-r-xl text-sm font-medium transition-colors ${t.idle}`}
         >
           <span className={ICON_COL}>
-            <LogOut className="w-5 h-5" />
+            {/* Гарах сум нь хаалганаас гарах чиглэлд бага зэрэг хөдөлнө */}
+            <LogOut className="w-5 h-5 transition-transform duration-200 ease-spring group-hover:translate-x-0.5" />
           </span>
           <span className={labelClass(rail)}>Гарах</span>
         </button>
@@ -162,14 +175,19 @@ export default function RailSidebar({ theme = 'emp', items, brand, caption, logo
           <button
             onClick={() => setMobileOpen(v => !v)}
             aria-label={mobileOpen ? 'Цэс хаах' : 'Цэс нээх'}
-            className={`p-2 rounded-lg ${t.idle}`}
+            aria-expanded={mobileOpen}
+            className={`p-2 rounded-lg press transition-colors ${t.idle}`}
           >
-            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {/* Хоёр дүрсийг сольж, эргүүлэн гарган ирснээр «нээх ↔ хаах» нь
+                нэг товч гэдэг нь мэдрэгдэнэ. */}
+            {mobileOpen
+              ? <X className="w-5 h-5 animate-scale-in" />
+              : <Menu className="w-5 h-5 animate-scale-in" />}
           </button>
         </div>
 
         {mobileOpen && (
-          <div className="pb-3 flex flex-col">
+          <div className="pb-3 flex flex-col animate-slide-up">
             <Body rail={false} />
           </div>
         )}

@@ -11,6 +11,11 @@ import { isNative } from '../config/runtime'
 const url = import.meta.env.VITE_SUPABASE_URL
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
+// Нэвтрэлтийн тохиргоог шууд асуухад хэрэгтэй (`/auth/v1/settings`).
+// anon key нь дээр тайлбарласны дагуу нийтийн зориулалттай.
+export const SUPABASE_URL = url
+export const SUPABASE_ANON_KEY = anonKey
+
 export const isSupabaseConfigured = Boolean(url && anonKey)
 
 if (!isSupabaseConfigured) {

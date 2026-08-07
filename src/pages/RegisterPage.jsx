@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useNotification } from '../hooks/useNotification';
 import { signInWithGoogle } from '../services/authService';
+import AnimatedBackground from '../components/AnimatedBackground';
+import CursorGlow from '../components/CursorGlow';
 const bgImage = new URL('../assets/hero-bg.jpg', import.meta.url).href;
 
 // Inline SVG icons
@@ -124,22 +126,14 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen text-white font-sans relative overflow-hidden flex items-center justify-center p-4">
-      {/* Background */}
-      <div 
-        className="fixed inset-0"
-        style={{ 
-          backgroundImage: `url(${bgImage})`, 
-          backgroundSize: 'cover', 
-          backgroundPosition: 'center', 
-          backgroundAttachment: 'fixed' 
-        }}
-      />
-      <div className="fixed inset-0 bg-slate-950/90" />
+      {/* Нүүр хуудастай ижил амьд дэвсгэр */}
+      <AnimatedBackground image={bgImage} />
+      <CursorGlow />
 
       <div className="relative z-10 w-full max-w-md">
         {/* Logo */}
-        <div className="text-center mb-10">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-cyan-400 flex items-center justify-center mx-auto mb-6 shadow-xl shadow-violet-500/20">
+        <div className="text-center mb-10 animate-fade-up">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-cyan-400 flex items-center justify-center mx-auto mb-6 shadow-xl shadow-violet-500/20 animate-pop-in">
             <Icons.Briefcase size={32} className="text-white" />
           </div>
           <h1 className="text-3xl font-extrabold mb-2">Бүртгэл Үүсгэх</h1>
@@ -147,7 +141,7 @@ export default function RegisterPage() {
         </div>
 
         {/* Card */}
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-10">
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-10 animate-fade-up" style={{ animationDelay: '120ms' }}>
           {/* Role toggle */}
           <div className="flex p-1.5 rounded-xl bg-white/5 border border-white/10 mb-8">
             <button
@@ -323,7 +317,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading} 
-              className="w-full px-6 py-4 rounded-xl bg-gradient-to-r from-violet-600 to-violet-500 text-white font-bold text-lg hover:shadow-xl hover:shadow-violet-500/40 transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3"
+              className="shine shine-auto w-full px-6 py-4 rounded-xl bg-gradient-to-r from-violet-600 to-violet-500 text-white font-bold text-lg hover:shadow-xl hover:shadow-violet-500/40 transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3"
             >
               {loading ? (
                 <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />

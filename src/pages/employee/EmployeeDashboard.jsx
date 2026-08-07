@@ -14,6 +14,8 @@ import { resolveLook, LevelRing, QuestRow, AvatarWithFrame, GameIcon } from '../
 import ExpandingSearch from '../../components/ExpandingSearch'
 import { getAccent, nextAccent } from '../../utils/accents'
 import { Loading, ErrorBox } from '../../components/States'
+import { CountUp, Stagger } from '../../components/Motion'
+import LevelUpOverlay, { useLevelUp } from '../../components/LevelUp'
 
 const statusColors = {
   applied: 'text-gray-200 bg-gray-400/15 border-gray-400/25',
@@ -50,6 +52,10 @@ export default function EmployeeDashboard() {
   const [cosmetics, setCosmetics] = useCosmetics(user?.id)
 
   const { loading, error, refreshAll } = combine(shiftsQ, appsQ, progressQ, rankQ)
+
+  // ⚠ Hook-ийг доорх `if (loading) return`-аас ӨМНӨ дуудах ёстой — React-ийн
+  //   дүрмээр hook-ийн дараалал дуудалт бүрт ижил байх шаардлагатай.
+  const levelUp = useLevelUp(user?.id, progressQ.data?.level)
 
   const shifts = shiftsQ.data
   const applications = appsQ.data
@@ -89,6 +95,10 @@ export default function EmployeeDashboard() {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {levelUp.from !== null && (
+        <LevelUpOverlay from={levelUp.from} to={stats.level} onClose={levelUp.dismiss} />
+      )}
+
       {/* Мэндчилгээ + хайлт */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-3xl sm:text-4xl font-extrabold">
@@ -118,7 +128,7 @@ export default function EmployeeDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Зүүн: түвшин + даалгавар */}
-        <div className="emp-card flex flex-col items-center">
+        <div className="emp-card flex flex-col items-center animate-fade-up">
           <LevelRing progress={stats} look={look} />
 
           <div className="w-full mt-5 space-y-2.5">
@@ -155,28 +165,31 @@ export default function EmployeeDashboard() {
 
         {/* Баруун */}
         <div className="lg:col-span-2 space-y-5">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <Stagger className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {tiles.map(tile => {
               const Icon = tile.icon
               return (
                 <Link
                   key={tile.label}
                   to={tile.to}
-                  className="emp-card hover:border-emp-accent/40 transition-colors group"
+                  className="emp-card hover:border-emp-accent/40 group animate-fade-up hover-lift press"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center mb-4 group-hover:bg-white/15 transition-colors">
+                  <div className="w-10 h-10 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center mb-4 transition-all duration-200 ease-spring group-hover:bg-white/15 group-hover:scale-110">
                     <Icon className="w-5 h-5 text-white" />
                   </div>
                   <p className="text-xs emp-text-body mb-1">{tile.label}</p>
-                  <p className="text-2xl font-extrabold text-white">{tile.value}</p>
+                  {/* Тоо 0-оос ургаж гарах нь «энэ бол миний үзүүлэлт» гэдгийг
+                      онцолж, самбар амьд мэт мэдрэгдүүлнэ. */}
+                  <CountUp value={tile.value} className="block text-2xl font-extrabold text-white" />
                 </Link>
               )
             })}
-          </div>
+          </Stagger>
 
           {nextTier && (
-            <div className="relative overflow-hidden rounded-2xl border border-emp-border p-6 bg-gradient-to-br from-emp-accent/25 via-fuchsia-500/10 to-transparent">
-              <div className="absolute -top-16 -right-10 w-56 h-56 rounded-full bg-emp-accent/20 blur-3xl pointer-events-none" />
+            <div className="relative overflow-hidden rounded-2xl border border-emp-border p-6 bg-gradient-to-br from-emp-accent/25 via-fuchsia-500/10 to-transparent animate-fade-up hover-lift" style={{ animationDelay: '220ms' }}>
+              {/* Аажим хөвөх гэрлийн бөмбөлөг — статик градиентээс илүү амьд */}
+              <div className="absolute -top-16 -right-10 w-56 h-56 rounded-full bg-emp-accent/20 blur-3xl pointer-events-none animate-float" />
               <div className="relative flex flex-wrap items-center gap-5">
                 <div className="flex-1 min-w-[220px]">
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 text-[11px] font-medium text-white mb-3">
@@ -198,7 +211,7 @@ export default function EmployeeDashboard() {
           )}
 
           {/* Сүүлийн хүсэлтүүд */}
-          <div className="emp-card">
+          <div className="emp-card animate-fade-up" style={{ animationDelay: '280ms' }}>
             <div className="flex items-center justify-between mb-3.5">
               <h2 className="text-base font-semibold emp-text-heading">Сүүлийн хүсэлтүүд</h2>
               <Link

@@ -24,6 +24,26 @@ router.post('/qpay/callback', rateLimit({ name: 'qpay-callback', windowMs: 60_00
   }
 }))
 
+// ⚠ Stripe webhook — нэвтрэлтгүй, ТҮҮХИЙ биетэй (app.js дээр `express.raw`).
+//   Гарын үсгийг шалгаж чадаагүй хүсэлтийг 400-аар няцаана: Stripe тэгвэл
+//   дахин оролдох ба бид хуурамч мэдэгдлээр нэхэмжлэл хаахгүй.
+router.post(
+  '/stripe/webhook',
+  rateLimit({ name: 'stripe-webhook', windowMs: 60_000, max: 120 }),
+  asyncHandler(async (req, res) => {
+    const signature = req.headers['stripe-signature']
+    if (!signature) return res.status(400).json({ error: 'Гарын үсэг алга.' })
+
+    try {
+      const result = await service.handleStripeWebhook(req.body, signature)
+      res.json({ received: true, ...result })
+    } catch (err) {
+      console.error('[stripe] webhook няцаагдлаа:', err.message)
+      res.status(400).json({ error: 'Гарын үсэг тохирохгүй байна.' })
+    }
+  })
+)
+
 router.get('/subscription', requireAuth, requireRole('employer', 'admin'), asyncHandler(async (req, res) => {
   res.json({ data: await service.subscription(req) })
 }))
@@ -53,6 +73,30 @@ router.post(
   rateLimit({ name: 'invoice-check', windowMs: 60_000, max: 15 }),
   asyncHandler(async (req, res) => {
     res.json({ data: await service.checkInvoice(req, req.params.id) })
+  })
+)
+
+// Картаар төлөх — Stripe-ийн байршуулсан хуудасны хаяг үүсгэнэ
+router.post(
+  '/invoices/:id/stripe',
+  requireAuth,
+  requireRole('employer', 'admin'),
+  rateLimit({ name: 'stripe-session', windowMs: 60_000, max: 10 }),
+  asyncHandler(async (req, res) => {
+    // Буцах хаягийг хүсэлтийн `Origin`-оос авна — вэб, апп, preview deploy
+    // бүр өөр домэйнтэй тул сервер дээр хатуу бичих боломжгүй.
+    const origin = req.headers.origin || `${req.protocol}://${req.get('host')}`
+    res.json({ data: await service.createStripePayment(req, req.params.id, origin) })
+  })
+)
+
+// Төлбөрийн хуудаснаас буцаж ирээд шалгах (webhook саатсан ч ажиллана)
+router.post(
+  '/invoices/:id/stripe/check',
+  requireAuth,
+  rateLimit({ name: 'stripe-check', windowMs: 60_000, max: 20 }),
+  asyncHandler(async (req, res) => {
+    res.json({ data: await service.checkStripeSession(req, req.params.id, req.body?.sessionId) })
   })
 )
 

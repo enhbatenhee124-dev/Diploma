@@ -17,6 +17,14 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     let active = true
 
+    // OAuth амжилтгүй болбол Supabase хэрэглэгчийг `?error=...`-тэй буцаадаг.
+    // Үүнийг барихгүй бол хэрэглэгч нүүр хуудсанд ЧИМЭЭГҮЙ хаягдаж, юу
+    // болсноо мэдэхгүй үлдэнэ.
+    const oauthError = auth.readOAuthError()
+    if (oauthError) {
+      notify({ type: 'error', message: 'Нэвтэрч чадсангүй', description: oauthError })
+    }
+
     if (!isSupabaseConfigured) {
       setLoading(false)
       return
@@ -113,6 +121,32 @@ export function AuthProvider({ children }) {
     setUser(null)
   }, [])
 
+  /**
+   * Дүрээ нэг удаа сонгож баталгаажуулна (голдуу Google-ээр анх нэвтэрсэн
+   * хэрэглэгч). Амжилттай бол `user` шинэчлэгдэж, маршрут нь тухайн дүрийн
+   * самбар руу автоматаар нээгдэнэ.
+   */
+  const chooseRole = useCallback(
+    async role => {
+      const result = await auth.confirmRole(role)
+
+      if (!result.ok) {
+        notify({ type: 'error', message: 'Дүр сонгож чадсангүй', description: result.error })
+        return result
+      }
+
+      setUser(result.data)
+      notify({
+        type: 'success',
+        message: 'Бэлэн боллоо',
+        description: `Та ${roleLabel(result.data.role)} эрхээр үргэлжлүүлнэ.`,
+        userId: result.data.id,
+      })
+      return result
+    },
+    [notify]
+  )
+
   const updateProfile = useCallback(
     async updates => {
       if (!user) return { ok: false, error: 'Нэвтрээгүй байна.' }
@@ -131,7 +165,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, register, logout, updateProfile, configured: isSupabaseConfigured }}
+      value={{ user, loading, login, register, logout, updateProfile, chooseRole, configured: isSupabaseConfigured }}
     >
       {children}
     </AuthContext.Provider>

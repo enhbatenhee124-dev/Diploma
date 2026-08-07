@@ -83,9 +83,9 @@ export default function NativeBridge() {
         return
       }
 
-      // AuthContext нь `onAuthStateChange`-ээр дүрийг уншиж, App.jsx-ийн
-      // `*` маршрут хэрэглэгчийг дүрийнх нь нүүр рүү аваачна.
-      navigate('/', { replace: true })
+      // Вэбтэй ижил цэг рүү аваачна: тэр нь профайл уншигдтал хүлээгээд,
+      // дүрд нь тохирсон самбар (эсвэл дүр сонгох алхам) руу зална.
+      navigate('/auth/callback', { replace: true })
     })
 
     return () => {

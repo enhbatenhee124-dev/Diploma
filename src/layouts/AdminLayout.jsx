@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom'
 import { LayoutDashboard, Users, Briefcase, BarChart3, Shield, CreditCard, Flag } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import RailSidebar from '../components/RailSidebar'
+import { PageTransition } from '../components/Motion'
 
 const navItems = [
   { path: '/admin/dashboard', label: 'Хянах самбар', icon: LayoutDashboard },
@@ -29,7 +30,9 @@ export default function AdminLayout() {
 
         <main className="flex-1 overflow-y-auto">
           <div className="p-6 lg:p-8">
-            <Outlet />
+            <PageTransition>
+              <Outlet />
+            </PageTransition>
           </div>
         </main>
       </div>

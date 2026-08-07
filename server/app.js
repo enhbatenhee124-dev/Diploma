@@ -68,6 +68,12 @@ export function createApp() {
     })
   )
 
+  // ⚠ Stripe webhook нь ТҮҮХИЙ биетэй байх ЁСТОЙ — JSON болгон задлаад
+  //   дахин мөр болговол гарын үсэг таарахаа болино (талбарын дараалал,
+  //   зай өөрчлөгддөг). Тиймээс `express.json`-оос ӨМНӨ, зөвхөн энэ замд
+  //   түүхий парсер тавина.
+  app.use('/api/billing/stripe/webhook', express.raw({ type: '*/*', limit: '1mb' }))
+
   // 100kb-аас том JSON хүлээж авахгүй — санамсаргүй/зориудын том хүсэлтээс хамгаална
   app.use(express.json({ limit: '100kb' }))
 

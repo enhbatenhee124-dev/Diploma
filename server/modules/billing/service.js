@@ -1,7 +1,10 @@
 import { asUser, admin } from '../../core/supabase.js'
-import { unwrap, notFound, forbidden } from '../../core/http.js'
+import { unwrap, notFound, forbidden, badRequest, ApiError } from '../../core/http.js'
 import { requireUuid, isUuid } from '../../core/validate.js'
 import { createInvoice, checkPayment, isQpayConfigured } from './qpay.js'
+import {
+  createCheckoutSession, verifyWebhook, retrieveSession, isStripeConfigured,
+} from './stripe.js'
 
 // ============================================================
 // Захиалга ба төлбөр (Бизнес загвар — А хувилбар)
@@ -61,7 +64,15 @@ export async function subscription(req) {
 export async function plan(req) {
   const sb = asUser(req.accessToken)
   const row = unwrap(await sb.from('plans').select('*').eq('id', PLAN_ID).single())
-  return { id: row.id, name: row.name, priceMnt: row.price_mnt, intervalDays: row.interval_days }
+  return {
+    id: row.id,
+    name: row.name,
+    priceMnt: row.price_mnt,
+    intervalDays: row.interval_days,
+    // Аль төлбөрийн арга бэлэн байгааг клиент мэдэх ёстой — эс тэгвээс
+    // тохируулаагүй аргын товчийг үзүүлээд 503 алдаа рүү хөтөлнө.
+    stripeEnabled: isStripeConfigured(),
+  }
 }
 
 /**
@@ -233,6 +244,142 @@ export async function handleCallback(query, body) {
   }
 }
 
+// ============================================================
+// Stripe (олон улсын карт — туршилтын горим)
+// ============================================================
+
+/** Нэхэмжлэлийг олж, дуудагчийнх мөн эсэхийг шалгана. */
+async function ownedInvoice(req, invoiceId) {
+  requireUuid(invoiceId, 'Нэхэмжлэлийн ID')
+
+  const invoice = unwrap(
+    await admin.from('invoices').select('*').eq('id', invoiceId).maybeSingle()
+  )
+  if (!invoice) throw notFound('Нэхэмжлэл олдсонгүй.')
+  if (invoice.employer_id !== req.user.id && req.user.role !== 'admin') {
+    throw forbidden('Энэ нэхэмжлэл танийх биш байна.')
+  }
+  return invoice
+}
+
+/** Stripe-ийн төлбөрийн хуудас үүсгэж, хаягийг нь буцаана. */
+export async function createStripePayment(req, invoiceId, origin) {
+  if (!isStripeConfigured()) {
+    throw new ApiError(503, 'Картаар төлөх боломж одоогоор тохируулагдаагүй байна.')
+  }
+
+  const invoice = await ownedInvoice(req, invoiceId)
+  if (invoice.status === 'paid') {
+    return { alreadyPaid: true, invoice: toInvoice(invoice) }
+  }
+
+  // Буцах хаягийг клиентээс авна — вэб, апп, preview deploy бүр өөр домэйнтэй.
+  const base = String(origin || '').replace(/\/$/, '')
+  const session = await createCheckoutSession({
+    invoiceId: invoice.id,
+    amountMnt: invoice.amount_mnt,
+    email: invoice.employer_email,
+    successUrl: `${base}/employer/subscription?stripe=success&session_id={CHECKOUT_SESSION_ID}`,
+    cancelUrl: `${base}/employer/subscription?stripe=cancel`,
+  })
+
+  await admin.from('payment_events').insert({
+    invoice_id: invoice.id,
+    provider: 'stripe',
+    event_type: 'session_created',
+    raw_payload: { sessionId: session.id, amount: session.amount, currency: session.currency },
+  })
+
+  return { url: session.url, sessionId: session.id }
+}
+
+/**
+ * Stripe webhook. Нэвтрэлтгүй ирнэ.
+ *
+ * ⚠ QPay-ээс ялгаатай нь энд дахин "шалгах" дуудлага хийх шаардлагагүй:
+ *   Stripe хүсэлт бүрийг хуваалцсан нууцаар гарын үсэг зурдаг тул гарын
+ *   үсэг тааруулсан нь эх сурвалжийн баталгаа болно.
+ */
+export async function handleStripeWebhook(rawBody, signature) {
+  const event = verifyWebhook(rawBody, signature)
+
+  if (event.type !== 'checkout.session.completed') return { ignored: event.type }
+
+  const session = event.data.object
+  const invoiceId = session.client_reference_id || session.metadata?.invoice_id
+
+  if (!isUuid(invoiceId)) {
+    console.warn('[stripe] танихгүй сешн — invoice_id буруу:', invoiceId)
+    return { ignored: 'bad_invoice_id' }
+  }
+
+  // Төлөгдөөгүй сешнийг үл тоомсорлоно (жишээ нь хугацаа дуусах үед)
+  if (session.payment_status !== 'paid') {
+    return { ignored: session.payment_status }
+  }
+
+  const invoice = unwrap(
+    await admin.from('invoices').select('*').eq('id', invoiceId).maybeSingle()
+  )
+  if (!invoice) {
+    console.warn('[stripe] нэхэмжлэл олдсонгүй:', invoiceId)
+    return { ignored: 'invoice_not_found' }
+  }
+  if (invoice.status === 'paid') return { alreadyPaid: true }
+
+  await markPaid(invoice, {
+    source: 'stripe_webhook',
+    sessionId: session.id,
+    paymentIntent: session.payment_intent,
+    amountTotal: session.amount_total,
+    currency: session.currency,
+  }, 'stripe')
+
+  return { paid: true, invoiceId }
+}
+
+/**
+ * Төлбөрийн хуудаснаас буцаж ирэхэд шалгах зам.
+ *
+ * Webhook нь локал орчинд `stripe listen`-гүйгээр ирдэггүй тул үзүүлэн
+ * дундуур тасрахгүйн тулд энэ шууд зам хэрэгтэй. Аль нэг нь эхэлж
+ * ажилласан ч `markPaid` доторх `.eq('status','pending')` нь давхардлаас
+ * хамгаална.
+ */
+export async function checkStripeSession(req, invoiceId, sessionId) {
+  if (!isStripeConfigured()) throw new ApiError(503, 'Stripe тохируулаагүй байна.')
+
+  // Сешний ID-г ЭНД шалгана: эс тэгвээс Stripe SDK нь ойлгомжгүй алдаа
+  // шидэж, хэрэглэгчид 500 болж харагдана.
+  if (typeof sessionId !== 'string' || !sessionId.startsWith('cs_')) {
+    throw badRequest('Төлбөрийн сешний ID буруу байна.')
+  }
+
+  const invoice = await ownedInvoice(req, invoiceId)
+  if (invoice.status === 'paid') return { paid: true, invoice: toInvoice(invoice) }
+
+  const session = await retrieveSession(sessionId)
+
+  // ⚠ Сешн ЯГ энэ нэхэмжлэлийнх мөн эсэхийг шалгана — үгүй бол хэрэглэгч
+  //   өөр (хямд) нэхэмжлэлийн сешнээр энэ нэхэмжлэлийг хаах боломжтой.
+  const ref = session.client_reference_id || session.metadata?.invoice_id
+  if (ref !== invoice.id) throw forbidden('Энэ төлбөр өөр нэхэмжлэлийнх байна.')
+
+  if (session.payment_status !== 'paid') {
+    return { paid: false, invoice: toInvoice(invoice) }
+  }
+
+  const updated = await markPaid(invoice, {
+    source: 'stripe_return',
+    sessionId: session.id,
+    paymentIntent: session.payment_intent,
+    amountTotal: session.amount_total,
+    currency: session.currency,
+  }, 'stripe')
+
+  return { paid: true, invoice: toInvoice(updated) }
+}
+
 // ------------------------------
 // Туслах
 // ------------------------------
@@ -241,12 +388,12 @@ export async function handleCallback(query, body) {
  * `confirm_invoice`-той ижил алхмуудыг хийнэ, гэхдээ админгүйгээр —
  * төлбөрийн үйлчилгээнээс баталгаа авсан үед л дуудагдана.
  */
-async function markPaid(invoice, evidence) {
+async function markPaid(invoice, evidence, provider = 'qpay') {
   const now = new Date().toISOString()
 
   await admin.from('payment_events').insert({
     invoice_id: invoice.id,
-    provider: 'qpay',
+    provider,
     event_type: 'paid',
     raw_payload: evidence,
   })

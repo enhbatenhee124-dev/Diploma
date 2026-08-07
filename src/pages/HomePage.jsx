@@ -1,5 +1,16 @@
-import React, { useState } from 'react';
+import { lazy, Suspense } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { CyclingText, Marquee, Reveal, ScrollSkew, SpotlightCard, StatCounter } from '../components/Motion';
+import SplitHeading from '../components/SplitHeading';
+import HorizontalScroller from '../components/HorizontalScroller';
+import AnimatedBackground from '../components/AnimatedBackground';
+import CursorGlow from '../components/CursorGlow';
+
+// anime.js ~43KB (gzip) нэмдэг ба энэ хэсэг ЗӨВХӨН нүүр хуудсанд байдаг.
+// Шууд импортловол ажилтан, ажил олгогч, админ хэн ч түүнийг харахгүй
+// мөртлөө эхний ачаалалтад татна. JobMap-ийг Leaflet-ийн улмаас салгасантай
+// ижил шалтгаан (NFR-1).
+const ScrollStory = lazy(() => import('../components/ScrollStory'));
 const bgImage = new URL('../assets/hero-bg.jpg', import.meta.url).href;
 
 // Inline SVG icons
@@ -146,6 +157,70 @@ const Icons = {
 // ------------------------------
 // Нүүр хуудас нэг урт хуудас тул цэс нь тухайн хэсэг рүү гүйлгэнэ.
 // `id` нь доорх <section>-уудтай таарна.
+// Гарчгийн дунд эргэлдэх үгс. Урт нь ойролцоо байх нь чухал — эс бөгөөс
+// солигдох бүрд мөрийн өргөн үсэрч, доорх текст чичирнэ.
+const HERO_WORDS = ['Ажиллах.', 'Хөгжих.', 'Бүтээх.', 'Дэвших.']
+
+// Зурвасаар гүйх ажлын чиглэлүүд
+const MARQUEE_ITEMS = [
+  'Бариста', 'Хүргэлт', 'Кассир', 'Хувийн багш', 'Зөөгч', 'Орчуулагч',
+  'Дизайнер', 'Агуулахын туслах', 'Борлуулагч', 'Үзэсгэлэнгийн ажилтан',
+  'Виртуал туслах', 'Цэвэрлэгч',
+]
+
+// Хоёр дахь мөр — эсрэг тийш гүйнэ
+const MARQUEE_ITEMS_ALT = [
+  'Уян хатан цаг', 'Оюутанд ээлтэй', 'Долоо хоногийн эцэст', 'Оройн ээлж',
+  'Алсаас', 'Богино хугацаа', 'Туршлага шаардахгүй', 'Өдрийн ажил',
+  'Улирлын ажил', 'Багаар ажиллах',
+]
+
+// Ажил олгогчид зориулсан давуу талууд
+const CTA_BENEFITS = [
+  'Анхны ажлыг үнэгүй зарлах',
+  'Хүсэлттэй шууд мессеж',
+  'Хүсэлт засах самбар',
+  'Эрхэм дэмжлэг',
+]
+
+// Нүүр хуудсанд үзүүлэх ЖИШЭЭ зарууд (бодит өгөгдөл биш)
+const SAMPLE_JOBS = [
+  {
+    title: 'Цагийн UI Дизайнер',
+    applicants: 24,
+    location: 'Улаанбаатар • Алсаас OK',
+    tone: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+  },
+  {
+    title: 'Амар Наасны Маркетинг Туслах',
+    applicants: 18,
+    location: 'Улаанбаатар • Дэлгэрэнгүй',
+    tone: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
+  },
+  {
+    title: 'Хүргэлтийн Хамтран',
+    applicants: 31,
+    location: 'Олон хот',
+    tone: 'bg-pink-500/10 text-pink-400 border-pink-500/20',
+  },
+]
+
+// Холбоо барих мөрүүд. `icon` нь дээрх `Icons` объектын түлхүүр.
+const CONTACT_ROWS = [
+  { icon: 'Mail', label: 'И-мэйл', value: 'hello@mongoljob.mn' },
+  { icon: 'Phone', label: 'Утас', value: '+976 9911-2233' },
+  {
+    icon: 'MapPin',
+    label: 'Офис',
+    value: (
+      <>
+        Чингисын Чөлөө 15, Сүхбаатар дүүрэг<br />
+        Улаанбаатар 14250, Монгол
+      </>
+    ),
+  },
+]
+
 const NAV_SECTIONS = [
   { label: 'Нүүр', id: null },              // хамгийн дээш
   { label: 'Ажил олгогчид', id: 'employers' },
@@ -172,17 +247,13 @@ function scrollToSection(id) {
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
-  // Track mouse position globally
-  React.useEffect(() => {
-    const handleMouseMove = (e) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-  
+  // ⚠ Өмнө нь энд `window`-ийн `mousemove`-ыг сонсож, хулгана хөдлөх БҮРД
+  //   төлөв шинэчилдэг байв. Уншсан газар нь байхгүй байсан ч энэ нь 800
+  //   мөрт хуудсыг секундэд олон арван удаа дахин зуруулж, гүйлгэлтийг
+  //   чирэгддэг болгож байсан тул авав. Картын гэрэл нь одоо `SpotlightCard`
+  //   дотор ЗӨВХӨН тухайн карт дээр л хэмжигдэнэ.
+
   const categories = [
     { 
       title: "Кафе ба Ресторан", 
@@ -275,23 +346,29 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="min-h-screen text-white font-sans relative overflow-hidden">
-      {/* Background */}
-      <div 
-        className="fixed inset-0"
-        style={{ 
-          backgroundImage: `url(${bgImage})`, 
-          backgroundSize: 'cover', 
-          backgroundPosition: 'center', 
-          backgroundAttachment: 'fixed' 
-        }}
-      />
-      <div className="fixed inset-0 bg-slate-950/90" />
+    // ⚠ `overflow-hidden` байж БОЛОХГҮЙ: `overflow: hidden` бүхий эцэг элемент
+    //   доторх `position: sticky`-г идэвхгүй болгодог (гүйлгэлтийн контейнер
+    //   болж хувирдаг тул) — `ScrollStory`-гийн наалдалт ажиллахгүй болно.
+    //   `overflow-x: clip` нь хэвтээ халилтыг ижилхэн таслах ч гүйлгэлтийн
+    //   контейнер ҮҮСГЭДЭГГҮЙ тул sticky хэвээр ажиллана.
+    <div className="min-h-screen text-white font-sans relative overflow-x-clip">
+      {/* Уншилтын явцын зурвас. Өргөн нь JS-гүйгээр, гүйлгэлтийн байрлалаас
+          шууд тооцогдоно (index.css → `.scroll-progress`). */}
+      <div className="scroll-progress" aria-hidden="true" />
+
+      {/* Хөдөлгөөнт дэвсгэр — хөвөгч гэрлийн толбууд, гүйх сүлжээ.
+          Гэрэл зураг бүдэг үлдэж, зөвхөн бүтэц өгнө. */}
+      <AnimatedBackground image={bgImage} />
+
+      {/* Курсорын араас дагах гэрэл. Агуулгын цаана байрлах тул текстийг
+          бүдгэрүүлэхгүй, зөвхөн дэвсгэрийг гэрэлтүүлнэ. */}
+      <CursorGlow />
 
       <div className="relative z-10">
         {/* Navbar */}
-        <nav className="sticky top-0 z-50 bg-slate-950/60 backdrop-blur-xl border-b border-white/5">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-20">
+        {/* Гүйлгэхэд цэс нягтарна — index.css → `.nav-condense` */}
+        <nav className="nav-condense sticky top-0 z-50 backdrop-blur-xl border-b bg-slate-950/60 border-white/5">
+          <div className="nav-condense-inner container-page flex items-center justify-between h-20 transition-[height]">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-violet-500/20">
                 <Icons.Briefcase size={26} className="text-white" />
@@ -325,138 +402,176 @@ export default function HomePage() {
         </nav>
 
         {/* Hero Section */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
-          <div className="text-center max-w-4xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8">
-              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-              <span className="text-sm text-slate-300">#1 Монголын Ажил Тохиргох Платформ</span>
-            </div>
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-tight mb-6">
-              Холбогдох. <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-indigo-400 to-cyan-400">
-                Ажиллах.
-              </span> <br />
-              Өсөх.
-            </h1>
-            <p className="text-xl text-slate-400 mb-4 leading-relaxed">
-              Монгол дахь цагийн ажилчин, оюутнуудыг ажил олгогчтой холбосон тэргүүн платформ. 
-              Таны цагтаа тохирсон хязгааргүй ажил олж эсвэл минутын дотор урлагтай ажилтан ол.
-            </p>
-            <p className="text-slate-500 mb-10 max-w-2xl mx-auto">
-              Хэрэв та анхны ажлыг хайж буй оюутан, нэмэгдэлтэй орлого хайж буй мэргэжилтэн эсвэл 
-              хязгааргүй ажилчдыг байгуулж буй ажил олгогч бол — MongolJob энэ бүгдийг хялбар, хурдан, найдвартай хийнэ.
-            </p>
+        <section className="container-page py-16 sm:py-24">
+          {/* Текстийг САНААТАЙГААР нарийн үлдээв — өргөн дэлгэцэнд догол мөр
+              бүтнээрээ сунавал нэг мөрөнд 120+ тэмдэгт багтаж, нүд мөрийн
+              эхлэлийг олоход хүндэрнэ. Доорх статистик харин бүтэн өргөнөөр. */}
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center">
+              {/* Hero нь эхний дэлгэцэнд байдаг тул гүйлгэлт хүлээхгүй —
+                  ачаалмагц дараалан орж ирнэ. */}
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8 animate-fade-up">
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                <span className="text-sm text-slate-300">#1 Монголын Ажил Тохиргох Платформ</span>
+              </div>
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-tight mb-6 animate-fade-up" style={{ animationDelay: '80ms' }}>
+                Холбогдох. <br />
+                {/* Дунд үг тасралтгүй солигдоно — хуудас хэзээ ч бүрэн
+                    зогсдоггүйн гол дохио. Градиент нь бас аажим урсана. */}
+                <CyclingText
+                  words={HERO_WORDS}
+                  className="gradient-flow inline-block text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-indigo-400 to-cyan-400"
+                />
+                <br />
+                Өсөх.
+              </h1>
+              <p className="text-xl text-slate-400 mb-4 leading-relaxed animate-fade-up" style={{ animationDelay: '160ms' }}>
+                Монгол дахь цагийн ажилчин, оюутнуудыг ажил олгогчтой холбосон тэргүүн платформ.
+                Таны цагтаа тохирсон хязгааргүй ажил олж эсвэл минутын дотор урлагтай ажилтан ол.
+              </p>
+              <p className="text-slate-500 mb-10 animate-fade-up" style={{ animationDelay: '220ms' }}>
+                Хэрэв та анхны ажлыг хайж буй оюутан, нэмэгдэлтэй орлого хайж буй мэргэжилтэн эсвэл
+                хязгааргүй ажилчдыг байгуулж буй ажил олгогч бол — MongolJob энэ бүгдийг хялбар, хурдан, найдвартай хийнэ.
+              </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-              <button 
-                onClick={() => navigate('/register')}
-                className="w-full sm:w-auto px-10 py-4 rounded-full bg-gradient-to-r from-violet-600 to-violet-500 text-white font-bold text-lg hover:shadow-xl hover:shadow-violet-500/40 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center gap-3"
-              >
-                <Icons.Search size={24} />
-                Ажил Олох
-              </button>
-              <button 
-                onClick={() => navigate('/register')}
-                className="w-full sm:w-auto px-10 py-4 rounded-full bg-white/5 border border-white/10 text-white font-bold text-lg hover:bg-white/10 hover:border-white/20 transition-all flex items-center justify-center gap-3"
-              >
-                <Icons.Briefcase size={24} />
-                Ажил Зарлах
-              </button>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-up" style={{ animationDelay: '280ms' }}>
+                <button
+                  onClick={() => navigate('/register')}
+                  className="shine shine-auto w-full sm:w-auto px-10 py-4 rounded-full bg-gradient-to-r from-violet-600 to-violet-500 text-white font-bold text-lg hover:shadow-xl hover:shadow-violet-500/40 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center gap-3"
+                >
+                  <Icons.Search size={24} />
+                  Ажил Олох
+                </button>
+                <button
+                  onClick={() => navigate('/register')}
+                  className="w-full sm:w-auto px-10 py-4 rounded-full bg-white/5 border border-white/10 text-white font-bold text-lg hover:bg-white/10 hover:border-white/20 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3"
+                >
+                  <Icons.Briefcase size={24} />
+                  Ажил Зарлах
+                </button>
+              </div>
             </div>
 
-            {/* Hero Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12">
+            {/* Hero Stats — текстээс өргөн, хэсгийн бүтэн өргөнийг эзэлнэ.
+                Сөрөг margin нь эцгийн `max-w-4xl` хязгаараас гаргаж байна. */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-16 lg:-mx-[8vw] xl:-mx-[12vw]">
               {[
                 { value: "12K+", label: "Идэвхит Ажил Хайгч" },
                 { value: "3.5K+", label: "Зарлагдсан Ажил" },
                 { value: "850+", label: "Ажил Олгогч" },
                 { value: "95%", label: "Тохиргооны Хувь" },
               ].map((stat, i) => (
-                <div 
-                  key={i} 
-                  className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-all"
+                <div
+                  key={i}
+                  className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 hover:bg-white/10 hover-lift animate-fade-up"
+                  style={{ animationDelay: `${360 + i * 70}ms` }}
                 >
-                  <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-blue-400 mb-1">
-                    {stat.value}
+                  {/* Хөвөлтийг ДОТООД элемент дээр өгсөн нь санаатай: гадна нь
+                      орж ирэх анимацтай тул нэг элементэд хоёр `animation`
+                      өгвөл сүүлийнх нь эхнийхийг дардаг. Мөн карт бүр өөр
+                      сааталтай тул дөрвүүлээ нэг зэрэг биш, долгион мэт хөдөлнө. */}
+                  <div className="animate-float" style={{ animationDelay: `${i * 900}ms` }}>
+                    <StatCounter
+                      value={stat.value}
+                      className="block text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-blue-400 mb-1"
+                    />
+                    <div className="text-sm text-slate-400">{stat.label}</div>
                   </div>
-                  <div className="text-sm text-slate-400">{stat.label}</div>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Popular Jobs Section */}
-        <section id="popular-jobs" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl sm:text-5xl font-extrabold mb-4">
-              Алдартай <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-cyan-400">Цагийн Ажил</span>
-            </h2>
-            <p className="text-slate-400 max-w-2xl mx-auto text-lg">
-              Монгол дахь хамгийн их хүссэн цагийн ажлуудыг олж мэдээрэй. Ангилалаар хайж, урлаг, цагаа тохирсон ажил олоорой.
-            </p>
-          </div>
+        {/* Хоёр эсрэг чиглэлийн зурвас — гүйлгэхгүй зогсож байсан ч хуудас
+            хөдөлгөөнтэй хэвээр. Хулгана дээр нь ирэхэд зогсоно.
+            `ScrollSkew` нь гүйлгэх хурднаас хамаарч бага зэрэг хазайлгана. */}
+        <ScrollSkew className="py-10 border-y border-white/5 bg-white/[0.02] space-y-4">
+          <Marquee speed={44}>
+            {MARQUEE_ITEMS.map(item => (
+              <span
+                key={item}
+                className="text-lg sm:text-xl font-semibold text-slate-500 whitespace-nowrap"
+              >
+                {item}
+              </span>
+            ))}
+          </Marquee>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {categories.map((category, index) => {
-              const [localMouse, setLocalMouse] = useState({ x: 50, y: 50 });
-              
-              const handleCardMouseMove = (e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                setLocalMouse({
-                  x: ((e.clientX - rect.left) / rect.width) * 100,
-                  y: ((e.clientY - rect.top) / rect.height) * 100
-                });
-              };
+          {/* Хоёр дахь мөр эсрэг тийш — хөндлөн хөдөлгөөн нь илүү мэдрэгдэнэ */}
+          <Marquee speed={58} reverse>
+            {MARQUEE_ITEMS_ALT.map(item => (
+              <span
+                key={item}
+                className="text-base sm:text-lg font-medium text-slate-600 whitespace-nowrap"
+              >
+                {item}
+              </span>
+            ))}
+          </Marquee>
+        </ScrollSkew>
 
-              return (
-                <div 
-                  key={index}
-                  onMouseMove={handleCardMouseMove}
-                  className="group relative overflow-hidden bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:border-violet-500/30 transition-all cursor-pointer"
-                >
-                  {/* Dynamic gradient overlay that follows cursor */}
-                  <div 
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                    style={{
-                      background: `radial-gradient(circle at ${localMouse.x}% ${localMouse.y}%, ${category.hoverGradient || 'rgba(139, 92, 246, 0.3)'} 0%, transparent 60%)`,
-                    }}
-                  />
-                  
-                  <div className="relative z-10">
-                    <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${category.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
-                      {category.icon}
-                    </div>
-                    <h3 className="text-2xl font-bold mb-3 group-hover:text-violet-300 transition-colors">
-                      {category.title}
-                    </h3>
-                    <p className="text-slate-400 mb-6">
-                      {category.desc}
-                    </p>
-                    <div className="flex items-center gap-2 text-violet-400 font-semibold group-hover:text-violet-300 transition-colors">
-                      Ажлыг Хайх
-                      <Icons.ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
+        {/* Гүйлгэлтээр жолоодогддог түүх — доошоо гүйлгэхэд хэсэг наалдаж,
+            алхмууд солигдоно. Дээшээ гүйлгэвэл ухарна. */}
+        <Suspense fallback={<div className="h-screen" />}>
+          <ScrollStory />
+        </Suspense>
+
+        {/* Ангиллууд — доошоо гүйлгэхэд картууд ХАЖУУ тийш гүйнэ.
+            `Reveal` энд хэрэггүй: хэвтээ хөдөлгөөн нь өөрөө нээлт болно. */}
+        <HorizontalScroller
+          id="popular-jobs"
+          // Хажуугийн зай нь `.container-page`-тэй ижил томьёотой — эхний
+          // карт бусад хэсгийн зүүн ирмэгтэй яг эгнэнэ.
+          className="px-[clamp(1rem,3.5vw,3rem)]"
+          header={
+            <div className="container-page w-full">
+              <SplitHeading className="text-4xl sm:text-5xl font-extrabold mb-4">
+                Алдартай <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-cyan-400">Цагийн Ажил</span>
+              </SplitHeading>
+              <p className="text-slate-400 max-w-2xl text-lg">
+                Монгол дахь хамгийн их хүссэн цагийн ажлуудыг олж мэдээрэй.
+                Доошоо гүйлгэхэд ангиллууд хажуу тийш гүйнэ.
+              </p>
+            </div>
+          }
+        >
+          {categories.map((category, index) => (
+            <SpotlightCard
+              key={index}
+              glow={category.hoverGradient}
+              className="w-[19rem] sm:w-[22rem] flex-shrink-0 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:border-violet-500/30 cursor-pointer"
+            >
+              <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${category.color} flex items-center justify-center mb-6 transition-transform duration-300 ease-spring group-hover:scale-110 group-hover:-rotate-3`}>
+                {category.icon}
+              </div>
+              <h3 className="text-2xl font-bold mb-3 group-hover:text-violet-300 transition-colors">
+                {category.title}
+              </h3>
+              <p className="text-slate-400 mb-6">
+                {category.desc}
+              </p>
+              <div className="flex items-center gap-2 text-violet-400 font-semibold group-hover:text-violet-300 transition-colors">
+                Ажлыг Хайх
+                <Icons.ArrowRight size={18} className="transition-transform duration-200 group-hover:translate-x-1" />
+              </div>
+            </SpotlightCard>
+          ))}
+        </HorizontalScroller>
 
         {/* For Employers Section */}
-        <section id="employers" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/20 mb-6">
+        <section id="employers" className="container-page py-16">
+          <Reveal className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/20 mb-6 animate-pop-in">
               <span className="text-violet-300 font-medium text-sm">Ажил Олгогчид</span>
             </div>
-            <h2 className="text-4xl sm:text-5xl font-extrabold mb-4">
+            <SplitHeading className="text-4xl sm:text-5xl font-extrabold mb-4">
               Ухаалаг Ажил Олгох. <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-cyan-400">Хурдан.</span>
-            </h2>
+            </SplitHeading>
             <p className="text-slate-400 max-w-2xl mx-auto text-lg">
               Кофееноос эхлээд Стартап хүртэл, олон Монгол ажил олгогч найдвартай цагийн ажилтан олохдоо MongolJob-ийг итгэдэг. Өөрийн ажлыг зарлаж, өнөөдөрөөс эхлэн хүсэлт хүлээн аваарай.
             </p>
-          </div>
+          </Reveal>
 
           {/* Feature Cards */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
@@ -485,77 +600,68 @@ export default function HomePage() {
                 icon: <Icons.CheckCircle size={28} />,
                 hoverGradient: "rgba(16, 185, 129, 0.3)"
               },
-            ].map((feature, index) => {
-              const [localMouse, setLocalMouse] = useState({ x: 50, y: 50 });
-              
-              const handleCardMouseMove = (e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                setLocalMouse({
-                  x: ((e.clientX - rect.left) / rect.width) * 100,
-                  y: ((e.clientY - rect.top) / rect.height) * 100
-                });
-              };
-
-              return (
-                <div 
-                  key={index} 
-                  onMouseMove={handleCardMouseMove}
-                  className="group relative overflow-hidden bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:border-violet-500/30 transition-all"
+            ].map((feature, index) => (
+              <Reveal key={index} delay={index * 70}>
+                <SpotlightCard
+                  glow={feature.hoverGradient}
+                  className="h-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:border-violet-500/30"
                 >
-                  <div 
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                    style={{
-                      background: `radial-gradient(circle at ${localMouse.x}% ${localMouse.y}%, ${feature.hoverGradient} 0%, transparent 60%)`,
-                    }}
-                  />
-
-                  <div className="relative z-10">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500/20 to-indigo-500/20 flex items-center justify-center mb-6 text-violet-400 group-hover:scale-110 transition-transform">
-                      {feature.icon}
-                    </div>
-                    <h3 className="text-xl font-bold mb-2 text-white group-hover:text-violet-300 transition-colors">{feature.title}</h3>
-                    <p className="text-slate-400 text-sm leading-relaxed">{feature.desc}</p>
+                  {/* Дүрс аажим хөвнө. Карт бүрд өөр саатал өгснөөр дөрвүүлээ
+                      нэг зэрэг биш, долгион мэт хөдөлнө. */}
+                  <div
+                    className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500/20 to-indigo-500/20 flex items-center justify-center mb-6 text-violet-400 transition-transform duration-300 ease-spring group-hover:scale-110 animate-float"
+                    style={{ animationDelay: `${index * 800}ms` }}
+                  >
+                    {feature.icon}
                   </div>
-                </div>
-              );
-            })}
+                  <h3 className="text-xl font-bold mb-2 text-white group-hover:text-violet-300 transition-colors">{feature.title}</h3>
+                  <p className="text-slate-400 text-sm leading-relaxed">{feature.desc}</p>
+                </SpotlightCard>
+              </Reveal>
+            ))}
           </div>
 
           {/* CTA Block */}
           <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-10 grid md:grid-cols-2 gap-10 items-center">
-            <div>
+            <Reveal>
               <h3 className="text-2xl font-bold mb-4 text-white">Дараагийн сайн ажилтан олох бэлэн байна уу?</h3>
               <p className="text-slate-400 mb-6">Аль хэт 850-аас олон ажил олгогч MongolJob-ийг ашиглаж байгаа. Хязгааргүй ажлыг зарлах, хүсэлтийг удирдах, ажилтантай холбоо барих — бүгдийг нэг дор.</p>
+
+              {/* Давуу талууд нэг нэгээр нь «тэмдэглэгдэнэ» */}
               <ul className="space-y-3 mb-8">
-                {[
-                  "Анхны ажлыг үнэгүй зарлах",
-                  "Хүсэлттэй шууд мессеж",
-                  "Хүсэлт засах самбар",
-                  "Эрхэм дэмжлэг"
-                ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 text-slate-300">
-                    <div className="w-5 h-5 rounded-full bg-cyan-500/20 flex items-center justify-center flex-shrink-0">
+                {CTA_BENEFITS.map((item, i) => (
+                  <Reveal
+                    key={item}
+                    as="li"
+                    delay={120 + i * 90}
+                    className="flex items-center gap-3 text-slate-300"
+                  >
+                    <span className="w-5 h-5 rounded-full bg-cyan-500/20 flex items-center justify-center flex-shrink-0">
                       <Icons.Check size={14} className="text-cyan-400" />
-                    </div>
+                    </span>
                     <span className="text-sm">{item}</span>
-                  </li>
+                  </Reveal>
                 ))}
               </ul>
-              <button 
+
+              <button
                 onClick={() => navigate('/register')}
-                className="px-8 py-4 rounded-full bg-gradient-to-r from-violet-600 to-violet-500 text-white font-bold text-lg hover:shadow-xl hover:shadow-violet-500/40 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center gap-3"
+                className="shine px-8 py-4 rounded-full bg-gradient-to-r from-violet-600 to-violet-500 text-white font-bold text-lg hover:shadow-xl hover:shadow-violet-500/40 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center gap-3"
               >
                 <Icons.Briefcase size={22} />
                 Ажил Зарлах — Үнэгүй
               </button>
-            </div>
+            </Reveal>
 
-            {/* Example Job Listings */}
+            {/* Жишээ зарууд */}
             <div className="relative">
-              {/* Decorative background */}
-              <div className="absolute -top-4 -right-4 w-40 h-40 bg-violet-500/20 rounded-full blur-3xl" />
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4 relative z-10">
-                {/* Example company */}
+              {/* Чимэглэлийн гэрэл — аажим хөвнө */}
+              <div className="absolute -top-4 -right-4 w-40 h-40 bg-violet-500/20 rounded-full blur-3xl animate-float" />
+
+              <Reveal
+                animation="animate-slide-in-right"
+                className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4 relative z-10"
+              >
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500" />
                   <div>
@@ -564,86 +670,58 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                {/* Example job 1 */}
-                <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h5 className="font-semibold text-sm text-white">Цагийн UI Дизайнер</h5>
-                    <span className="px-3 py-1 rounded-full bg-cyan-500/10 text-xs font-medium text-cyan-400 border border-cyan-500/20">24 хүсэлт</span>
+                {/* Гурван зар өмнө нь ГУРВАН УДАА хуулж бичсэн байсныг өгөгдөл
+                    болгож нэгтгэв — нэмэх, засахад нэг л газар хүрэхэд болно. */}
+                {SAMPLE_JOBS.map((job, i) => (
+                  <div
+                    key={job.title}
+                    className="bg-white/5 border border-white/10 rounded-xl p-4 hover-lift animate-fade-up"
+                    style={{ animationDelay: `${260 + i * 110}ms` }}
+                  >
+                    <div className="flex items-center justify-between gap-3 mb-2">
+                      <h5 className="font-semibold text-sm text-white">{job.title}</h5>
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium border flex-shrink-0 ${job.tone}`}>
+                        <StatCounter value={String(job.applicants)} duration={900} /> хүсэлт
+                      </span>
+                    </div>
+                    <div className="text-xs text-slate-500">{job.location}</div>
                   </div>
-                  <div className="text-xs text-slate-500">Улаанбаатар • Алсаас OK</div>
-                </div>
-
-                {/* Example job 2 */}
-                <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h5 className="font-semibold text-sm text-white">Амар Наасны Маркетинг Туслах</h5>
-                    <span className="px-3 py-1 rounded-full bg-violet-500/10 text-xs font-medium text-violet-400 border border-violet-500/20">18 хүсэлт</span>
-                  </div>
-                  <div className="text-xs text-slate-500">Улаанбаатар • Дэлгэрэнгүй</div>
-                </div>
-
-                {/* Example job 3 */}
-                <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h5 className="font-semibold text-sm text-white">Хүргэлтийн Хамтран</h5>
-                    <span className="px-3 py-1 rounded-full bg-pink-500/10 text-xs font-medium text-pink-400 border border-pink-500/20">31 хүсэлт</span>
-                  </div>
-                  <div className="text-xs text-slate-500">Олон хот</div>
-                </div>
-              </div>
+                ))}
+              </Reveal>
             </div>
           </div>
         </section>
 
         {/* Statistics Section */}
-        <section id="stats" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/20 mb-6">
+        <section id="stats" className="container-page py-16">
+          <Reveal className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/20 mb-6 animate-pop-in">
               <span className="text-violet-300 font-medium text-sm">Мэдээлэл ба Үзүүлэлт</span>
             </div>
-            <h2 className="text-4xl sm:text-5xl font-extrabold mb-4">
+            <SplitHeading className="text-4xl sm:text-5xl font-extrabold mb-4">
               Монголын <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-cyan-400">Оюутны Ажлын Зах</span>
-            </h2>
+            </SplitHeading>
             <p className="text-slate-400 max-w-2xl mx-auto text-lg">
               Манай платформын бодит тоо нь Монгол оюутан, залуу мэргэжилтнуудын хязгааргүй ажилд эрчимтэй хүрэлцэх үүдийг харуулж байна.
             </p>
-          </div>
+          </Reveal>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            {stats.map((stat, i) => {
-              const [localMouse, setLocalMouse] = useState({ x: 50, y: 50 });
-              
-              const handleCardMouseMove = (e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                setLocalMouse({
-                  x: ((e.clientX - rect.left) / rect.width) * 100,
-                  y: ((e.clientY - rect.top) / rect.height) * 100
-                });
-              };
-
-              return (
-                <div 
-                  key={i}
-                  onMouseMove={handleCardMouseMove}
-                  className="group relative overflow-hidden bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 text-center hover:border-violet-500/30 transition-all"
+            {stats.map((stat, i) => (
+              <Reveal key={i} delay={i * 70}>
+                <SpotlightCard
+                  glow={stat.hoverGradient}
+                  className="h-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 text-center hover:border-violet-500/30"
                 >
-                  <div 
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                    style={{
-                      background: `radial-gradient(circle at ${localMouse.x}% ${localMouse.y}%, ${stat.hoverGradient} 0%, transparent 60%)`,
-                    }}
+                  <StatCounter
+                    value={stat.value}
+                    className={`block text-5xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r ${stat.color} transition-transform duration-300 ease-spring group-hover:scale-105`}
                   />
-
-                  <div className="relative z-10">
-                    <div className={`text-5xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r ${stat.color} group-hover:scale-105 transition-transform`}>
-                      {stat.value}
-                    </div>
-                    <div className="text-lg font-bold text-white mb-2">{stat.label}</div>
-                    <div className="text-slate-500 text-sm">{stat.desc}</div>
-                  </div>
-                </div>
-              );
-            })}
+                  <div className="text-lg font-bold text-white mb-2">{stat.label}</div>
+                  <div className="text-slate-500 text-sm">{stat.desc}</div>
+                </SpotlightCard>
+              </Reveal>
+            ))}
           </div>
 
           {/* Chart Section */}
@@ -658,11 +736,16 @@ export default function HomePage() {
                     <div key={i}>
                       <div className="flex justify-between mb-2">
                         <span className="font-medium text-slate-200">{item.category}</span>
-                        <span className="font-bold text-white">{item.percent}%</span>
+                        <StatCounter value={`${item.percent}%`} className="font-bold text-white" />
                       </div>
                       <div className="h-3 bg-white/5 rounded-full overflow-hidden">
-                        <div 
-                          className={`h-full ${item.color} rounded-full transition-all duration-1000`}
+                        {/* Зурвас нь гүйлгэж ирэхэд зүүнээс баруун тийш ургана.
+                            `origin-left` байхгүй бол голоосоо тэлж, буруу
+                            харагдана. */}
+                        <Reveal
+                          animation="animate-grow-x"
+                          delay={i * 80}
+                          className={`h-full origin-left ${item.color} rounded-full`}
                           style={{ width: `${item.percent}%` }}
                         />
                       </div>
@@ -678,11 +761,20 @@ export default function HomePage() {
                 </div>
                 <div className="flex items-end justify-between gap-3 h-48 pt-8">
                   {[60, 75, 65, 85, 78, 90, 100].map((height, i) => (
-                    <div key={i} className="flex-1 flex flex-col items-center gap-2">
-                      <div 
-                        className="w-full bg-gradient-to-t from-violet-600 to-violet-400 rounded-t-lg transition-all"
-                        style={{ height: `${height}%` }}
-                      />
+                    <div key={i} className="flex-1 h-full flex flex-col items-center gap-2">
+                      {/* Хувиар өгсөн өндөр нь ЭЦЭГ элементийн өндрөөс
+                          тооцогддог тул баганад зориулж тодорхой өндөртэй
+                          талбай (`flex-1`) заавал хэрэгтэй — эс бөгөөс
+                          `height: 60%` нь auto өндрөөс тооцогдож 0 болно. */}
+                      <div className="flex-1 w-full flex items-end">
+                        {/* `origin-bottom` нь баганыг доороос дээш ургуулна */}
+                        <Reveal
+                          animation="animate-grow-y"
+                          delay={i * 70}
+                          className="w-full origin-bottom bg-gradient-to-t from-violet-600 to-violet-400 rounded-t-lg"
+                          style={{ height: `${height}%` }}
+                        />
+                      </div>
                       <span className="text-xs text-slate-500">
                         {['1-р сар', '2-р сар', '3-р сар', '4-р сар', '5-р сар', '6-р сар', '7-р сар'][i]}
                       </span>
@@ -691,7 +783,11 @@ export default function HomePage() {
                 </div>
                 <div className="mt-6 flex justify-between items-center pt-4 border-t border-white/5">
                   <span className="text-slate-400">Нийт өсөлт</span>
-                  <span className="text-xl font-bold text-cyan-400">+73%</span>
+                  {/* «+» нь урд байгаа тул тусад нь бичив — `StatCounter` нь
+                      зөвхөн ард байх дагаварыг таньдаг. */}
+                  <span className="text-xl font-bold text-cyan-400">
+                    +<StatCounter value="73%" />
+                  </span>
                 </div>
               </div>
             </div>
@@ -699,73 +795,70 @@ export default function HomePage() {
         </section>
 
         {/* Contact Section */}
-        <section id="contact" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 pb-24">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 mb-6">
+        <section id="contact" className="container-page py-16 pb-24">
+          <Reveal className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 mb-6 animate-pop-in">
               <span className="text-cyan-300 font-medium text-sm">Холбоо барих</span>
             </div>
-            <h2 className="text-4xl sm:text-5xl font-extrabold mb-4">
+            <SplitHeading className="text-4xl sm:text-5xl font-extrabold mb-4">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-cyan-400">Мантай</span> Холбогдоорой
-            </h2>
+            </SplitHeading>
             <p className="text-slate-400 max-w-2xl mx-auto text-lg">
               Ажил зарлах эсвэл ажил олох талаар асуулт байна уу? Манай баг тусламж хийхийн тулд энд байна.
             </p>
-          </div>
+          </Reveal>
 
           <div className="grid md:grid-cols-5 gap-8">
             <div className="md:col-span-2 space-y-6">
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8">
+              <Reveal className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8">
                 <h3 className="text-xl font-bold mb-6">Холбоо барих мэдээлэл</h3>
-                
-                <div className="space-y-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-violet-500/20 flex items-center justify-center flex-shrink-0">
-                      <Icons.Mail className="text-violet-400" size={24} />
-                    </div>
-                    <div>
-                      <div className="font-medium mb-1">И-мэйл</div>
-                      <div className="text-slate-400">hello@mongoljob.mn</div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-violet-500/20 flex items-center justify-center flex-shrink-0">
-                      <Icons.Phone className="text-violet-400" size={24} />
-                    </div>
-                    <div>
-                      <div className="font-medium mb-1">Утас</div>
-                      <div className="text-slate-400">+976 9911-2233</div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-violet-500/20 flex items-center justify-center flex-shrink-0">
-                      <Icons.MapPin className="text-violet-400" size={24} />
-                    </div>
-                    <div>
-                      <div className="font-medium mb-1">Офис</div>
-                      <div className="text-slate-400">Чингисын Чөлөө 15, Сүхбаатар дүүрэг<br />Улаанбаатар 14250, Монгол</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
 
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8">
+                {/* Гурван мөр өмнө нь бараг ижилхэн хуулагдсан байсныг өгөгдөл
+                    болгож нэгтгэв. Мөр бүр дараалан орж ирнэ. */}
+                <div className="space-y-6">
+                  {CONTACT_ROWS.map((row, i) => {
+                    const Icon = Icons[row.icon]
+                    return (
+                      <Reveal
+                        key={row.label}
+                        delay={140 + i * 110}
+                        className="group flex items-start gap-4"
+                      >
+                        <span className="w-12 h-12 rounded-xl bg-violet-500/20 flex items-center justify-center flex-shrink-0 transition-transform duration-200 ease-spring group-hover:scale-110">
+                          <Icon className="text-violet-400" size={24} />
+                        </span>
+                        <div>
+                          <div className="font-medium mb-1">{row.label}</div>
+                          <div className="text-slate-400">{row.value}</div>
+                        </div>
+                      </Reveal>
+                    )
+                  })}
+                </div>
+              </Reveal>
+
+              <Reveal delay={160} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8">
                 <h3 className="text-xl font-bold mb-6">Дагах</h3>
                 <div className="flex gap-3">
-                  {[1,2,3,4].map((i) => (
-                    <div key={i} className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-violet-500/30 transition-all cursor-pointer">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div
+                      key={i}
+                      className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-violet-500/30 transition-all cursor-pointer hover-lift press animate-pop-in"
+                      style={{ animationDelay: `${260 + i * 80}ms` }}
+                    >
                       <Icons.Globe className="text-slate-400" size={20} />
                     </div>
                   ))}
                 </div>
-              </div>
+              </Reveal>
             </div>
 
             <div className="md:col-span-3">
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-10">
-                <form className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-6">
+              <Reveal delay={120} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-10">
+                {/* Талбарууд дараалан гарч ирнэ — `stagger` класс нь хүүхэд
+                    бүрд nth-child-ээр саатал өгнө (index.css). */}
+                <form className="space-y-6 stagger">
+                  <div className="grid md:grid-cols-2 gap-6 animate-fade-up">
                     <div>
                       <label className="block text-slate-300 font-medium mb-2">Бүтэн Нэр</label>
                       <input 
@@ -784,7 +877,7 @@ export default function HomePage() {
                     </div>
                   </div>
                   
-                  <div>
+                  <div className="animate-fade-up">
                     <label className="block text-slate-300 font-medium mb-2">Мессеж</label>
                     <textarea 
                       placeholder="Бид таныг хэрхэн тусалж вэ?" 
@@ -793,15 +886,16 @@ export default function HomePage() {
                     />
                   </div>
                   
-                  <button 
+                  <button
                     type="submit"
-                    className="w-full md:w-auto px-10 py-4 rounded-xl bg-gradient-to-r from-violet-600 to-violet-500 text-white font-bold text-lg hover:shadow-xl hover:shadow-violet-500/40 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center gap-3"
+                    className="shine group animate-fade-up w-full md:w-auto px-10 py-4 rounded-xl bg-gradient-to-r from-violet-600 to-violet-500 text-white font-bold text-lg hover:shadow-xl hover:shadow-violet-500/40 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center gap-3"
                   >
-                    <Icons.Send size={22} />
+                    {/* Илгээх сум нь хүрэхэд урагш хөдөлнө */}
+                    <Icons.Send size={22} className="transition-transform duration-200 group-hover:translate-x-1 group-hover:-translate-y-0.5" />
                     Мессеж Илгээх
                   </button>
                 </form>
-              </div>
+              </Reveal>
             </div>
           </div>
         </section>

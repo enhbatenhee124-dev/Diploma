@@ -115,14 +115,18 @@ export default function MyApplications() {
       </div>
 
       <div className="space-y-4">
-        {userApps.map(app => {
+        {userApps.map((app, i) => {
           const shift = getShift(app.shiftId)
           const employer = getEmployer(shift?.employerId)
           const employerProfile = getEmployerProfile(shift?.employerId)
           const existingReview = getReview(app.id, user?.id)
           const canRate = app.status === 'completed' && !existingReview
           return (
-            <div key={app.id} className="emp-card animate-slide-up">
+            <div
+              key={app.id}
+              className="emp-card animate-fade-up hover-lift"
+              style={{ animationDelay: `${Math.min(i, 8) * 45}ms` }}
+            >
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
                               <div className="flex flex-wrap items-center gap-3 mb-1">

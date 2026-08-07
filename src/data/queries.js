@@ -252,5 +252,13 @@ export const requestInvoice = () => apiPost('/billing/invoices')
 
 export const checkInvoice = invoiceId => apiPost(`/billing/invoices/${invoiceId}/check`)
 
+/** Stripe-ийн төлбөрийн хуудас үүсгэнэ (туршилтын горим). */
+export const createStripePayment = invoiceId =>
+  apiPost(`/billing/invoices/${invoiceId}/stripe`)
+
+/** Төлбөрийн хуудаснаас буцаж ирээд баталгаажуулна. */
+export const checkStripePayment = (invoiceId, sessionId) =>
+  apiPost(`/billing/invoices/${invoiceId}/stripe/check`, { sessionId })
+
 export const confirmInvoice = (invoiceId, note) =>
   apiPost(`/billing/invoices/${invoiceId}/confirm`, { note })

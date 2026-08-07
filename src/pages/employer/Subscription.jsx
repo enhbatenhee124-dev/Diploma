@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { format } from 'date-fns'
 import { CreditCard, Copy, Check, Building2, Hash, Info, RefreshCw, QrCode, Smartphone } from 'lucide-react'
 import { useSubscription, usePlan, useInvoices, combine } from '../../hooks/useData'
-import { requestInvoice, checkInvoice } from '../../data/queries'
+import {
+  requestInvoice, checkInvoice, createStripePayment, checkStripePayment,
+} from '../../data/queries'
 import { useNotification } from '../../hooks/useNotification'
 import { Loading, ErrorBox } from '../../components/States'
 import { BANK_ACCOUNT, paymentReference, SUBSCRIPTION_STATUS, INVOICE_STATUS } from '../../config/billing'
@@ -49,6 +51,7 @@ export default function Subscription() {
   const { loading, error, refreshAll } = combine(subQ, planQ, invQ)
   const [creating, setCreating] = useState(false)
   const [checking, setChecking] = useState(false)
+  const [paying, setPaying] = useState(false)
 
   const sub = subQ.data
   const plan = planQ.data
@@ -93,6 +96,75 @@ export default function Subscription() {
         description: 'Банкнаас баталгаажихад 1-2 минут шаардаж болно. Дахин шалгана уу.',
       })
     }
+  }
+
+  // ------------------------------
+  // Stripe-ээс буцаж ирэх
+  // ------------------------------
+  // Локал орчинд webhook нь `stripe listen`-гүйгээр ирдэггүй тул үзүүлэн
+  // дундуур тасрахгүйн тулд буцаж ирмэгц сешнийг шууд шалгана. Webhook ч
+  // ирсэн бол давхардахгүй — сервер тал нь `status = 'pending'` үед л
+  // шинэчилдэг.
+  const stripeHandled = useRef(false)
+
+  useEffect(() => {
+    if (stripeHandled.current) return
+
+    const params = new URLSearchParams(window.location.search)
+    const state = params.get('stripe')
+    if (!state) return
+
+    stripeHandled.current = true
+    // Хаягийг цэвэрлэнэ — сэргээхэд дахин ажиллахгүй
+    window.history.replaceState({}, '', window.location.pathname)
+
+    if (state === 'cancel') {
+      notify({ type: 'info', message: 'Төлбөрийг цуцаллаа' })
+      return
+    }
+
+    const sessionId = params.get('session_id')
+    const invoiceId = pending?.id
+    if (state !== 'success' || !sessionId || !invoiceId) return
+
+    checkStripePayment(invoiceId, sessionId).then(result => {
+      if (result.ok && result.data?.paid) {
+        notify({
+          type: 'success',
+          message: 'Төлбөр баталгаажлаа',
+          description: 'Захиалга сунгагдлаа.',
+        })
+        refreshAll()
+      } else {
+        notify({
+          type: 'info',
+          message: 'Төлбөр хараахан баталгаажаагүй байна',
+          description: 'Хэдэн секундын дараа "Төлсөн, шалгана уу" товчийг дарна уу.',
+        })
+      }
+    })
+    // `pending` ачаалагдсаны дараа л ажиллах ёстой тул хамааралд оруулав
+  }, [pending, notify, refreshAll])
+
+  /** Stripe-ийн төлбөрийн хуудас руу шилжүүлнэ. */
+  const handleStripe = async () => {
+    if (!pending) return
+    setPaying(true)
+    const result = await createStripePayment(pending.id)
+    setPaying(false)
+
+    if (!result.ok) {
+      notify({ type: 'error', message: 'Картаар төлөх боломжгүй', description: result.error })
+      return
+    }
+    if (result.data?.alreadyPaid) {
+      notify({ type: 'info', message: 'Энэ нэхэмжлэл аль хэдийн төлөгдсөн' })
+      refreshAll()
+      return
+    }
+    // Stripe-ийн байршуулсан хуудас руу — картын мэдээлэл манай сервер рүү
+    // ХЭЗЭЭ Ч ирэхгүй тул PCI-ийн хамрах хүрээ хамгийн бага байна.
+    window.location.assign(result.data.url)
   }
 
   if (loading) return <Loading label="Захиалгын мэдээлэл ачаалж байна…" />
@@ -200,6 +272,29 @@ export default function Subscription() {
                 >
                   {checking ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                   {checking ? 'Шалгаж байна…' : 'Төлсөн, шалгана уу'}
+                </button>
+              </div>
+            )}
+
+            {/* Олон улсын карт — Stripe (туршилтын горим).
+                Сервер дээр түлхүүр тохируулаагүй бол товчийг ОГТ үзүүлэхгүй:
+                дарвал зөвхөн 503 алдаа гарах тул хэрэглэгчийг төөрөгдүүлнэ. */}
+            {plan?.stripeEnabled && (
+              <div className="p-4 rounded-xl bg-wrk-bg border border-wrk-border">
+                <p className="text-sm font-medium wrk-text-heading mb-1 flex items-center gap-2">
+                  <CreditCard className="w-4 h-4" />
+                  Картаар төлөх
+                </p>
+                <p className="text-sm wrk-text-body mb-3">
+                  Visa/Mastercard. Stripe-ийн хамгаалалттай хуудас руу шилжинэ.
+                </p>
+                <button
+                  onClick={handleStripe}
+                  disabled={paying}
+                  className="wrk-btn-secondary flex items-center gap-2 disabled:opacity-60"
+                >
+                  {paying ? <RefreshCw className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
+                  {paying ? 'Бэлтгэж байна…' : 'Картаар төлөх'}
                 </button>
               </div>
             )}

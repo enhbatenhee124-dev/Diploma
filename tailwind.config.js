@@ -75,19 +75,91 @@ export default {
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
       },
+      // ==================== ХӨДӨЛГӨӨНИЙ ТОКЕН ====================
+      // Бүх анимац ижил хэмнэлтэй байхын тулд эвдрэлтийн муруйг нэг дор
+      // тодорхойлов. `spring` нь бага зэрэг үсэрч буцдаг тул товч, тэмдэг
+      // зэрэг ЖИЖИГ элементэд; `smooth` нь хальтирч зогсдог тул хуудас,
+      // карт зэрэг ТОМ элементэд тохирно.
+      transitionTimingFunction: {
+        spring: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+        smooth: 'cubic-bezier(0.16, 1, 0.3, 1)',
+      },
       animation: {
-        'fade-in': 'fadeIn 0.3s ease-out',
-        'slide-up': 'slideUp 0.4s ease-out',
+        'fade-in': 'fadeIn 0.35s ease-out both',
+        'fade-up': 'fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both',
+        'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both',
+        'slide-in-right': 'slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) both',
+        'slide-out-right': 'slideOutRight 0.22s ease-in forwards',
+        'scale-in': 'scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both',
+        'pop-in': 'popIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both',
+        shimmer: 'shimmer 1.6s linear infinite',
+        float: 'float 6s ease-in-out infinite',
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'pulse-ring': 'pulseRing 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'spin-slow': 'spin 3s linear infinite',
+        // Диаграмын багана/зурвас 0-оос ургана. `width`/`height` биш
+        // `transform`-оор томордог тул хөтөч layout дахин тооцохгүй.
+        'grow-x': 'growX 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
+        'grow-y': 'growY 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
+        // Toast-ийн үлдсэн хугацааг харуулах зурвас. Үргэлжлэх хугацааг нь
+        // JS-ээс `animationDuration`-аар өгнө.
+        countdown: 'countdown linear forwards',
       },
       keyframes: {
         fadeIn: {
           '0%': { opacity: '0' },
           '100%': { opacity: '1' },
         },
+        fadeUp: {
+          '0%': { opacity: '0', transform: 'translateY(18px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
         slideUp: {
           '0%': { opacity: '0', transform: 'translateY(10px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        slideInRight: {
+          '0%': { opacity: '0', transform: 'translateX(24px) scale(0.97)' },
+          '100%': { opacity: '1', transform: 'translateX(0) scale(1)' },
+        },
+        slideOutRight: {
+          '0%': { opacity: '1', transform: 'translateX(0) scale(1)' },
+          '100%': { opacity: '0', transform: 'translateX(24px) scale(0.97)' },
+        },
+        scaleIn: {
+          '0%': { opacity: '0', transform: 'scale(0.94)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        popIn: {
+          '0%': { opacity: '0', transform: 'scale(0.7)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        // Skeleton дээгүүр гүйх гэрлийн туяа
+        shimmer: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-8px)' },
+        },
+        // Ачаалалтын тэмдгийн эргэн тойрны тэлэх цагираг
+        pulseRing: {
+          '0%': { transform: 'scale(0.9)', opacity: '0.7' },
+          '70%': { transform: 'scale(1.6)', opacity: '0' },
+          '100%': { transform: 'scale(1.6)', opacity: '0' },
+        },
+        countdown: {
+          '0%': { transform: 'scaleX(1)' },
+          '100%': { transform: 'scaleX(0)' },
+        },
+        growX: {
+          '0%': { transform: 'scaleX(0)' },
+          '100%': { transform: 'scaleX(1)' },
+        },
+        growY: {
+          '0%': { transform: 'scaleY(0)' },
+          '100%': { transform: 'scaleY(1)' },
         },
       },
     },

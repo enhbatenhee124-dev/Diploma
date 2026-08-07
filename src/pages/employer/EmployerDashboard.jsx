@@ -15,6 +15,7 @@ import { getBadges, shiftHours, EMPTY_STATS } from '../../utils/gamification'
 import { ProfileHero, BadgeGrid, RankingCard, resolveLook } from '../../components/Gamification'
 import { formatCurrency } from '../../utils/helpers'
 import { Loading, ErrorBox } from '../../components/States'
+import { CountUp, Stagger } from '../../components/Motion'
 
 function greeting() {
   const h = new Date().getHours()
@@ -147,21 +148,27 @@ export default function EmployerDashboard() {
       )}
 
       {/* Тоон үзүүлэлт */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <Stagger className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {tiles.map(tile => (
           <Link
             key={tile.label}
             to={tile.to}
-            className="wrk-card-sm text-center hover:scale-[1.03] transition-transform"
+            className="wrk-card-sm text-center group animate-fade-up hover-lift press"
           >
-            <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center">
+            <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center transition-transform duration-200 ease-spring group-hover:scale-110">
               <tile.Icon className="w-5 h-5 text-white" />
             </div>
-            <p className="text-2xl font-extrabold wrk-text-heading">{tile.value}</p>
+            {/* Үнэлгээ нь «—» эсвэл 4.8 гэх мэт бутархай тул тоо байвал л
+                өсгөж тоолно; эс бөгөөс хэвээр нь харуулна. */}
+            <p className="text-2xl font-extrabold wrk-text-heading">
+              {Number.isInteger(tile.value)
+                ? <CountUp value={tile.value} />
+                : tile.value}
+            </p>
             <p className="text-xs wrk-text-body">{tile.label}</p>
           </Link>
         ))}
-      </div>
+      </Stagger>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">

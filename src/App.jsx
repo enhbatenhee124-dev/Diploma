@@ -1,6 +1,8 @@
 import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { Briefcase } from 'lucide-react'
 import { useAuth } from './hooks/useAuth'
+import { roleHome } from './utils/roleHome'
 
 // Layouts — бүх хуудсанд хэрэгтэй тул шууд ачаална
 import MainLayout from './layouts/MainLayout'
@@ -15,6 +17,8 @@ import RegisterPage from './pages/RegisterPage'
 
 const TermsPage = lazy(() => import('./pages/TermsPage'))
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
+const AuthCallback = lazy(() => import('./pages/AuthCallback'))
+const ChooseRolePage = lazy(() => import('./pages/ChooseRolePage'))
 
 // ============================================================
 // Дүрээр нь хуваасан ачаалалт (NFR-1)
@@ -50,10 +54,23 @@ const AdminAnalytics = lazy(() => import('./pages/admin/AdminAnalytics'))
 const Payments = lazy(() => import('./pages/admin/Payments'))
 const Moderation = lazy(() => import('./pages/admin/Moderation'))
 
+/**
+ * Хуудас татагдаж байх үеийн дэлгэц.
+ *
+ * Энэ нь аппын ХАМГИЙН ЭХЭНД харагддаг зүйл тул зүгээр нэг эргэлдэх дугуй
+ * биш, брэндийн тэмдэгтэй байлгав: цүнхний дүрс амьсгалж, гадуур нь
+ * цагираг тэлэн бүдгэрнэ.
+ */
 function Spinner() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-500" />
+    <div className="min-h-screen flex flex-col items-center justify-center gap-5 bg-slate-950">
+      <div className="relative flex items-center justify-center">
+        <span className="absolute w-16 h-16 rounded-2xl bg-violet-500/25 animate-pulse-ring" />
+        <span className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center shadow-xl shadow-violet-500/30 animate-float">
+          <Briefcase className="w-8 h-8 text-white" />
+        </span>
+      </div>
+      <p className="text-sm text-slate-400 animate-pulse">Ачаалж байна…</p>
     </div>
   )
 }
@@ -65,32 +82,67 @@ function RoleGuard({ role, children }) {
   if (loading) return <Spinner />
 
   if (!user) return <Navigate to="/login" replace />
+
+  // Google-ээр анх нэвтэрсэн хүнд дүр нь автоматаар оноогдсон байдаг тул
+  // өөрөөр нь сонгуулах хүртэл цааш нэвтрүүлэхгүй.
+  if (!user.roleConfirmed) return <Navigate to="/choose-role" replace />
+
   if (user.role !== role) return <Navigate to="/" replace />
   return children
+}
+
+/** Дүрээ сонгосон хүнийг сонголтын дэлгэц рүү дахин оруулахгүй. */
+function ChooseRoleGuard() {
+  const { user, loading } = useAuth()
+
+  if (loading) return <Spinner />
+  if (!user) return <Navigate to="/login" replace />
+  if (user.roleConfirmed) return <Navigate to={`/${user.role}/dashboard`} replace />
+  return <ChooseRolePage />
+}
+
+/**
+ * Нүүр хуудас нь НЭВТРЭЭГҮЙ зочдод зориулсан танилцуулга. Нэвтэрсэн хүнийг
+ * энд үлдээвэл "Нэвтрэх" товч харагдсаар байх тул тэрээр нэвтэрсэн атлаа
+ * нэвтрээгүй мэт бодож дахин дардаг.
+ *
+ * `loading` үед нүүр хуудсыг харуулна — зочин бол илүү түгээмэл тохиолдол
+ * бөгөөд тэдэнд эргэлдэх дугуй үзүүлэх нь дэмий. Нэвтэрсэн хүн нэг агшин
+ * хараад шилжинэ.
+ */
+function HomeRoute() {
+  const { user, loading } = useAuth()
+
+  if (loading || !user) return <HomePage />
+
+  // Дүр нь танигдахгүй бол хаашаа ч явуулахгүй — эс тэгвээс `/` → `/`
+  // гэсэн төгсгөлгүй чиглүүлэлт үүснэ.
+  const home = roleHome(user)
+  return home === '/' ? <HomePage /> : <Navigate to={home} replace />
 }
 
 export default function App() {
   const { user, loading } = useAuth()
 
-  const getDefaultRedirect = () => {
-    if (loading || !user) return '/'
-    switch (user.role) {
-      case 'employee': return '/employee/dashboard'
-      case 'employer': return '/employer/dashboard'
-      case 'admin': return '/admin/dashboard'
-      default: return '/'
-    }
-  }
+  // Сешн уншигдтал нүүр хуудсанд үлдээнэ; дараа нь дүрд нь тохирсон газар.
+  const getDefaultRedirect = () => (loading || !user ? '/' : roleHome(user))
 
   return (
     <Suspense fallback={<Spinner />}>
       <Routes>
         {/* Нийтийн хуудсууд — өөрсдийн UI-тай */}
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<HomeRoute />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+        {/* Google-ээр нэвтэрсний дараах буцах цэг — дүрд нь тохирсон
+            хянах самбар руу аваачна */}
+        <Route path="/auth/callback" element={<AuthCallback />} />
+
+        {/* Нэвтэрсэн ч дүрээ сонгоогүй хүний нэг удаагийн алхам */}
+        <Route path="/choose-role" element={<ChooseRoleGuard />} />
 
         {/* MainLayout шаардлагатай нийтийн хуудсууд */}
         <Route element={<MainLayout />}>

@@ -6,6 +6,7 @@ import { useShifts, useApplications, useProfilesWithContact, useEmployerQueue, c
 import { verifyEmployer, rejectEmployer } from '../../data/queries'
 import { useNotification } from '../../hooks/useNotification'
 import { Loading, ErrorBox } from '../../components/States'
+import { CountUp, Stagger } from '../../components/Motion'
 
 const roleLabels = {
   employee: 'Ажил хайгч',
@@ -89,24 +90,24 @@ export default function AdminDashboard() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <Stagger className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map(stat => {
           const Icon = stat.icon
           return (
-            <div key={stat.label} className="adm-card">
+            <div key={stat.label} className="adm-card group animate-fade-up hover-lift">
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${stat.color}`}>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-transform duration-200 ease-spring group-hover:scale-110 ${stat.color}`}>
                   <Icon className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold adm-text-heading">{stat.value}</p>
+                  <CountUp value={stat.value} className="block text-2xl font-bold adm-text-heading" />
                   <p className="text-sm adm-text-body">{stat.label}</p>
                 </div>
               </div>
             </div>
           )
         })}
-      </div>
+      </Stagger>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Employer Verification Queue */}

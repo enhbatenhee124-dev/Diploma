@@ -3,6 +3,7 @@ import { LayoutDashboard, Briefcase, DollarSign, User, Users, Trophy, CreditCard
 import { useAuth } from '../hooks/useAuth'
 import RailSidebar from '../components/RailSidebar'
 import ChatDock from '../components/ChatDock'
+import { PageTransition } from '../components/Motion'
 
 const navItems = [
   { path: '/employer/dashboard', label: 'Хянах самбар', icon: LayoutDashboard },
@@ -32,7 +33,9 @@ export default function EmployerLayout() {
         <main className="flex-1 overflow-y-auto">
           {/* Доод талд чатын товчны зай үлдээнэ */}
           <div className="p-6 lg:p-8 pb-28">
-            <Outlet />
+            <PageTransition>
+              <Outlet />
+            </PageTransition>
           </div>
         </main>
       </div>

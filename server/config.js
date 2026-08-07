@@ -102,3 +102,45 @@ export const QPAY = {
 
 export const isQpayConfigured = () =>
   Boolean(QPAY.baseUrl && QPAY.username && QPAY.password && QPAY.invoiceCode)
+
+// ------------------------------
+// Stripe (олон улсын картын төлбөр)
+// ------------------------------
+// QPay нь Монголын банкуудыг хамардаг; Stripe нь гадаадын карт хүлээн авах,
+// мөн ТУРШИЛТЫН орчинд бүтэн төлбөрийн урсгалыг үзүүлэхэд хэрэглэгдэнэ.
+//
+// ⚠ ЗӨВХӨН туршилтын түлхүүр. `sk_live_` түлхүүрийг ЗОРИУДААР няцаана —
+//   энэ код нь бодит мөнгө хүлээн авахад шаардлагатай зүйлсийг (татвар,
+//   буцаалт, маргаан, PCI-ийн бүрэн шаардлага) хангаагүй. Дипломын
+//   үзүүлэнд туршилтын горим хангалттай.
+const stripeKey = process.env.STRIPE_SECRET_KEY || ''
+const stripeIsLive = stripeKey.startsWith('sk_live_')
+
+if (stripeIsLive) {
+  console.error(
+    '\n❌ STRIPE_SECRET_KEY нь БОДИТ (sk_live_) түлхүүр байна.\n' +
+    '   Энэ төсөл зөвхөн туршилтын горимд ажиллана. Stripe Dashboard-ийн\n' +
+    '   "Test mode"-г асааж `sk_test_...` түлхүүрээ авна уу.\n'
+  )
+}
+
+export const STRIPE = {
+  // Live түлхүүрийг огт ачаалахгүй — санамсаргүй ч бодит гүйлгээ гарахгүй
+  secretKey: stripeIsLive ? '' : stripeKey,
+  webhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
+  // Stripe данс бүр өөр валют дэмждэг. МНТ дэмжигдээгүй бол `usd` зэрэг
+  // валют сонгоод доорх ханшаар хөрвүүлнэ.
+  currency: (process.env.STRIPE_CURRENCY || 'usd').toLowerCase(),
+  // 1 нэгж валют хэдэн төгрөг вэ. ⚠ Энэ бол ҮЗҮҮЛЭНГИЙН тогтмол ханш —
+  // бодит үйлчилгээнд ханшийн API-аас авах ёстой.
+  mntPerUnit: Number(process.env.STRIPE_MNT_PER_UNIT) || 3600,
+}
+
+// Stripe-ийн тэг-аравтын валютууд: дүнг зуугаар үржүүлэхгүй.
+// (docs.stripe.com/currencies → «Zero-decimal currencies»)
+export const STRIPE_ZERO_DECIMAL = new Set([
+  'bif', 'clp', 'djf', 'gnf', 'jpy', 'kmf', 'krw', 'mga',
+  'pyg', 'rwf', 'ugx', 'vnd', 'vuv', 'xaf', 'xof', 'xpf',
+])
+
+export const isStripeConfigured = () => Boolean(STRIPE.secretKey)

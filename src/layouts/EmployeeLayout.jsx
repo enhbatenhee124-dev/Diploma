@@ -5,6 +5,7 @@ import { useCosmetics } from '../hooks/useData'
 import { accentStyle } from '../utils/accents'
 import RailSidebar from '../components/RailSidebar'
 import ChatDock from '../components/ChatDock'
+import { PageTransition } from '../components/Motion'
 
 const navItems = [
   { path: '/employee/dashboard', label: 'Хянах самбар', icon: LayoutDashboard },
@@ -36,7 +37,10 @@ export default function EmployeeLayout() {
         <main className="flex-1 overflow-y-auto">
           {/* Доод талд чатын товчны зай үлдээнэ */}
           <div className="p-6 lg:p-8 pb-28">
-            <Outlet />
+            {/* Цэсээр шилжих бүрд агуулга зөөлөн орж ирнэ */}
+            <PageTransition>
+              <Outlet />
+            </PageTransition>
           </div>
         </main>
       </div>

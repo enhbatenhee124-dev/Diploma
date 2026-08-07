@@ -30,8 +30,12 @@ export default function SavedJobs() {
 
       {savedShifts.length > 0 ? (
         <div className="space-y-4">
-          {savedShifts.map(job => (
-            <div key={job.id} className="emp-card animate-slide-up">
+          {savedShifts.map((job, i) => (
+            <div
+              key={job.id}
+              className="emp-card animate-fade-up hover-lift"
+              style={{ animationDelay: `${Math.min(i, 8) * 45}ms` }}
+            >
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">

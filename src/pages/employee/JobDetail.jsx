@@ -14,6 +14,7 @@ import { WEB_ORIGIN } from '../../config/runtime'
 import ReportButton from '../../components/ReportButton'
 import { levelAdvice, shiftHours, EMPTY_STATS } from '../../utils/gamification'
 import { Loading, ErrorBox } from '../../components/States'
+import { SHARED_JOB_CARD } from '../../hooks/useViewTransition'
 
 const StarRating = ({ rating, size = "w-4 h-4" }) => {
   return (
@@ -116,7 +117,11 @@ export default function JobDetail() {
         <ArrowLeft className="w-4 h-4" /> Буцах
       </Link>
 
-      <div className="emp-card mb-6">
+      {/* Жагсаалтаас дарсан картын `view-transition-name` энэ хайрцагтай
+          таарна — хөтөч хоёрыг холбож, карт нь энэ толгой хэсэг БОЛЖ
+          томордог мэт харагдана. Дэмждэггүй хөтөч дээр энэ шинж чанар
+          үл тоомсорлогдоно. */}
+      <div className="emp-card mb-6" style={{ viewTransitionName: SHARED_JOB_CARD }}>
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
           <div className="flex items-start gap-4">
             <div className="w-16 h-16 rounded-xl bg-emp-accent/20 flex items-center justify-center flex-shrink-0">

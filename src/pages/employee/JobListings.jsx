@@ -18,6 +18,9 @@ import { applyToShift, withdrawApplication } from '../../data/queries'
 import { levelAdvice, EMPTY_STATS } from '../../utils/gamification'
 import { Loading, ErrorBox } from '../../components/States'
 import SavedSearches from '../../components/SavedSearches'
+import {
+  useViewTransitionNavigate, supportsViewTransition, SHARED_JOB_CARD,
+} from '../../hooks/useViewTransition'
 
 const getSkillLabel = skill => {
   const map = {
@@ -70,6 +73,27 @@ export default function JobListings() {
   // Хуудас нь /jobs (нийтийн) болон /employee/jobs хоёуланд ашиглагддаг тул
   // дэлгэрэнгүйн холбоосыг байршилд нь тааруулна.
   const detailBase = user?.role === 'employee' ? '/employee/jobs' : '/jobs'
+
+  const vtNavigate = useViewTransitionNavigate()
+
+  /**
+   * Дэлгэрэнгүй рүү шилжинэ — дарагдсан картыг дэлгэрэнгүй хуудасны толгой
+   * хэсэгтэй холбож хөдөлгөнө.
+   *
+   * Нэрийг React-ийн төлөвөөр бус, DOM дээр ШУУД тавьж байгаа нь санаатай:
+   * хөтөч `startViewTransition` дуудагдмагц зургаа авдаг тул нэр нь тэр
+   * агшинд аль хэдийн байх ёстой. `setState` бол хойшлогдоно.
+   */
+  const openJob = (e, to) => {
+    // Ctrl/Cmd+дарж шинэ таб нээх зэрэг хөтчийн жирийн зан төлөвт хөндлөнгөөс
+    // орохгүй.
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return
+    if (!supportsViewTransition()) return // `Link` өөрөө шилжүүлнэ
+
+    e.preventDefault()
+    e.currentTarget.closest('.emp-card')?.style.setProperty('view-transition-name', SHARED_JOB_CARD)
+    vtNavigate(to)
+  }
 
   const getEmployerProfile = employerId => orgsQ.data.find(p => p.userId === employerId)
 
@@ -261,13 +285,19 @@ export default function JobListings() {
           </Suspense>
         )}
 
-        {view === 'list' && ranked.map(({ shift: job, score, reasons }) => {
+        {view === 'list' && ranked.map(({ shift: job, score, reasons }, i) => {
           const employerProfile = getEmployerProfile(job.employerId)
           const applied = !!getUserApplication(job.id)
           const saved = isSaved(job.id)
           const { recommendedLevel, meetsRecommendation } = levelAdvice(job.hourlyWage, myProgress.level)
           return (
-            <div key={job.id} className="emp-card animate-slide-up">
+            // Зарууд дараалан гарч ирнэ. 8 дахиас хойш саатал нэмэхгүй — урт
+            // жагсаалтын сүүл хэтэрхий удаж гарахаас сэргийлнэ.
+            <div
+              key={job.id}
+              className="emp-card animate-fade-up hover-lift"
+              style={{ animationDelay: `${Math.min(i, 8) * 45}ms` }}
+            >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 rounded-xl bg-emp-accent/20 flex items-center justify-center flex-shrink-0">
@@ -346,7 +376,11 @@ export default function JobListings() {
               )}
 
               <div className="flex items-center justify-between gap-3 pt-3 border-t border-emp-border">
-                <Link to={`${detailBase}/${job.id}`} className="text-sm text-emp-accent hover:text-emp-accent-hover">
+                <Link
+                  to={`${detailBase}/${job.id}`}
+                  onClick={e => openJob(e, `${detailBase}/${job.id}`)}
+                  className="text-sm text-emp-accent hover:text-emp-accent-hover"
+                >
                   Дэлгэрэнгүй
                 </Link>
                 <button

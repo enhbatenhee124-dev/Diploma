@@ -303,11 +303,15 @@ export default function MyPostings() {
 
       {/* Shifts List */}
       <div className="space-y-4">
-        {filtered.map((shift) => {
+        {filtered.map((shift, i) => {
           const apps = getApplicationsForShift(shift.id);
           const isExpanded = expandedShift === shift.id;
           return (
-            <div key={shift.id} className="wrk-card animate-slide-up">
+            <div
+              key={shift.id}
+              className="wrk-card animate-fade-up"
+              style={{ animationDelay: `${Math.min(i, 8) * 45}ms` }}
+            >
               <div>
                 <div className="flex items-start justify-between mb-3">
                   <div>
