@@ -72,10 +72,14 @@ export default function StoryScene() {
       role="img"
       aria-label="Ажил зарлахаас цалин авах хүртэлх урсгалыг харуулсан хөдөлгөөнт дүрс"
     >
+      {/* ⚠ Бүх өнгө нь БАРААН Chadal дэвсгэрт (#0E1522 карт) зориулагдсан.
+          Halo үед энэ дүрс цайвар дэвсгэр дээр байсан тул бараан дүүргэлт,
+          гүнзгий аягийн зураас хэрэглэдэг байв — бараан дэвсгэр дээр
+          тэдгээр нь алга болно. Одоо эсрэгээр: цайвар зураас, тод аяг. */}
       <defs>
         <linearGradient id="scene-card" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#a78bfa" stopOpacity="0.28" />
-          <stop offset="100%" stopColor="#22d3ee" stopOpacity="0.10" />
+          <stop offset="0%" stopColor="#A78BFA" stopOpacity="0.22" />
+          <stop offset="100%" stopColor="#38BDF8" stopOpacity="0.10" />
         </linearGradient>
         <filter id="scene-glow" x="-40%" y="-40%" width="180%" height="180%">
           <feGaussianBlur stdDeviation="5" result="b" />
@@ -93,7 +97,7 @@ export default function StoryScene() {
         cy={CY}
         r={158}
         fill="none"
-        stroke="#f472b6"
+        stroke="#F472B6"
         strokeWidth="3"
         strokeLinecap="round"
         opacity="0"
@@ -107,7 +111,7 @@ export default function StoryScene() {
             key={link.i}
             className={`scene-link scene-link-${link.i}`}
             d={link.d}
-            stroke={link.matched ? '#10b981' : '#94a3b8'}
+            stroke={link.matched ? '#34D399' : '#7E8A9C'}
             opacity="0"
           />
         ))}
@@ -122,12 +126,14 @@ export default function StoryScene() {
             opacity="0"
             style={{ transformOrigin: `${a.x}px ${a.y}px` }}
           >
-            <circle cx={a.x} cy={a.y} r="17" fill="#1e293b" stroke="#475569" strokeWidth="1.5" />
-            {/* Хүний бүдүүвч дүрс */}
-            <circle cx={a.x} cy={a.y - 4} r="5.5" fill="#cbd5e1" />
+            {/* Бага зэрэг цайвар дугуй + ЦАГААН бүдүүвч. Дугуй нь картын
+                дэвсгэрээс (#0E1522) ялгарах ёстой тул түүнээс нэг шат
+                цайвар, ирмэг нь акцентын өнгөтэй. */}
+            <circle cx={a.x} cy={a.y} r="17" fill="#1E2A3E" stroke="#8ECBFB" strokeOpacity="0.35" strokeWidth="1.5" />
+            <circle cx={a.x} cy={a.y - 4} r="5.5" fill="#FFFFFF" />
             <path
               d={`M ${a.x - 8} ${a.y + 10} a 8 8 0 0 1 16 0`}
-              fill="#cbd5e1"
+              fill="#FFFFFF"
             />
           </g>
         ))}
@@ -143,8 +149,8 @@ export default function StoryScene() {
           height={CARD.h}
           rx={CARD.r}
           fill="url(#scene-card)"
-          stroke="#a78bfa"
-          strokeOpacity="0.4"
+          stroke="#A78BFA"
+          strokeOpacity="0.55"
           strokeWidth="1.5"
           opacity="0"
           style={{ transformOrigin: `${CX}px ${CY}px` }}
@@ -156,7 +162,7 @@ export default function StoryScene() {
             className={`scene-corner scene-corner-${c.id}`}
             d={c.d}
             fill="none"
-            stroke="#c4b5fd"
+            stroke="#A78BFA"
             strokeWidth="3"
             strokeLinecap="round"
             opacity="0"
@@ -172,8 +178,8 @@ export default function StoryScene() {
             width={line.w}
             height={i === 0 ? 9 : 6}
             rx={3}
-            fill="#e2e8f0"
-            opacity={i === 0 ? 0.9 : 0.45}
+            fill="#FFFFFF"
+            opacity={i === 0 ? 0.85 : 0.4}
             style={{ transformOrigin: `${CARD.x + 22}px ${line.y}px`, transform: 'scaleX(0)' }}
           />
         ))}
@@ -181,14 +187,14 @@ export default function StoryScene() {
 
       {/* 4-р алхам: түвшний тэмдэг */}
       <g className="scene-badge" opacity="0" style={{ transformOrigin: `${CARD.x + CARD.w}px ${CARD.y}px` }}>
-        <rect x={CARD.x + CARD.w - 44} y={CARD.y - 20} width="72" height="34" rx="17" fill="#f472b6" />
+        <rect x={CARD.x + CARD.w - 44} y={CARD.y - 20} width="72" height="34" rx="17" fill="#9D174D" />
         <text
           x={CARD.x + CARD.w - 8}
           y={CARD.y + 2}
           textAnchor="middle"
           fontSize="15"
           fontWeight="700"
-          fill="#0f172a"
+          fill="#FFFFFF"
           fontFamily="Inter, system-ui, sans-serif"
         >
           Lv.2

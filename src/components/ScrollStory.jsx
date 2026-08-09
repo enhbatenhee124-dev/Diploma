@@ -21,30 +21,35 @@ import StoryScene, { APPLICANTS, MATCHED_INDEX, CORNERS } from './StoryScene'
 //   байж болохгүй (HomePage-д `overflow-x-clip` болгосон шалтгаан).
 // ------------------------------
 
+// ⚠ Алхмын өнгө нь БАРААН Chadal дэвсгэрт (#0E1522 самбар) зориулагдсан.
+//   Halo (цайвар) үед эдгээр нь -800 аягтай гүн өнгө байсан; бараан дээр
+//   тэдгээр нь дэвсгэртэйгээ нийлж алга болно. Тиймээс -400 аяг руу
+//   буцаав — өнгөний ЧАНАР нь хэвээр, зөвхөн гүн нь өөрчлөгдсөн.
+//   `StoryScene` дэх ижил үүрэгтэй өнгөнүүдтэй тааруулсан.
 const STEPS = [
   {
     n: '01',
     title: 'Ажил зарлах',
     body: 'Ажил олгогч цагийн ажлаа минутын дотор нийтэлнэ — цаг, байршил, цалингаа зааж өгөхөд л хангалттай.',
-    color: '#a78bfa',
+    color: '#A78BFA',
   },
   {
     n: '02',
     title: 'Хүсэлт илгээх',
     body: 'Ажил хайгчид өөрсдийн боломжит цаг, ур чадварт тохирсон зарыг хараад нэг товшилтоор хүсэлтээ илгээнэ.',
-    color: '#22d3ee',
+    color: '#38BDF8',
   },
   {
     n: '03',
     title: 'Тохирол',
     body: 'Систем ур чадвар, байршил, цагийн давхцлыг тооцож эрэмбэлнэ. Ажил олгогч зөвшөөрөхөд хоёр тал холбогдоно.',
-    color: '#10b981',
+    color: '#34D399',
   },
   {
     n: '04',
     title: 'Ажиллаад цалингаа авах',
     body: 'Ажил дуусахад үнэлгээ өгч, туршлагын оноо цуглуулна. Түвшин ахих тусам илүү өндөр цалинтай ажил нээгдэнэ.',
-    color: '#f472b6',
+    color: '#F472B6',
   },
 ]
 
@@ -178,14 +183,14 @@ export default function ScrollStory() {
   if (reduced) {
     return (
       <section className="container-page py-16">
-        <h2 className="text-4xl font-extrabold mb-10">Хэрхэн ажилладаг вэ?</h2>
+        <h2 className="text-4xl font-extrabold mb-10 text-white">Хэрхэн ажилладаг вэ?</h2>
         <div className="space-y-8">
           {STEPS.map(step => (
             <div key={step.n} className="flex gap-5">
               <span className="text-2xl font-mono font-bold" style={{ color: step.color }}>{step.n}</span>
               <div>
                 <h3 className="text-xl font-bold text-white">{step.title}</h3>
-                <p className="text-slate-400 mt-1">{step.body}</p>
+                <p className="text-chadal-muted mt-1">{step.body}</p>
               </div>
             </div>
           ))}
@@ -204,7 +209,7 @@ export default function ScrollStory() {
           {/* Зүүн: алхмуудын текст. Бүгд нэг дээр давхарлаж, timeline нь
               алийг нь харуулахыг шийднэ. */}
           <div className="relative min-h-[21rem] order-2 lg:order-1">
-            <p className="text-xs sm:text-sm uppercase tracking-[0.25em] text-slate-500 mb-6">
+            <p className="text-xs sm:text-sm uppercase tracking-[0.25em] text-chadal-muted mb-6">
               Хэрхэн ажилладаг вэ
             </p>
 
@@ -239,7 +244,7 @@ export default function ScrollStory() {
                 <h3 className="text-3xl sm:text-4xl font-extrabold text-white mb-3">
                   {step.title}
                 </h3>
-                <p className="text-base sm:text-lg text-slate-400 max-w-xl leading-relaxed">
+                <p className="text-base sm:text-lg text-chadal-muted max-w-xl leading-relaxed">
                   {step.body}
                 </p>
               </div>
@@ -255,7 +260,7 @@ export default function ScrollStory() {
         {/* Зураасан заагч */}
         <div
           className="absolute bottom-6 sm:bottom-8 right-4 sm:right-10 h-9 w-48 sm:w-72 rounded-lg
-                     bg-slate-950/80 border border-white/10 backdrop-blur
+                     bg-chadal-card/80 border border-chadal-border backdrop-blur
                      flex items-center overflow-hidden"
           aria-hidden="true"
         >
@@ -263,12 +268,12 @@ export default function ScrollStory() {
             {Array.from({ length: 34 }, (_, i) => (
               <span
                 key={i}
-                className="w-px bg-white/25"
+                className="w-px bg-white/30"
                 style={{ height: i % 5 === 0 ? '16px' : '9px' }}
               />
             ))}
           </div>
-          <span className="story-scrubber-head absolute w-[3px] h-5 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.9)]" />
+          <span className="story-scrubber-head absolute w-[3px] h-5 rounded-full bg-rose-600 shadow-[0_0_8px_rgba(225,29,72,0.7)]" />
         </div>
       </div>
     </section>

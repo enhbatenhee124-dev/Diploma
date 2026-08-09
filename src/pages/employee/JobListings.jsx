@@ -1,5 +1,5 @@
 import { useState, lazy, Suspense } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Search, MapPin, DollarSign, Clock, Bookmark, BookmarkCheck, Filter, ChevronDown, Star, Building, CheckCircle, Info, List as ListIcon, Map as MapIcon } from 'lucide-react'
 
 // Leaflet-ийг эхний ачаалалтад оруулахгүй — хэрэглэгчдийн дийлэнх нь
@@ -53,7 +53,12 @@ const StarRating = ({ rating, size = "w-4 h-4" }) => {
 
 export default function JobListings() {
   const { user } = useAuth()
-  const [search, setSearch] = useState('')
+  // Нүүр хуудасны hero дэх хайлтын талбар `/jobs?q=...` руу илгээдэг тул
+  // эхний утгыг URL-ээс авна. Дараа нь хэрэглэгч бичихэд зөвхөн энэ
+  // төлөв өөрчлөгдөнө — URL-ийг дагуулж шинэчлэхгүй (буцах товч нь
+  // хайлтын алхам бүрээр дүүрэхээс сэргийлнэ).
+  const [searchParams] = useSearchParams()
+  const [search, setSearch] = useState(() => searchParams.get('q') ?? '')
   const [selectedDistrict, setSelectedDistrict] = useState('Бүгд')
   const [sortMode, setSortMode] = useState('match')   // 'match' | 'date'
   const [view, setView] = useState('list')            // 'list' | 'map'

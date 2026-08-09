@@ -1,17 +1,42 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { CyclingText, Marquee, Reveal, ScrollSkew, SpotlightCard, StatCounter } from '../components/Motion';
+import { Marquee, Reveal, SpotlightCard, StatCounter } from '../components/Motion';
 import SplitHeading from '../components/SplitHeading';
-import HorizontalScroller from '../components/HorizontalScroller';
-import AnimatedBackground from '../components/AnimatedBackground';
-import CursorGlow from '../components/CursorGlow';
+import Footer from '../components/Footer';
 
 // anime.js ~43KB (gzip) нэмдэг ба энэ хэсэг ЗӨВХӨН нүүр хуудсанд байдаг.
 // Шууд импортловол ажилтан, ажил олгогч, админ хэн ч түүнийг харахгүй
 // мөртлөө эхний ачаалалтад татна. JobMap-ийг Leaflet-ийн улмаас салгасантай
 // ижил шалтгаан (NFR-1).
 const ScrollStory = lazy(() => import('../components/ScrollStory'));
-const bgImage = new URL('../assets/hero-bg.jpg', import.meta.url).href;
+
+// Загварын хоёр mascot. Claude Design-ийн "Дизайн импорт арга" төслөөс
+// татсан — хоёулаа RGBA (тунгалаг дэвсгэртэй) тул цайвар картан дээр
+// шууд суух ба цагаан хайрцаг үүсгэхгүй.
+const mascotSeeker = new URL('../assets/mascot-rabbit.png', import.meta.url).href;
+const mascotEmployer = new URL('../assets/mascot-capybara.png', import.meta.url).href;
+
+// ============================================================
+// Chadal сэдэв
+// ============================================================
+// Claude Design-ийн "Chadal Landing" загварыг энэ хуудсанд буулгав.
+// Өмнөх Halo (цайвар) сэдвийг БҮРЭН орлосон. Гол зарчмууд:
+//
+//   • Дэвсгэр нь БАРААН (#070C15), текст нь цагаан. Хуучин `text-halo-*`
+//     классууд энд ажиллахгүй — `text-chadal-*` хэрэглэнэ.
+//   • Акцент нь цайвар цэнхэр #8ECBFB. Үндсэн товч нь ТЭР дүүргэлттэй,
+//     дотор нь бараан текст.
+//   • Загварын цорын ганц ЦАЙВАР хэсэг нь хоёр mascot карт — тэдгээр нь
+//     санаатай, хуудсын дунд амьсгал өгнө.
+//   • Загварт `min-width: 1180px` байсныг (зөвхөн desktop) АВЧ, бүх
+//     хэсгийг responsive болгов.
+//
+// ⚠ Загварын эх текст нь AI-ийн ажлын зах зээлийн тухай байсан бөгөөд
+//   энэ платформын бодит үйлчилгээтэй (оюутны цагийн ажил) таарахгүй.
+//   Тиймээс ЗӨВХӨН харагдах систем (layout, өнгө, хэмнэл) авч, агуулгыг
+//   нь платформын бодит мэдээллээр бөглөв. Үнийн хэсэг нь `/terms#payments`
+//   дээрх нөхцөлтэй тохирно.
+// ============================================================
 
 // Inline SVG icons
 const Icons = {
@@ -25,12 +50,6 @@ const Icons = {
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
       <circle cx="11" cy="11" r="8" />
       <line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </svg>
-  ),
-  User: ({ className = "", size = 24 }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
     </svg>
   ),
   Mail: ({ className = "", size = 24 }) => (
@@ -101,7 +120,7 @@ const Icons = {
     </svg>
   ),
   ArrowRight: ({ className = "", size = 24 }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
       <line x1="5" y1="12" x2="19" y2="12" />
       <polyline points="12 5 19 12 12 19" />
     </svg>
@@ -119,34 +138,8 @@ const Icons = {
       <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
     </svg>
   ),
-  Zap: ({ className = "", size = 24 }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
-      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-    </svg>
-  ),
-  Users: ({ className = "", size = 24 }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
-      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-  ),
-  Target: ({ className = "", size = 24 }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
-      <circle cx="12" cy="12" r="10" />
-      <circle cx="12" cy="12" r="6" />
-      <circle cx="12" cy="12" r="2" />
-    </svg>
-  ),
-  CheckCircle: ({ className = "", size = 24 }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
-      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-      <polyline points="22 4 12 14.01 9 11.01" />
-    </svg>
-  ),
   Check: ({ className = "", size = 24 }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
       <polyline points="20 6 9 17 4 12" />
     </svg>
   ),
@@ -157,51 +150,85 @@ const Icons = {
 // ------------------------------
 // Нүүр хуудас нэг урт хуудас тул цэс нь тухайн хэсэг рүү гүйлгэнэ.
 // `id` нь доорх <section>-уудтай таарна.
-// Гарчгийн дунд эргэлдэх үгс. Урт нь ойролцоо байх нь чухал — эс бөгөөс
-// солигдох бүрд мөрийн өргөн үсэрч, доорх текст чичирнэ.
-const HERO_WORDS = ['Ажиллах.', 'Хөгжих.', 'Бүтээх.', 'Дэвших.']
-
-// Зурвасаар гүйх ажлын чиглэлүүд
-const MARQUEE_ITEMS = [
-  'Бариста', 'Хүргэлт', 'Кассир', 'Хувийн багш', 'Зөөгч', 'Орчуулагч',
-  'Дизайнер', 'Агуулахын туслах', 'Борлуулагч', 'Үзэсгэлэнгийн ажилтан',
-  'Виртуал туслах', 'Цэвэрлэгч',
+const NAV_SECTIONS = [
+  { label: 'Нүүр', id: null },              // хамгийн дээш
+  { label: 'Алдартай ажил', id: 'popular-jobs' },
+  { label: 'Статистик', id: 'stats' },
+  { label: 'Холбоо барих', id: 'contact' },
 ]
 
-// Хоёр дахь мөр — эсрэг тийш гүйнэ
-const MARQUEE_ITEMS_ALT = [
-  'Уян хатан цаг', 'Оюутанд ээлтэй', 'Долоо хоногийн эцэст', 'Оройн ээлж',
-  'Алсаас', 'Богино хугацаа', 'Туршлага шаардахгүй', 'Өдрийн ажил',
-  'Улирлын ажил', 'Багаар ажиллах',
-]
+// Hero-гийн доорх шуурхай шүүлтүүр. Бүгд `/jobs` руу хайлтын үгтэйгээ
+// очно — `JobListings` нь `?q=` -ийг уншиж эхний утга болгоно.
+const HERO_CHIPS = ['Оройн ээлж', 'Долоо хоногийн эцэст', 'Алсаас', 'Туршлага шаардахгүй']
 
-// Ажил олгогчид зориулсан давуу талууд
-const CTA_BENEFITS = [
-  'Анхны ажлыг үнэгүй зарлах',
-  'Хүсэлттэй шууд мессеж',
-  'Хүсэлт засах самбар',
-  'Эрхэм дэмжлэг',
-]
-
-// Нүүр хуудсанд үзүүлэх ЖИШЭЭ зарууд (бодит өгөгдөл биш)
-const SAMPLE_JOBS = [
+// Загварын хоёр mascot карт. Зүүн нь ажил хайгч (туулай), баруун нь
+// ажил олгогч (бавуу).
+const ROLE_CARDS = [
   {
-    title: 'Цагийн UI Дизайнер',
-    applicants: 24,
-    location: 'Улаанбаатар • Алсаас OK',
-    tone: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+    tag: 'АЖИЛ ХАЙГЧ',
+    title: 'Хичээлийнхээ хуваарьт тохирсон ээлжээ ол',
+    desc: 'Дүүрэг, цагийн хуваарь, ур чадвараараа шүүж хүсэлтээ илгээ.',
+    cta: 'Профайл үүсгэх',
+    to: '/register',
+    img: mascotSeeker,
+    bg: 'bg-chadal-lilac',
+    eyebrow: 'text-chadal-lilac-eyebrow',
+    ink: 'text-chadal-lilac-ink',
+    body: 'text-chadal-lilac-body',
+    btn: 'bg-chadal-lilac-btn hover:bg-[#6A43AD]',
   },
   {
-    title: 'Амар Наасны Маркетинг Туслах',
-    applicants: 18,
-    location: 'Улаанбаатар • Дэлгэрэнгүй',
-    tone: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
+    tag: 'АЖИЛ ОЛГОГЧ',
+    title: 'Ээлжиндээ таарах ажилтнаа хурдан ол',
+    desc: 'Зар нийтэлж, ирсэн хүсэлтийг нэг самбараас удирд.',
+    cta: 'Зар нийтлэх',
+    to: '/register',
+    img: mascotEmployer,
+    bg: 'bg-chadal-mint',
+    eyebrow: 'text-chadal-mint-eyebrow',
+    ink: 'text-chadal-mint-ink',
+    body: 'text-chadal-mint-body',
+    btn: 'bg-chadal-mint-btn hover:bg-[#246661]',
+  },
+]
+
+// Загварын «backers» зурвасын байрд — платформыг ашигладаг салбарууд.
+// Үсгийн загвар нь санаатайгаар өөр өөр: жинхэнэ лого зурваст ажиглагддаг
+// «олон брэнд» мэдрэмжийг өнгөгүйгээр гаргана.
+const PARTNER_SECTORS = [
+  { label: 'Кафе & Ресторан', font: "'Times New Roman', serif", weight: 400, spacing: '0.02em', size: '15px' },
+  { label: 'ЖИЖИГЛЭН ХУДАЛДАА', font: "'Arial Black', Arial, sans-serif", weight: 900, spacing: '0.08em', size: '15px' },
+  { label: 'Логистик', font: 'Impact, sans-serif', weight: 700, spacing: '0.05em', size: '18px' },
+  { label: 'Сургалт', font: 'Georgia, serif', weight: 600, spacing: '-0.02em', size: '17px' },
+  { label: 'Мэдээллийн технологи', font: 'Helvetica, Arial, sans-serif', weight: 700, spacing: '-0.01em', size: '15px' },
+  { label: 'ҮЙЛ ЯВДАЛ', font: 'Verdana, sans-serif', weight: 700, spacing: '0.06em', size: '14px' },
+  { label: 'Агуулах', font: "'Courier New', monospace", weight: 700, spacing: '0.18em', size: '14px' },
+  { label: 'Маркетинг', font: "Palatino, 'Book Antiqua', serif", weight: 500, spacing: '0.03em', size: '16px' },
+]
+
+// Үнийн хэсэг. Тоо бодохгүй — `/terms#payments` дээрх нөхцөлийг ЯГ
+// давтана: ажил хайгчид үнэгүй, ажил олгогч сарын багц авна (үнийг
+// захиалгын хуудсанд харуулна).
+const PRICING = [
+  {
+    tag: 'АЖИЛ ХАЙГЧ',
+    price: '0₮',
+    unit: 'үргэлж',
+    note: 'Профайл, хайлт, хүсэлт — бүгд үнэгүй.',
+    features: ['Хязгааргүй хүсэлт', 'Дүүрэг, цагийн хуваарийн шүүлтүүр', 'Ажлын саналын мэдэгдэл', 'Платформ доторх чат'],
+    cta: 'Бүртгүүлэх',
+    to: '/register',
+    featured: false,
   },
   {
-    title: 'Хүргэлтийн Хамтран',
-    applicants: 31,
-    location: 'Олон хот',
-    tone: 'bg-pink-500/10 text-pink-400 border-pink-500/20',
+    tag: 'АЖИЛ ОЛГОГЧ',
+    price: 'Сарын багц',
+    unit: '',
+    note: 'Багцын үнэ, хугацааг захиалгын хуудсанд харуулна.',
+    features: ['Зар нийтлэх', 'Хүсэлтийн нэгдсэн самбар', 'Нэр дэвшигчийн профайл харах', 'Платформ доторх чат'],
+    cta: 'Нөхцөлийг харах',
+    to: '/terms#payments',
+    featured: true,
   },
 ]
 
@@ -219,14 +246,6 @@ const CONTACT_ROWS = [
       </>
     ),
   },
-]
-
-const NAV_SECTIONS = [
-  { label: 'Нүүр', id: null },              // хамгийн дээш
-  { label: 'Ажил олгогчид', id: 'employers' },
-  { label: 'Алдартай Ажил', id: 'popular-jobs' },
-  { label: 'Статистик', id: 'stats' },
-  { label: 'Холбоо барих', id: 'contact' },
 ]
 
 /**
@@ -247,92 +266,84 @@ function scrollToSection(id) {
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const [query, setQuery] = useState('');
 
-  // ⚠ Өмнө нь энд `window`-ийн `mousemove`-ыг сонсож, хулгана хөдлөх БҮРД
-  //   төлөв шинэчилдэг байв. Уншсан газар нь байхгүй байсан ч энэ нь 800
-  //   мөрт хуудсыг секундэд олон арван удаа дахин зуруулж, гүйлгэлтийг
-  //   чирэгддэг болгож байсан тул авав. Картын гэрэл нь одоо `SpotlightCard`
-  //   дотор ЗӨВХӨН тухайн карт дээр л хэмжигдэнэ.
+  // Hero-гийн хайлт. Хоосон бол шүүлтгүйгээр жагсаалт руу оруулна.
+  const handleSearch = e => {
+    e.preventDefault()
+    const q = query.trim()
+    navigate(q ? `/jobs?q=${encodeURIComponent(q)}` : '/jobs')
+  }
 
   const categories = [
-    { 
-      title: "Кафе ба Ресторан", 
-      desc: "Бариста, үйлчлэгч, хоолны өрөөний ажилтан, хослолч", 
-      color: "from-orange-500/20 to-orange-600/20", 
-      hoverGradient: "rgba(249, 115, 22, 0.3)",
-      iconColor: "text-orange-400",
-      icon: <Icons.Coffee className="text-orange-400" size={28} />
+    {
+      title: "Кафе ба Ресторан",
+      desc: "Бариста, үйлчлэгч, хоолны өрөөний ажилтан",
+      level: "Туршлага шаардахгүй · Оройн ээлж",
+      glow: "rgba(249, 115, 22, 0.35)",
+      icon: <Icons.Coffee className="text-orange-300" size={22} />,
     },
-    { 
-      title: "Багш ба Номлогч", 
-      desc: "Хувийн багш, хэлний багш, STEM зөвлөгч", 
-      color: "from-violet-500/20 to-violet-600/20", 
-      hoverGradient: "rgba(139, 92, 246, 0.3)",
-      iconColor: "text-violet-400",
-      icon: <Icons.GraduationCap className="text-violet-400" size={28} />
+    {
+      title: "Багш ба Номлогч",
+      desc: "Хувийн багш, хэлний багш, STEM зөвлөгч",
+      level: "Оюутан · Бакалавр",
+      glow: "rgba(139, 92, 246, 0.35)",
+      icon: <Icons.GraduationCap className="text-violet-300" size={22} />,
     },
-    { 
-      title: "Хүргэлт ба Логистик", 
-      desc: "Хоолны хүргэлт, курьер үйлчилгээ, агуулахын тусламж", 
-      color: "from-emerald-500/20 to-emerald-600/20", 
-      hoverGradient: "rgba(16, 185, 129, 0.3)",
-      iconColor: "text-emerald-400",
-      icon: <Icons.Truck className="text-emerald-400" size={28} />
+    {
+      title: "Хүргэлт ба Логистик",
+      desc: "Хоолны хүргэлт, курьер, агуулахын тусламж",
+      level: "Уян хатан цаг · Өдрийн ажил",
+      glow: "rgba(16, 185, 129, 0.35)",
+      icon: <Icons.Truck className="text-emerald-300" size={22} />,
     },
-    { 
-      title: "Борлуулалт ба Захиалга", 
-      desc: "Дэлгүүрийн туслах, кассир, брэндийн дэмжигч", 
-      color: "from-pink-500/20 to-pink-600/20", 
-      hoverGradient: "rgba(236, 72, 153, 0.3)",
-      iconColor: "text-pink-400",
-      icon: <Icons.ShoppingBag className="text-pink-400" size={28} />
+    {
+      title: "Борлуулалт ба Захиалга",
+      desc: "Дэлгүүрийн туслах, кассир, брэндийн дэмжигч",
+      level: "Долоо хоногийн эцэст",
+      glow: "rgba(236, 72, 153, 0.35)",
+      icon: <Icons.ShoppingBag className="text-pink-300" size={22} />,
     },
-    { 
-      title: "Фриланс ба Алсаас", 
-      desc: "Дизайн, бичих, кодлогч, виртуал туслах", 
-      color: "from-blue-500/20 to-blue-600/20", 
-      hoverGradient: "rgba(59, 130, 246, 0.3)",
-      iconColor: "text-blue-400",
-      icon: <Icons.Laptop className="text-blue-400" size={28} />
+    {
+      title: "Фриланс ба Алсаас",
+      desc: "Дизайн, бичих, кодлогч, виртуал туслах",
+      level: "Алсаас · Богино хугацаа",
+      glow: "rgba(59, 130, 246, 0.35)",
+      icon: <Icons.Laptop className="text-blue-300" size={22} />,
     },
-    { 
-      title: "Үзэсгэлэнт Ажил", 
-      desc: "Дэмжигч, удирдагч, засварын ажилтан, брэндийн төлөөлөгч", 
-      color: "from-cyan-500/20 to-cyan-600/20", 
-      hoverGradient: "rgba(6, 182, 212, 0.3)",
-      iconColor: "text-cyan-400",
-      icon: <Icons.Calendar className="text-cyan-400" size={28} />
+    {
+      title: "Үзэсгэлэнт Ажил",
+      desc: "Дэмжигч, удирдагч, брэндийн төлөөлөгч",
+      level: "Улирлын ажил",
+      glow: "rgba(6, 182, 212, 0.35)",
+      icon: <Icons.Calendar className="text-cyan-300" size={22} />,
     },
   ];
 
   const stats = [
-    { 
-      value: "45,200+", 
-      label: "Идэвхит Оюутан Ажил хайгч", 
-      desc: "Одоогоор Монгол дахь цагийн ажил хайж байгаа", 
-      color: "from-violet-500 to-indigo-500",
-      hoverGradient: "rgba(139, 92, 246, 0.3)"
+    {
+      value: "45,200+",
+      label: "Идэвхтэй оюутан ажил хайгч",
+      desc: "Одоогоор Монгол дахь цагийн ажил хайж байгаа",
+      glow: "rgba(139, 92, 246, 0.35)",
     },
-    { 
-      value: "68%", 
-      label: "Цагийн Ажилд Оруулсан Оюутнууд", 
-      desc: "Дээд их сургуулийн оюутнууд ажил болон сургалтыг харилцуулж байна", 
-      color: "from-pink-500 to-rose-500",
-      hoverGradient: "rgba(236, 72, 153, 0.3)"
+    {
+      value: "68%",
+      label: "Цагийн ажилд орсон оюутан",
+      desc: "Их сургуулийн оюутнууд ажил, сургалтаа хослуулж байна",
+      glow: "rgba(236, 72, 153, 0.35)",
     },
-    { 
-      value: "32%", 
-      label: "Жилийн Өсөлт", 
-      desc: "2025 онд цагийн ажлын зарлалын нэмэгдэл", 
-      color: "from-cyan-500 to-blue-500",
-      hoverGradient: "rgba(6, 182, 212, 0.3)"
+    {
+      value: "32%",
+      label: "Жилийн өсөлт",
+      desc: "2025 онд цагийн ажлын зарлалын нэмэгдэл",
+      glow: "rgba(6, 182, 212, 0.35)",
     },
-    { 
-      value: "4.2K", 
-      label: "Сарын Тохиролцоо", 
-      desc: "Туршилттай ажил олгогдох бүх сар", 
-      color: "from-indigo-500 to-violet-500",
-      hoverGradient: "rgba(99, 102, 241, 0.3)"
+    {
+      value: "4.2K",
+      label: "Сарын тохиролт",
+      desc: "Ажил олгогч, ажилтан амжилттай холбогдсон тоо",
+      glow: "rgba(99, 102, 241, 0.35)",
     },
   ];
 
@@ -351,555 +362,522 @@ export default function HomePage() {
     //   болж хувирдаг тул) — `ScrollStory`-гийн наалдалт ажиллахгүй болно.
     //   `overflow-x: clip` нь хэвтээ халилтыг ижилхэн таслах ч гүйлгэлтийн
     //   контейнер ҮҮСГЭДЭГГҮЙ тул sticky хэвээр ажиллана.
-    <div className="min-h-screen text-white font-sans relative overflow-x-clip">
+    <div className="chadal-page relative overflow-x-clip">
       {/* Уншилтын явцын зурвас. Өргөн нь JS-гүйгээр, гүйлгэлтийн байрлалаас
           шууд тооцогдоно (index.css → `.scroll-progress`). */}
       <div className="scroll-progress" aria-hidden="true" />
 
-      {/* Хөдөлгөөнт дэвсгэр — хөвөгч гэрлийн толбууд, гүйх сүлжээ.
-          Гэрэл зураг бүдэг үлдэж, зөвхөн бүтэц өгнө. */}
-      <AnimatedBackground image={bgImage} />
-
-      {/* Курсорын араас дагах гэрэл. Агуулгын цаана байрлах тул текстийг
-          бүдгэрүүлэхгүй, зөвхөн дэвсгэрийг гэрэлтүүлнэ. */}
-      <CursorGlow />
-
-      <div className="relative z-10">
-        {/* Navbar */}
-        {/* Гүйлгэхэд цэс нягтарна — index.css → `.nav-condense` */}
-        <nav className="nav-condense sticky top-0 z-50 backdrop-blur-xl border-b bg-slate-950/60 border-white/5">
-          <div className="nav-condense-inner container-page flex items-center justify-between h-20 transition-[height]">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-violet-500/20">
-                <Icons.Briefcase size={26} className="text-white" />
-              </div>
-              <span className="text-2xl font-bold tracking-tight">
-                Mongol<span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-cyan-400">Job</span>
+      {/* ==================== ЦЭС ====================
+          Загварынхтай ижил: наалддаг, хагас тунгалаг бараан зурвас.
+          `MainLayout`-ийн `Navbar` энд ХЭРЭГЛЭГДЭХГҮЙ — нүүр хуудас нь
+          зөвхөн өөр дээрээ гүйлгэдэг тусдаа цэстэй (`NAV_SECTIONS`). */}
+      <nav className="sticky top-0 z-50 border-b border-chadal-line bg-chadal-bg/80 backdrop-blur-xl">
+        <div className="container-page">
+          <div className="flex h-[4.5rem] items-center justify-between gap-6">
+            <button
+              onClick={() => scrollToSection(null)}
+              className="flex items-center gap-3 text-xl font-extrabold tracking-tight text-white"
+            >
+              <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-chadal-accent">
+                <Icons.Briefcase size={17} className="text-chadal-ink" />
               </span>
-            </div>
+              Mongol<span className="font-bold text-chadal-dim">Job</span>
+            </button>
 
-            <div className="hidden md:flex items-center gap-8">
+            <div className="hidden items-center gap-8 lg:flex">
               {NAV_SECTIONS.map(item => (
-                <button
-                  key={item.label}
-                  onClick={() => scrollToSection(item.id)}
-                  className="text-slate-300 hover:text-white transition-colors font-medium"
-                >
+                <button key={item.label} onClick={() => scrollToSection(item.id)} className="chadal-nav-link">
                   {item.label}
                 </button>
               ))}
             </div>
 
             <div className="flex items-center gap-4">
-              <Link to="/login" className="hidden sm:block px-4 py-2 text-slate-300 hover:text-white transition-colors font-medium">
+              <Link to="/login" className="chadal-nav-link hidden sm:block">
                 Нэвтрэх
               </Link>
-              <Link to="/register" className="px-6 py-3 rounded-full bg-gradient-to-r from-violet-600 to-violet-500 text-white font-bold hover:shadow-xl hover:shadow-violet-500/30 transition-all transform hover:scale-105 active:scale-95">
+              <Link
+                to="/register"
+                className="rounded-full bg-chadal-accent px-6 py-2.5 text-sm font-bold text-chadal-ink transition-colors hover:bg-white"
+              >
                 Эхлэх
               </Link>
             </div>
           </div>
-        </nav>
+        </div>
+      </nav>
 
-        {/* Hero Section */}
-        <section className="container-page py-16 sm:py-24">
-          {/* Текстийг САНААТАЙГААР нарийн үлдээв — өргөн дэлгэцэнд догол мөр
-              бүтнээрээ сунавал нэг мөрөнд 120+ тэмдэгт багтаж, нүд мөрийн
-              эхлэлийг олоход хүндэрнэ. Доорх статистик харин бүтэн өргөнөөр. */}
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center">
-              {/* Hero нь эхний дэлгэцэнд байдаг тул гүйлгэлт хүлээхгүй —
-                  ачаалмагц дараалан орж ирнэ. */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8 animate-fade-up">
-                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-                <span className="text-sm text-slate-300">#1 Монголын Ажил Тохиргох Платформ</span>
-              </div>
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-tight mb-6 animate-fade-up" style={{ animationDelay: '80ms' }}>
-                Холбогдох. <br />
-                {/* Дунд үг тасралтгүй солигдоно — хуудас хэзээ ч бүрэн
-                    зогсдоггүйн гол дохио. Градиент нь бас аажим урсана. */}
-                <CyclingText
-                  words={HERO_WORDS}
-                  className="gradient-flow inline-block text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-indigo-400 to-cyan-400"
-                />
-                <br />
-                Өсөх.
-              </h1>
-              <p className="text-xl text-slate-400 mb-4 leading-relaxed animate-fade-up" style={{ animationDelay: '160ms' }}>
-                Монгол дахь цагийн ажилчин, оюутнуудыг ажил олгогчтой холбосон тэргүүн платформ.
-                Таны цагтаа тохирсон хязгааргүй ажил олж эсвэл минутын дотор урлагтай ажилтан ол.
-              </p>
-              <p className="text-slate-500 mb-10 animate-fade-up" style={{ animationDelay: '220ms' }}>
-                Хэрэв та анхны ажлыг хайж буй оюутан, нэмэгдэлтэй орлого хайж буй мэргэжилтэн эсвэл
-                хязгааргүй ажилчдыг байгуулж буй ажил олгогч бол — MongolJob энэ бүгдийг хялбар, хурдан, найдвартай хийнэ.
-              </p>
+      {/* ==================== HERO ====================
+          Загварын нээлт: асар том том үсгээр бичсэн гарчиг, доор нь
+          нэг мөрийн хайлт, доогуур нь шуурхай шүүлтүүрүүд. Ард нь
+          цэнхэр туяа (`chadal-glow`). */}
+      <header className="relative overflow-hidden px-4 pb-24 pt-16 text-center sm:px-6 sm:pb-28 sm:pt-24">
+        {/* Туяа нь агуулгаас ӨРГӨН байх ёстой — эс бөгөөс ирмэг нь
+            гарчгийн доор тод зураас болж харагдана. `max-w-[150vw]` нь
+            жижиг дэлгэцэнд хэвтээ халилт үүсгэхээс сэргийлнэ. */}
+        <div
+          className="chadal-glow left-1/2 top-[-9rem] h-[56rem] w-[94rem] max-w-[160vw] -translate-x-1/2"
+          aria-hidden="true"
+        />
 
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-up" style={{ animationDelay: '280ms' }}>
-                <button
-                  onClick={() => navigate('/register')}
-                  className="shine shine-auto w-full sm:w-auto px-10 py-4 rounded-full bg-gradient-to-r from-violet-600 to-violet-500 text-white font-bold text-lg hover:shadow-xl hover:shadow-violet-500/40 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center gap-3"
-                >
-                  <Icons.Search size={24} />
-                  Ажил Олох
-                </button>
-                <button
-                  onClick={() => navigate('/register')}
-                  className="w-full sm:w-auto px-10 py-4 rounded-full bg-white/5 border border-white/10 text-white font-bold text-lg hover:bg-white/10 hover:border-white/20 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3"
-                >
-                  <Icons.Briefcase size={24} />
-                  Ажил Зарлах
-                </button>
-              </div>
-            </div>
+        <h1 className="relative m-0 mx-auto max-w-5xl text-[clamp(2.6rem,8.6vw,7.4rem)] font-extrabold uppercase leading-[0.92] tracking-[-0.035em] text-white animate-fade-up">
+          Дараагийн ажлаа олъё
+        </h1>
 
-            {/* Hero Stats — текстээс өргөн, хэсгийн бүтэн өргөнийг эзэлнэ.
-                Сөрөг margin нь эцгийн `max-w-4xl` хязгаараас гаргаж байна. */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-16 lg:-mx-[8vw] xl:-mx-[12vw]">
-              {[
-                { value: "12K+", label: "Идэвхит Ажил Хайгч" },
-                { value: "3.5K+", label: "Зарлагдсан Ажил" },
-                { value: "850+", label: "Ажил Олгогч" },
-                { value: "95%", label: "Тохиргооны Хувь" },
-              ].map((stat, i) => (
-                <div
-                  key={i}
-                  className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 hover:bg-white/10 hover-lift animate-fade-up"
-                  style={{ animationDelay: `${360 + i * 70}ms` }}
-                >
-                  {/* Хөвөлтийг ДОТООД элемент дээр өгсөн нь санаатай: гадна нь
-                      орж ирэх анимацтай тул нэг элементэд хоёр `animation`
-                      өгвөл сүүлийнх нь эхнийхийг дардаг. Мөн карт бүр өөр
-                      сааталтай тул дөрвүүлээ нэг зэрэг биш, долгион мэт хөдөлнө. */}
-                  <div className="animate-float" style={{ animationDelay: `${i * 900}ms` }}>
-                    <StatCounter
-                      value={stat.value}
-                      className="block text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-blue-400 mb-1"
-                    />
-                    <div className="text-sm text-slate-400">{stat.label}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Хоёр эсрэг чиглэлийн зурвас — гүйлгэхгүй зогсож байсан ч хуудас
-            хөдөлгөөнтэй хэвээр. Хулгана дээр нь ирэхэд зогсоно.
-            `ScrollSkew` нь гүйлгэх хурднаас хамаарч бага зэрэг хазайлгана. */}
-        <ScrollSkew className="py-10 border-y border-white/5 bg-white/[0.02] space-y-4">
-          <Marquee speed={44}>
-            {MARQUEE_ITEMS.map(item => (
-              <span
-                key={item}
-                className="text-lg sm:text-xl font-semibold text-slate-500 whitespace-nowrap"
-              >
-                {item}
-              </span>
-            ))}
-          </Marquee>
-
-          {/* Хоёр дахь мөр эсрэг тийш — хөндлөн хөдөлгөөн нь илүү мэдрэгдэнэ */}
-          <Marquee speed={58} reverse>
-            {MARQUEE_ITEMS_ALT.map(item => (
-              <span
-                key={item}
-                className="text-base sm:text-lg font-medium text-slate-600 whitespace-nowrap"
-              >
-                {item}
-              </span>
-            ))}
-          </Marquee>
-        </ScrollSkew>
-
-        {/* Гүйлгэлтээр жолоодогддог түүх — доошоо гүйлгэхэд хэсэг наалдаж,
-            алхмууд солигдоно. Дээшээ гүйлгэвэл ухарна. */}
-        <Suspense fallback={<div className="h-screen" />}>
-          <ScrollStory />
-        </Suspense>
-
-        {/* Ангиллууд — доошоо гүйлгэхэд картууд ХАЖУУ тийш гүйнэ.
-            `Reveal` энд хэрэггүй: хэвтээ хөдөлгөөн нь өөрөө нээлт болно. */}
-        <HorizontalScroller
-          id="popular-jobs"
-          // Хажуугийн зай нь `.container-page`-тэй ижил томьёотой — эхний
-          // карт бусад хэсгийн зүүн ирмэгтэй яг эгнэнэ.
-          className="px-[clamp(1rem,3.5vw,3rem)]"
-          header={
-            <div className="container-page w-full">
-              <SplitHeading className="text-4xl sm:text-5xl font-extrabold mb-4">
-                Алдартай <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-cyan-400">Цагийн Ажил</span>
-              </SplitHeading>
-              <p className="text-slate-400 max-w-2xl text-lg">
-                Монгол дахь хамгийн их хүссэн цагийн ажлуудыг олж мэдээрэй.
-                Доошоо гүйлгэхэд ангиллууд хажуу тийш гүйнэ.
-              </p>
-            </div>
-          }
+        <p
+          className="relative mx-auto mt-8 max-w-xl text-base font-medium leading-relaxed text-[#A9C8E8] animate-fade-up sm:text-[1.07rem]"
+          style={{ animationDelay: '80ms' }}
         >
-          {categories.map((category, index) => (
-            <SpotlightCard
-              key={index}
-              glow={category.hoverGradient}
-              className="w-[19rem] sm:w-[22rem] flex-shrink-0 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:border-violet-500/30 cursor-pointer"
+          Монгол дахь цагийн ажилчид, оюутнуудыг ажил олгогчтой холбоно.
+          Цагтаа тохирсон ээлжээ ол, эсвэл минутын дотор ажилтнаа ол.
+        </p>
+
+        <form
+          onSubmit={handleSearch}
+          className="relative mx-auto mt-11 flex w-full max-w-[54rem] items-center gap-3 rounded-[1.35rem] border border-chadal-field bg-chadal-card/90 p-3 pl-5 backdrop-blur animate-fade-up sm:pl-6"
+          style={{ animationDelay: '160ms' }}
+        >
+          <Icons.Search size={19} className="hidden flex-none text-chadal-dim sm:block" />
+          <label htmlFor="hero-search" className="sr-only">Ажлын хайлт</label>
+          <input
+            id="hero-search"
+            type="text"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Бариста, хүргэлт, хувийн багш…"
+            className="min-w-0 flex-1 bg-transparent text-base font-medium text-white outline-none placeholder:text-chadal-dim"
+          />
+          <button
+            type="submit"
+            aria-label="Ажил хайх"
+            className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-chadal-accent text-chadal-ink transition-colors hover:bg-white"
+          >
+            <Icons.ArrowRight size={20} />
+          </button>
+        </form>
+
+        <div
+          className="relative mt-7 flex flex-wrap justify-center gap-3 animate-fade-up"
+          style={{ animationDelay: '240ms' }}
+        >
+          {HERO_CHIPS.map(chip => (
+            <Link
+              key={chip}
+              to={`/jobs?q=${encodeURIComponent(chip)}`}
+              className="rounded-full border border-[#2F4A70] bg-[#142034]/60 px-5 py-2.5 text-sm font-semibold text-[#CFE4F9] transition-colors hover:border-chadal-accent hover:text-white"
             >
-              <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${category.color} flex items-center justify-center mb-6 transition-transform duration-300 ease-spring group-hover:scale-110 group-hover:-rotate-3`}>
-                {category.icon}
-              </div>
-              <h3 className="text-2xl font-bold mb-3 group-hover:text-violet-300 transition-colors">
-                {category.title}
-              </h3>
-              <p className="text-slate-400 mb-6">
-                {category.desc}
-              </p>
-              <div className="flex items-center gap-2 text-violet-400 font-semibold group-hover:text-violet-300 transition-colors">
-                Ажлыг Хайх
-                <Icons.ArrowRight size={18} className="transition-transform duration-200 group-hover:translate-x-1" />
-              </div>
-            </SpotlightCard>
+              {chip}
+            </Link>
           ))}
-        </HorizontalScroller>
+        </div>
+      </header>
 
-        {/* For Employers Section */}
-        <section id="employers" className="container-page py-16">
-          <Reveal className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/20 mb-6 animate-pop-in">
-              <span className="text-violet-300 font-medium text-sm">Ажил Олгогчид</span>
-            </div>
-            <SplitHeading className="text-4xl sm:text-5xl font-extrabold mb-4">
-              Ухаалаг Ажил Олгох. <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-cyan-400">Хурдан.</span>
-            </SplitHeading>
-            <p className="text-slate-400 max-w-2xl mx-auto text-lg">
-              Кофееноос эхлээд Стартап хүртэл, олон Монгол ажил олгогч найдвартай цагийн ажилтан олохдоо MongolJob-ийг итгэдэг. Өөрийн ажлыг зарлаж, өнөөдөрөөс эхлэн хүсэлт хүлээн аваарай.
-            </p>
-          </Reveal>
-
-          {/* Feature Cards */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            {[
-              { 
-                title: "Минутын Дотор Зарлах", 
-                desc: "Манай энхрий зааварчилсаны ар ажлын зарлагыг үүсгэн, нийтлэх. Нарийн тохиргоо шаарддаггүй.", 
-                icon: <Icons.Zap size={28} />,
-                hoverGradient: "rgba(139, 92, 246, 0.3)"
-              },
-              { 
-                title: "Эрчимтэй Ажилтанд Хүрэх", 
-                desc: "Эргэлзээгүй оюутан, цагийн ажилчдын сонгосон бүлэгт нэвтрэх. Эдгээр нь ажлаа хайж байгаа.", 
-                icon: <Icons.Users size={28} />,
-                hoverGradient: "rgba(6, 182, 212, 0.3)"
-              },
-              { 
-                title: "Ухаалаг Тохиргоо", 
-                desc: "Манай алгоритм таны шаардлагад нийцсэн урлаг, цагтай ажилтанд холбосон.", 
-                icon: <Icons.Target size={28} />,
-                hoverGradient: "rgba(236, 72, 153, 0.3)"
-              },
-              { 
-                title: "Эргэлзээгүй Профайл", 
-                desc: "Бүх ажил хайгч баталгаажсан, та найдвартай, жинхэнэ ажилтантай холбогдох боломжтой.", 
-                icon: <Icons.CheckCircle size={28} />,
-                hoverGradient: "rgba(16, 185, 129, 0.3)"
-              },
-            ].map((feature, index) => (
-              <Reveal key={index} delay={index * 70}>
-                <SpotlightCard
-                  glow={feature.hoverGradient}
-                  className="h-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:border-violet-500/30"
-                >
-                  {/* Дүрс аажим хөвнө. Карт бүрд өөр саатал өгснөөр дөрвүүлээ
-                      нэг зэрэг биш, долгион мэт хөдөлнө. */}
-                  <div
-                    className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500/20 to-indigo-500/20 flex items-center justify-center mb-6 text-violet-400 transition-transform duration-300 ease-spring group-hover:scale-110 animate-float"
-                    style={{ animationDelay: `${index * 800}ms` }}
+      {/* ==================== ХОЁР ДҮРИЙН КАРТ ====================
+          Загварын цорын ганц цайвар хэсэг. Mascot нь картын ЁРООЛД
+          наалдана — тиймээс эцэг нь `items-end`, доод padding нь 0. */}
+      <section className="container-page pb-24 sm:pb-28">
+        <div className="grid gap-6 lg:grid-cols-2">
+          {ROLE_CARDS.map((card, i) => (
+            <Reveal key={card.tag} delay={i * 90}>
+              <div className={`flex h-full min-h-[16rem] items-end gap-3 overflow-hidden rounded-[1.75rem] p-7 pb-0 sm:gap-4 sm:p-11 sm:pb-0 ${card.bg}`}>
+                <div className="min-w-0 flex-1 pb-8 sm:pb-10">
+                  <div className={`text-xs font-bold tracking-[0.14em] ${card.eyebrow}`}>{card.tag}</div>
+                  <h3 className={`m-0 mt-4 text-[1.4rem] font-bold leading-[1.15] tracking-[-0.02em] sm:text-[1.85rem] ${card.ink}`}>
+                    {card.title}
+                  </h3>
+                  <p className={`m-0 mt-3.5 text-sm font-medium ${card.body}`}>{card.desc}</p>
+                  <Link
+                    to={card.to}
+                    className={`mt-6 inline-block whitespace-nowrap rounded-full px-6 py-3 text-sm font-bold text-white transition-colors ${card.btn}`}
                   >
-                    {feature.icon}
-                  </div>
-                  <h3 className="text-xl font-bold mb-2 text-white group-hover:text-violet-300 transition-colors">{feature.title}</h3>
-                  <p className="text-slate-400 text-sm leading-relaxed">{feature.desc}</p>
-                </SpotlightCard>
-              </Reveal>
-            ))}
-          </div>
+                    {card.cta}
+                  </Link>
+                </div>
+                {/* Тунгалаг PNG тул цайвар картан дээр цагаан хайрцаг
+                    үүсгэхгүй. Мэдээллийн ачаалалгүй чимэглэл учир
+                    `alt=""` — дэлгэц уншигч алгасана. */}
+                <img
+                  src={card.img}
+                  alt=""
+                  className="w-24 flex-none self-end object-contain object-bottom sm:w-36 lg:w-44"
+                />
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </section>
 
-          {/* CTA Block */}
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-10 grid md:grid-cols-2 gap-10 items-center">
-            <Reveal>
-              <h3 className="text-2xl font-bold mb-4 text-white">Дараагийн сайн ажилтан олох бэлэн байна уу?</h3>
-              <p className="text-slate-400 mb-6">Аль хэт 850-аас олон ажил олгогч MongolJob-ийг ашиглаж байгаа. Хязгааргүй ажлыг зарлах, хүсэлтийг удирдах, ажилтантай холбоо барих — бүгдийг нэг дор.</p>
+      {/* ==================== АНГИЛЛУУД ==================== */}
+      <section id="popular-jobs" className="container-page scroll-mt-24 pb-24 text-center sm:pb-28">
+        <Reveal>
+          <div className="chadal-eyebrow">АНГИЛЛААР</div>
+          <SplitHeading className="mx-auto mt-4 max-w-3xl text-[clamp(1.9rem,4.4vw,2.9rem)] font-extrabold leading-[1.14] tracking-[-0.03em] text-white">
+            Алдартай цагийн ажил
+          </SplitHeading>
+          <p className="mx-auto mt-5 max-w-2xl text-[0.95rem] font-medium leading-relaxed text-chadal-muted">
+            Монгол дахь хамгийн эрэлттэй цагийн ажлуудыг ангиллаар нь үзээрэй.
+            Ангилал дээр дарвал шүүсэн жагсаалт руу шилжинэ.
+          </p>
+        </Reveal>
 
-              {/* Давуу талууд нэг нэгээр нь «тэмдэглэгдэнэ» */}
-              <ul className="space-y-3 mb-8">
-                {CTA_BENEFITS.map((item, i) => (
-                  <Reveal
-                    key={item}
-                    as="li"
-                    delay={120 + i * 90}
-                    className="flex items-center gap-3 text-slate-300"
-                  >
-                    <span className="w-5 h-5 rounded-full bg-cyan-500/20 flex items-center justify-center flex-shrink-0">
-                      <Icons.Check size={14} className="text-cyan-400" />
-                    </span>
-                    <span className="text-sm">{item}</span>
-                  </Reveal>
-                ))}
-              </ul>
-
-              <button
-                onClick={() => navigate('/register')}
-                className="shine px-8 py-4 rounded-full bg-gradient-to-r from-violet-600 to-violet-500 text-white font-bold text-lg hover:shadow-xl hover:shadow-violet-500/40 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center gap-3"
+        <div className="mt-12 grid gap-5 text-left sm:grid-cols-2 lg:grid-cols-3">
+          {categories.map((category, i) => (
+            <Reveal key={category.title} delay={i * 60} className="h-full">
+              <SpotlightCard
+                glow={category.glow}
+                className="flex h-full min-h-[13rem] cursor-pointer flex-col justify-between rounded-[1.25rem] border border-chadal-border bg-chadal-card p-7 transition-colors hover:border-[#33507A]"
+                onClick={() => navigate(`/jobs?q=${encodeURIComponent(category.title)}`)}
               >
-                <Icons.Briefcase size={22} />
-                Ажил Зарлах — Үнэгүй
-              </button>
+                <div>
+                  <div className="mb-5 flex h-[2.6rem] w-[2.6rem] items-center justify-center rounded-xl border border-chadal-accent/25 bg-chadal-accent/10 transition-transform duration-300 ease-spring group-hover:scale-110 group-hover:-rotate-3">
+                    {category.icon}
+                  </div>
+                  <div className="text-[1.18rem] font-bold leading-snug tracking-tight text-white">{category.title}</div>
+                  <div className="mt-2 text-sm font-semibold text-[#7FB4E4]">{category.desc}</div>
+                </div>
+                <div className="mt-6 text-[0.82rem] font-medium text-chadal-dim">{category.level}</div>
+              </SpotlightCard>
+            </Reveal>
+          ))}
+        </div>
+
+        <Link to="/jobs" className="chadal-btn chadal-btn-accent mt-12">
+          Бүх ажлыг үзэх
+        </Link>
+      </section>
+
+      {/* ==================== САЛБАРУУДЫН ЗУРВАС ====================
+          Загварын компанийн логоны зурвасын байрд. Жинхэнэ лого байхгүй
+          тул салбаруудыг өөр өөр үсгийн загвараар — «олон брэнд»
+          мэдрэмжийг өнгөгүйгээр гаргана. */}
+      <section className="pb-24 sm:pb-28">
+        <div className="container-page mb-7 flex items-center gap-2.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-chadal-accent" />
+          <span className="text-xs font-bold text-white">MongolJob дээр ажилтан хайж буй салбарууд</span>
+        </div>
+        <Marquee speed={38}>
+          {PARTNER_SECTORS.map(sector => (
+            <div
+              key={sector.label}
+              className="flex h-[8.9rem] w-[13.25rem] items-center justify-center rounded-[1.15rem] border border-chadal-border bg-chadal-card px-5 text-center text-chadal-muted transition-all duration-300 hover:border-chadal-accent/55 hover:bg-chadal-card-hover hover:text-[#DCEEFF] hover:shadow-[0_0_0_1px_rgba(142,203,251,.25),0_0_34px_rgba(80,160,240,.35),inset_0_0_30px_rgba(90,170,245,.12)]"
+              style={{
+                fontFamily: sector.font,
+                fontWeight: sector.weight,
+                letterSpacing: sector.spacing,
+                fontSize: sector.size,
+              }}
+            >
+              {sector.label}
+            </div>
+          ))}
+        </Marquee>
+      </section>
+
+      {/* ==================== ТОМ МЭДЭГДЭЛ ====================
+          Загварын дундах ганц өгүүлбэрийн хэсэг — хэмнэл тасалж,
+          дараагийн блокт бэлддэг. */}
+      <section className="container-page pb-24 text-center sm:pb-28">
+        <Reveal>
+          <h2 className="m-0 mx-auto max-w-3xl text-[clamp(1.75rem,3.7vw,2.65rem)] font-extrabold leading-[1.22] tracking-[-0.03em] text-balance text-white">
+            Оюутны цагийн ажлын Монгол дахь хамгийн энгийн зам
+          </h2>
+        </Reveal>
+      </section>
+
+      {/* ==================== ХЭРХЭН АЖИЛЛАДАГ ВЭ ====================
+          Гүйлгэлтээр жолоодогддог түүх — доошоо гүйлгэхэд хэсэг наалдаж,
+          алхмууд солигдоно.
+
+          ⚠ Энд `overflow` (hidden/clip/auto) ОГТ өгч болохгүй — доторх
+            `sticky top-0` шууд унаж, наалдалт ажиллахаа болино. Тиймээс
+            булангийн бөөрөнхийлөлтийг `overflow-hidden`-гүйгээр хийв
+            (хүүхэд нь өөрийн дэвсгэргүй тул булангаас халихгүй).
+
+          ⚠ `backdrop-blur` мөн ЗОРИУДААР ашиглаагүй: filter төрлийн
+            шинжүүд агуулагч блок үүсгэдэг тул наалдалтад эрсдэл нэмнэ. */}
+      <div className="px-4 pb-24 sm:px-6 sm:pb-28">
+        <div className="chadal-panel">
+          <Suspense fallback={<div className="h-screen" />}>
+            <ScrollStory />
+          </Suspense>
+        </div>
+      </div>
+
+      {/* ==================== СТАТИСТИК ==================== */}
+      <section id="stats" className="container-page scroll-mt-24 pb-24 sm:pb-28">
+        <Reveal className="mb-12 max-w-2xl">
+          <div className="chadal-eyebrow">МЭДЭЭЛЭЛ БА ҮЗҮҮЛЭЛТ</div>
+          <SplitHeading className="mt-4 text-[clamp(1.9rem,4.4vw,2.9rem)] font-extrabold leading-[1.14] tracking-[-0.03em] text-white">
+            Монголын оюутны ажлын зах зээл
+          </SplitHeading>
+          <p className="mt-5 text-[0.95rem] font-medium leading-relaxed text-chadal-muted">
+            Платформын тоо нь Монгол оюутан, залуу мэргэжилтнүүдийн цагийн ажилд
+            хэр идэвхтэй хүрч байгааг харуулна.
+          </p>
+        </Reveal>
+
+        <div className="mb-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {stats.map((stat, i) => (
+            <Reveal key={stat.label} delay={i * 70} className="h-full">
+              <SpotlightCard
+                glow={stat.glow}
+                className="h-full rounded-[1.25rem] border border-chadal-border bg-chadal-card p-7"
+              >
+                <StatCounter
+                  value={stat.value}
+                  className="mb-3 block text-[2.5rem] font-extrabold leading-none tracking-[-0.03em] text-white transition-transform duration-300 ease-spring group-hover:scale-105"
+                />
+                <div className="mb-2 font-bold text-white">{stat.label}</div>
+                <div className="text-sm font-medium text-chadal-muted">{stat.desc}</div>
+              </SpotlightCard>
+            </Reveal>
+          ))}
+        </div>
+
+        {/* Графикууд. Загварын «цагаан карт градиент хүрээнд» гэсэн
+            хэлбэрийг дагав — гадна нь цэнхэр градиент, дотор нь агуулга. */}
+        <div className="rounded-[1.9rem] bg-[linear-gradient(150deg,#12457F,#7CC2F9)] p-1.5 sm:p-2">
+          <div className="grid gap-10 rounded-[1.55rem] bg-chadal-card p-7 sm:p-10 lg:grid-cols-2 lg:items-center">
+            <div>
+              <h3 className="m-0 mb-2 text-xl font-bold tracking-tight text-white">
+                Хамгийн эрэлттэй ажлын ангилал
+              </h3>
+              <p className="m-0 mb-8 text-sm font-medium text-chadal-muted">
+                2025 онд ангиллаар цагийн ажлын зарлалын түгээлт
+              </p>
+
+              <div className="space-y-5">
+                {demandData.map((item, i) => (
+                  <div key={item.category}>
+                    <div className="mb-2 flex justify-between text-sm">
+                      <span className="font-semibold text-chadal-fg">{item.category}</span>
+                      <StatCounter value={`${item.percent}%`} className="font-bold text-chadal-accent" />
+                    </div>
+                    <div className="h-2.5 overflow-hidden rounded-full bg-white/10">
+                      {/* Зурвас нь гүйлгэж ирэхэд зүүнээс баруун тийш ургана.
+                          `origin-left` байхгүй бол голоосоо тэлж, буруу
+                          харагдана. */}
+                      <Reveal
+                        animation="animate-grow-x"
+                        delay={i * 80}
+                        className={`h-full origin-left rounded-full ${item.color}`}
+                        style={{ width: `${item.percent}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="chadal-inset p-6">
+              <div className="mb-6 flex items-center gap-2">
+                <Icons.TrendingUp className="text-chadal-accent" size={20} />
+                <h4 className="m-0 text-base font-bold text-white">Өсөлтийн урсгал: ажлын зарлал</h4>
+              </div>
+              <div className="flex h-48 items-end justify-between gap-3 pt-8">
+                {[60, 75, 65, 85, 78, 90, 100].map((height, i) => (
+                  <div key={i} className="flex h-full flex-1 flex-col items-center gap-2">
+                    {/* Хувиар өгсөн өндөр нь ЭЦЭГ элементийн өндрөөс
+                        тооцогддог тул баганад зориулж тодорхой өндөртэй
+                        талбай (`flex-1`) заавал хэрэгтэй — эс бөгөөс
+                        `height: 60%` нь auto өндрөөс тооцогдож 0 болно. */}
+                    <div className="flex w-full flex-1 items-end">
+                      {/* `origin-bottom` нь баганыг доороос дээш ургуулна */}
+                      <Reveal
+                        animation="animate-grow-y"
+                        delay={i * 70}
+                        className="w-full origin-bottom rounded-t-lg bg-gradient-to-t from-chadal-accent/25 to-chadal-accent"
+                        style={{ height: `${height}%` }}
+                      />
+                    </div>
+                    <span className="text-xs font-medium text-chadal-dim">
+                      {['1-р', '2-р', '3-р', '4-р', '5-р', '6-р', '7-р'][i]}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-6 flex items-center justify-between border-t border-white/10 pt-4">
+                <span className="text-sm font-medium text-chadal-muted">Нийт өсөлт</span>
+                {/* «+» нь урд байгаа тул тусад нь бичив — `StatCounter` нь
+                    зөвхөн ард байх дагаварыг таньдаг. */}
+                <span className="text-lg font-bold text-white">
+                  +<StatCounter value="73%" />
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ==================== ҮНЭ ==================== */}
+      <section className="container-page pb-24 sm:pb-28">
+        <Reveal className="flex flex-wrap items-start justify-between gap-8">
+          <h2 className="m-0 max-w-lg text-[clamp(1.75rem,3.7vw,2.4rem)] font-extrabold leading-[1.18] tracking-[-0.03em] text-white">
+            Ажил хайгчдад үргэлж үнэгүй
+          </h2>
+          <p className="m-0 max-w-xs text-sm font-medium leading-relaxed text-chadal-muted">
+            Цалин платформоор дамжихгүй — ажил олгогч ажилтандаа ШУУД төлнө.
+            Дэлгэрэнгүйг үйлчилгээний нөхцөлөөс уншина уу.
+          </p>
+        </Reveal>
+
+        <div className="mt-11 grid gap-5 md:grid-cols-2">
+          {PRICING.map((plan, i) => (
+            <Reveal key={plan.tag} delay={i * 90} className="h-full">
+              <div
+                className={`flex h-full flex-col rounded-[1.4rem] p-8 ${
+                  plan.featured
+                    ? 'bg-chadal-pink text-white'
+                    : 'border border-chadal-border bg-chadal-card'
+                }`}
+              >
+                <div className={`text-xs font-bold tracking-[0.14em] ${plan.featured ? 'text-chadal-pink-soft' : 'text-chadal-muted'}`}>
+                  {plan.tag}
+                </div>
+                <div className="mt-5 flex flex-wrap items-baseline gap-2">
+                  <span className="text-[2.4rem] font-extrabold leading-none tracking-[-0.03em] text-white">
+                    {plan.price}
+                  </span>
+                  {plan.unit && (
+                    <span className={`text-sm font-medium ${plan.featured ? 'text-chadal-pink-soft' : 'text-chadal-muted'}`}>
+                      {plan.unit}
+                    </span>
+                  )}
+                </div>
+                <p className={`m-0 mt-4 text-sm font-medium ${plan.featured ? 'text-chadal-pink-soft' : 'text-chadal-muted'}`}>
+                  {plan.note}
+                </p>
+
+                <ul className="m-0 mt-7 flex list-none flex-col gap-3 p-0 text-sm font-medium">
+                  {plan.features.map(feature => (
+                    <li key={feature} className={`flex items-start gap-2.5 ${plan.featured ? 'text-white' : 'text-chadal-fg'}`}>
+                      <Icons.Check size={16} className="mt-0.5 flex-none" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+
+                {/* `mt-auto` нь товчийг картын ЁРООЛД түлхэнэ — жагсаалтын
+                    урт нь хоёр картад ялгаатай байсан ч товчнууд эгнэнэ. */}
+                <Link
+                  to={plan.to}
+                  className={`mt-auto block rounded-xl px-6 py-3.5 text-center text-sm font-bold transition-colors ${
+                    plan.featured
+                      ? 'bg-[#FDEEF5] text-[#8D1F57] hover:bg-white'
+                      : 'bg-chadal-accent text-chadal-ink hover:bg-white'
+                  }`}
+                >
+                  {plan.cta}
+                </Link>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      {/* ==================== ТОМ УРИАЛГА ==================== */}
+      <section className="container-page pb-24 sm:pb-28">
+        <Reveal className="flex flex-wrap items-center justify-between gap-8 rounded-[1.6rem] bg-chadal-accent px-8 py-12 sm:px-14 sm:py-14">
+          <h2 className="m-0 max-w-lg text-[clamp(1.7rem,3.4vw,2.5rem)] font-bold leading-[1.2] tracking-[-0.03em] text-chadal-ink">
+            Профайлаа үүсгээд өнөөдрөөс ээлжээ хай.
+          </h2>
+          <Link
+            to="/register"
+            className="rounded-xl bg-chadal-ink px-8 py-4 text-sm font-bold text-white transition-colors hover:bg-[#1B2534]"
+          >
+            Үнэгүй профайл үүсгэх
+          </Link>
+        </Reveal>
+      </section>
+
+      {/* ==================== ХОЛБОО БАРИХ ==================== */}
+      <section id="contact" className="container-page scroll-mt-24 pb-24 sm:pb-28">
+        <Reveal className="mb-12 max-w-2xl">
+          <div className="chadal-eyebrow">ХОЛБОО БАРИХ</div>
+          <SplitHeading className="mt-4 text-[clamp(1.9rem,4.4vw,2.9rem)] font-extrabold leading-[1.14] tracking-[-0.03em] text-white">
+            Бидэнтэй холбогдоорой
+          </SplitHeading>
+          <p className="mt-5 text-[0.95rem] font-medium leading-relaxed text-chadal-muted">
+            Ажил зарлах эсвэл ажил олох талаар асуулт байна уу? Манай баг тусламж үзүүлэхэд бэлэн.
+          </p>
+        </Reveal>
+
+        <div className="grid gap-5 lg:grid-cols-5">
+          <div className="space-y-5 lg:col-span-2">
+            <Reveal className="chadal-card">
+              <h3 className="m-0 mb-6 text-lg font-bold text-white">Холбоо барих мэдээлэл</h3>
+
+              <div className="space-y-6">
+                {CONTACT_ROWS.map((row, i) => {
+                  const Icon = Icons[row.icon]
+                  return (
+                    <Reveal key={row.label} delay={140 + i * 110} className="group flex items-start gap-4">
+                      <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-chadal-accent text-chadal-ink transition-transform duration-200 ease-spring group-hover:scale-110">
+                        <Icon size={20} />
+                      </span>
+                      <div>
+                        <div className="mb-1 text-sm font-bold text-white">{row.label}</div>
+                        <div className="text-sm font-medium text-chadal-muted">{row.value}</div>
+                      </div>
+                    </Reveal>
+                  )
+                })}
+              </div>
             </Reveal>
 
-            {/* Жишээ зарууд */}
-            <div className="relative">
-              {/* Чимэглэлийн гэрэл — аажим хөвнө */}
-              <div className="absolute -top-4 -right-4 w-40 h-40 bg-violet-500/20 rounded-full blur-3xl animate-float" />
-
-              <Reveal
-                animation="animate-slide-in-right"
-                className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4 relative z-10"
-              >
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500" />
-                  <div>
-                    <h4 className="font-bold text-white">TechStart Mongolia</h4>
-                    <p className="text-xs text-slate-500">2 цагийн өмнө зарлагдсан</p>
-                  </div>
-                </div>
-
-                {/* Гурван зар өмнө нь ГУРВАН УДАА хуулж бичсэн байсныг өгөгдөл
-                    болгож нэгтгэв — нэмэх, засахад нэг л газар хүрэхэд болно. */}
-                {SAMPLE_JOBS.map((job, i) => (
+            <Reveal delay={160} className="chadal-card">
+              <h3 className="m-0 mb-6 text-lg font-bold text-white">Дагах</h3>
+              <div className="flex gap-3">
+                {[1, 2, 3, 4].map(i => (
                   <div
-                    key={job.title}
-                    className="bg-white/5 border border-white/10 rounded-xl p-4 hover-lift animate-fade-up"
-                    style={{ animationDelay: `${260 + i * 110}ms` }}
+                    key={i}
+                    className="animate-pop-in press flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl border border-chadal-border bg-white/[0.04] text-chadal-muted transition-all hover-lift hover:border-chadal-accent/55 hover:text-white"
+                    style={{ animationDelay: `${260 + i * 80}ms` }}
                   >
-                    <div className="flex items-center justify-between gap-3 mb-2">
-                      <h5 className="font-semibold text-sm text-white">{job.title}</h5>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium border flex-shrink-0 ${job.tone}`}>
-                        <StatCounter value={String(job.applicants)} duration={900} /> хүсэлт
-                      </span>
-                    </div>
-                    <div className="text-xs text-slate-500">{job.location}</div>
+                    <Icons.Globe size={18} />
                   </div>
                 ))}
-              </Reveal>
-            </div>
+              </div>
+            </Reveal>
           </div>
-        </section>
 
-        {/* Statistics Section */}
-        <section id="stats" className="container-page py-16">
-          <Reveal className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/20 mb-6 animate-pop-in">
-              <span className="text-violet-300 font-medium text-sm">Мэдээлэл ба Үзүүлэлт</span>
-            </div>
-            <SplitHeading className="text-4xl sm:text-5xl font-extrabold mb-4">
-              Монголын <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-cyan-400">Оюутны Ажлын Зах</span>
-            </SplitHeading>
-            <p className="text-slate-400 max-w-2xl mx-auto text-lg">
-              Манай платформын бодит тоо нь Монгол оюутан, залуу мэргэжилтнуудын хязгааргүй ажилд эрчимтэй хүрэлцэх үүдийг харуулж байна.
-            </p>
-          </Reveal>
+          <div className="lg:col-span-3">
+            <Reveal delay={120} className="chadal-card p-7 sm:p-9">
+              {/* Талбарууд дараалан гарч ирнэ — `stagger` класс нь хүүхэд
+                  бүрд nth-child-ээр саатал өгнө (index.css). */}
+              <form className="stagger space-y-6">
+                <div className="grid animate-fade-up gap-6 sm:grid-cols-2">
+                  <div>
+                    <label className="chadal-label" htmlFor="contact-name">Бүтэн нэр</label>
+                    <input id="contact-name" type="text" placeholder="Таны нэр" className="chadal-input" />
+                  </div>
+                  <div>
+                    <label className="chadal-label" htmlFor="contact-email">И-мэйл</label>
+                    <input id="contact-email" type="email" placeholder="ta@example.com" className="chadal-input" />
+                  </div>
+                </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            {stats.map((stat, i) => (
-              <Reveal key={i} delay={i * 70}>
-                <SpotlightCard
-                  glow={stat.hoverGradient}
-                  className="h-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 text-center hover:border-violet-500/30"
-                >
-                  <StatCounter
-                    value={stat.value}
-                    className={`block text-5xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r ${stat.color} transition-transform duration-300 ease-spring group-hover:scale-105`}
+                <div className="animate-fade-up">
+                  <label className="chadal-label" htmlFor="contact-message">Мессеж</label>
+                  <textarea
+                    id="contact-message"
+                    placeholder="Бид танд хэрхэн туслах вэ?"
+                    rows={5}
+                    className="chadal-input resize-none"
                   />
-                  <div className="text-lg font-bold text-white mb-2">{stat.label}</div>
-                  <div className="text-slate-500 text-sm">{stat.desc}</div>
-                </SpotlightCard>
-              </Reveal>
-            ))}
+                </div>
+
+                <button type="button" className="chadal-btn chadal-btn-accent animate-fade-up">
+                  <Icons.Send size={18} />
+                  Мессеж илгээх
+                </button>
+              </form>
+            </Reveal>
           </div>
+        </div>
+      </section>
 
-          {/* Chart Section */}
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-10">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div>
-                <h3 className="text-2xl font-bold mb-3">Хамгийн Их Хүссэн Ажлын Ангилал</h3>
-                <p className="text-slate-400 mb-8">2025 онд ангиллаар цагийн ажлын зарлалын түгээлт</p>
-                
-                <div className="space-y-5">
-                  {demandData.map((item, i) => (
-                    <div key={i}>
-                      <div className="flex justify-between mb-2">
-                        <span className="font-medium text-slate-200">{item.category}</span>
-                        <StatCounter value={`${item.percent}%`} className="font-bold text-white" />
-                      </div>
-                      <div className="h-3 bg-white/5 rounded-full overflow-hidden">
-                        {/* Зурвас нь гүйлгэж ирэхэд зүүнээс баруун тийш ургана.
-                            `origin-left` байхгүй бол голоосоо тэлж, буруу
-                            харагдана. */}
-                        <Reveal
-                          animation="animate-grow-x"
-                          delay={i * 80}
-                          className={`h-full origin-left ${item.color} rounded-full`}
-                          style={{ width: `${item.percent}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-                <div className="flex items-center gap-2 mb-6">
-                  <Icons.TrendingUp className="text-cyan-400" size={24} />
-                  <h4 className="text-xl font-bold">Өсөлтийн Урсгал: Ажлын Зарлал</h4>
-                </div>
-                <div className="flex items-end justify-between gap-3 h-48 pt-8">
-                  {[60, 75, 65, 85, 78, 90, 100].map((height, i) => (
-                    <div key={i} className="flex-1 h-full flex flex-col items-center gap-2">
-                      {/* Хувиар өгсөн өндөр нь ЭЦЭГ элементийн өндрөөс
-                          тооцогддог тул баганад зориулж тодорхой өндөртэй
-                          талбай (`flex-1`) заавал хэрэгтэй — эс бөгөөс
-                          `height: 60%` нь auto өндрөөс тооцогдож 0 болно. */}
-                      <div className="flex-1 w-full flex items-end">
-                        {/* `origin-bottom` нь баганыг доороос дээш ургуулна */}
-                        <Reveal
-                          animation="animate-grow-y"
-                          delay={i * 70}
-                          className="w-full origin-bottom bg-gradient-to-t from-violet-600 to-violet-400 rounded-t-lg"
-                          style={{ height: `${height}%` }}
-                        />
-                      </div>
-                      <span className="text-xs text-slate-500">
-                        {['1-р сар', '2-р сар', '3-р сар', '4-р сар', '5-р сар', '6-р сар', '7-р сар'][i]}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-6 flex justify-between items-center pt-4 border-t border-white/5">
-                  <span className="text-slate-400">Нийт өсөлт</span>
-                  {/* «+» нь урд байгаа тул тусад нь бичив — `StatCounter` нь
-                      зөвхөн ард байх дагаварыг таньдаг. */}
-                  <span className="text-xl font-bold text-cyan-400">
-                    +<StatCounter value="73%" />
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Contact Section */}
-        <section id="contact" className="container-page py-16 pb-24">
-          <Reveal className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 mb-6 animate-pop-in">
-              <span className="text-cyan-300 font-medium text-sm">Холбоо барих</span>
-            </div>
-            <SplitHeading className="text-4xl sm:text-5xl font-extrabold mb-4">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-cyan-400">Мантай</span> Холбогдоорой
-            </SplitHeading>
-            <p className="text-slate-400 max-w-2xl mx-auto text-lg">
-              Ажил зарлах эсвэл ажил олох талаар асуулт байна уу? Манай баг тусламж хийхийн тулд энд байна.
-            </p>
-          </Reveal>
-
-          <div className="grid md:grid-cols-5 gap-8">
-            <div className="md:col-span-2 space-y-6">
-              <Reveal className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8">
-                <h3 className="text-xl font-bold mb-6">Холбоо барих мэдээлэл</h3>
-
-                {/* Гурван мөр өмнө нь бараг ижилхэн хуулагдсан байсныг өгөгдөл
-                    болгож нэгтгэв. Мөр бүр дараалан орж ирнэ. */}
-                <div className="space-y-6">
-                  {CONTACT_ROWS.map((row, i) => {
-                    const Icon = Icons[row.icon]
-                    return (
-                      <Reveal
-                        key={row.label}
-                        delay={140 + i * 110}
-                        className="group flex items-start gap-4"
-                      >
-                        <span className="w-12 h-12 rounded-xl bg-violet-500/20 flex items-center justify-center flex-shrink-0 transition-transform duration-200 ease-spring group-hover:scale-110">
-                          <Icon className="text-violet-400" size={24} />
-                        </span>
-                        <div>
-                          <div className="font-medium mb-1">{row.label}</div>
-                          <div className="text-slate-400">{row.value}</div>
-                        </div>
-                      </Reveal>
-                    )
-                  })}
-                </div>
-              </Reveal>
-
-              <Reveal delay={160} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8">
-                <h3 className="text-xl font-bold mb-6">Дагах</h3>
-                <div className="flex gap-3">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div
-                      key={i}
-                      className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-violet-500/30 transition-all cursor-pointer hover-lift press animate-pop-in"
-                      style={{ animationDelay: `${260 + i * 80}ms` }}
-                    >
-                      <Icons.Globe className="text-slate-400" size={20} />
-                    </div>
-                  ))}
-                </div>
-              </Reveal>
-            </div>
-
-            <div className="md:col-span-3">
-              <Reveal delay={120} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-10">
-                {/* Талбарууд дараалан гарч ирнэ — `stagger` класс нь хүүхэд
-                    бүрд nth-child-ээр саатал өгнө (index.css). */}
-                <form className="space-y-6 stagger">
-                  <div className="grid md:grid-cols-2 gap-6 animate-fade-up">
-                    <div>
-                      <label className="block text-slate-300 font-medium mb-2">Бүтэн Нэр</label>
-                      <input 
-                        type="text" 
-                        placeholder="Таны нэр" 
-                        className="w-full px-5 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-slate-300 font-medium mb-2">И-мэйл</label>
-                      <input 
-                        type="email" 
-                        placeholder="ta@example.com" 
-                        className="w-full px-5 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="animate-fade-up">
-                    <label className="block text-slate-300 font-medium mb-2">Мессеж</label>
-                    <textarea 
-                      placeholder="Бид таныг хэрхэн тусалж вэ?" 
-                      rows={5}
-                      className="w-full px-5 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all resize-none"
-                    />
-                  </div>
-                  
-                  <button
-                    type="submit"
-                    className="shine group animate-fade-up w-full md:w-auto px-10 py-4 rounded-xl bg-gradient-to-r from-violet-600 to-violet-500 text-white font-bold text-lg hover:shadow-xl hover:shadow-violet-500/40 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center gap-3"
-                  >
-                    {/* Илгээх сум нь хүрэхэд урагш хөдөлнө */}
-                    <Icons.Send size={22} className="transition-transform duration-200 group-hover:translate-x-1 group-hover:-translate-y-0.5" />
-                    Мессеж Илгээх
-                  </button>
-                </form>
-              </Reveal>
-            </div>
-          </div>
-        </section>
-      </div>
+      <Footer />
     </div>
   );
 }

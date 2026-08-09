@@ -374,7 +374,6 @@ export function SpotlightCard({
  * Гуравдагч санг ашиглаагүй: холилдуулалт нь 20 мөр код бөгөөд ингэснээр
  * anime.js ачаалагдаагүй газар ч ажиллана.
  */
-const SCRAMBLE_CHARS = 'АБВГДЕЁЖЗИЙКЛМНОӨПРСТУҮФХЦЧШЩЪЫЬЭЮЯ'
 
 export function CyclingText({
   words = [],
@@ -404,14 +403,32 @@ export function CyclingText({
       const tick = now => {
         const t = Math.min((now - start) / scrambleMs, 1)
         // Зүүнээс баруун тийш илэрнэ: эхний `revealed` үсэг эцсийн утгаараа,
-        // үлдсэн нь санамсаргүй.
+        // үлдсэн нь холилдсон.
         const revealed = Math.floor(next.length * t)
-        let out = ''
-        for (let i = 0; i < next.length; i++) {
-          if (i < revealed || next[i] === ' ' || next[i] === '.') out += next[i]
-          else out += SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)]
+
+        // ⚠ Илрээгүй хэсгийг ТУХАЙН ҮГИЙН ӨӨРИЙНХ нь үсгүүдийг байр
+        //   солиулж (permutation) үүсгэнэ — санамсаргүй цагаан толгойноос
+        //   ТҮҮВЭРЛЭДЭГГҮЙ.
+        //
+        //   Шалтгаан: түүвэрлэвэл үсгийн олонлог өөрчлөгдөж, өргөн үсэг
+        //   (ш, ж, д) олон удаа таарвал холилдох мөр эцсийн үгээсээ 57px
+        //   хүртэл өргөсдөг байв (тестэд 12% тохиолдолд). Тэр нь дараах
+        //   « Өсөх.» рүү давхцана. Байр солих үед үсгийн ОЛОНЛОГ хэвээр
+        //   тул нийт өргөн эцсийн үгтэйгээ бараг яг тэнцүү байна.
+        const idx = []
+        for (let i = revealed; i < next.length; i++) {
+          if (next[i] !== ' ' && next[i] !== '.') idx.push(i)
         }
-        setText(out)
+        const chars = idx.map(i => next[i])
+        for (let i = chars.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1))
+          ;[chars[i], chars[j]] = [chars[j], chars[i]]
+        }
+
+        const out = next.split('')
+        idx.forEach((pos, k) => { out[pos] = chars[k] })
+
+        setText(out.join(''))
         if (t < 1) frame = requestAnimationFrame(tick)
         else setText(next)
       }
@@ -431,8 +448,34 @@ export function CyclingText({
     }
   }, [words, interval, scrambleMs])
 
-  // `tabular-nums` нь үсэг солигдох үед өргөн нь үсрэхийг багасгана
-  return <span className={className}>{text}</span>
+  // ==================== ӨРГӨНИЙГ ТОГТМОЛ БАРИХ ====================
+  // Өмнө нь энэ нь ердөө `<span>{text}</span>` байсан тул үг солигдох бүрд
+  // мөрийн урт өөрчлөгдөж, доорх догол мөр, товчнууд босоо тэнхлэгээр
+  // ҮСЭРДЭГ байв (үг нэг мөрөнд багтахаа больж хоёр мөр болоход бүр
+  // мэдэгдэнэ).
+  //
+  // Шийдэл: БҮХ үгийг нэг grid нүдэнд үл үзэгдэх «хэмжигч» болгон
+  // байрлуулна — ингэснээр хайрцгийн өргөн нь ХАМГИЙН ӨРГӨН үгээр
+  // тогтоогдоно. Харагдах текстийг `absolute`-аар дээр нь тавьсан тул
+  // тэр нь хайрцгийн хэмжээнд ОГТ нөлөөлөхгүй: холилдох үеийн санамсаргүй
+  // үсгүүд ч layout-ыг хөдөлгөж чадахгүй.
+  //
+  // Хэмжигчид жинхэнэ үгс байгаа нь чухал — «хамгийн урт» гэж тэмдэгтийн
+  // тоогоор таамаглавал буруу гарна (үсэг бүр өөр өргөнтэй).
+  return (
+    <span className={`relative inline-grid align-bottom ${className}`}>
+      {words.map(w => (
+        <span
+          key={w}
+          aria-hidden="true"
+          className="invisible col-start-1 row-start-1 whitespace-pre"
+        >
+          {w}
+        </span>
+      ))}
+      <span className="absolute inset-0 whitespace-pre">{text}</span>
+    </span>
+  )
 }
 
 /**

@@ -3,9 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useNotification } from '../hooks/useNotification';
 import { signInWithGoogle, requestPasswordReset } from '../services/authService';
-import AnimatedBackground from '../components/AnimatedBackground';
-import CursorGlow from '../components/CursorGlow';
-const bgImage = new URL('../assets/hero-bg.jpg', import.meta.url).href;
 
 // Inline SVG icons
 const Icons = {
@@ -127,26 +124,21 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen text-white font-sans relative overflow-hidden flex items-center justify-center p-4">
-      {/* Нүүр хуудастай ижил амьд дэвсгэр — хөвөгч гэрлийн толбо, гүйх
-          сүлжээ, бөөмс. Гэрэл зураг бүдэг үлдэж бүтэц өгнө. */}
-      <AnimatedBackground image={bgImage} />
-      <CursorGlow />
-
-      <div className="relative z-10 w-full max-w-md">
+    <div className="chadal-page flex min-h-screen items-center justify-center p-4">
+      <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-10 animate-fade-up">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-cyan-400 flex items-center justify-center mx-auto mb-6 shadow-xl shadow-violet-500/20 animate-pop-in">
-            <Icons.Briefcase size={32} className="text-white" />
+          <div className="w-16 h-16 rounded-full bg-chadal-accent flex items-center justify-center mx-auto mb-6 animate-pop-in">
+            <Icons.Briefcase size={28} className="text-chadal-ink" />
           </div>
-          <h1 className="text-3xl font-extrabold mb-2">Тавтай Морилно уу</h1>
-          <p className="text-slate-400">МонголJob-д нэвтрэх</p>
+          <h1 className="text-3xl font-extrabold tracking-tight text-white mb-2">Тавтай морилно уу</h1>
+          <p className="font-medium text-chadal-muted">MongolJob-д нэвтрэх</p>
         </div>
 
         {/* Card */}
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-10 animate-fade-up" style={{ animationDelay: '120ms' }}>
+        <div className="chadal-panel p-8 md:p-10 animate-fade-up" style={{ animationDelay: '120ms' }}>
           {/* Нэвтрэх арга сонгох */}
-          <div className="flex p-1.5 rounded-xl bg-white/5 border border-white/10 mb-8">
+          <div className="flex p-1.5 rounded-full bg-white/[0.04] border border-chadal-border mb-8">
             {[
               { value: 'phone', label: 'Утсаар' },
               { value: 'email', label: 'И-мэйлээр' },
@@ -155,10 +147,10 @@ export default function LoginPage() {
                 key={option.value}
                 type="button"
                 onClick={() => setMethod(option.value)}
-                className={`flex-1 py-3 rounded-lg text-sm font-bold transition-all ${
+                className={`flex-1 py-3 rounded-full text-sm font-semibold transition-all ${
                   method === option.value
-                    ? 'bg-gradient-to-r from-violet-600 to-violet-500 text-white shadow-xl shadow-violet-500/20'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-chadal-accent text-chadal-ink'
+                    : 'text-chadal-muted hover:text-white'
                 }`}
               >
                 {option.label}
@@ -170,34 +162,34 @@ export default function LoginPage() {
             {/* Утас эсвэл и-мэйл */}
             {method === 'phone' ? (
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-3">Утасны дугаар</label>
+                <label className="chadal-label">Утасны дугаар</label>
                 <div className="relative">
-                  <Icons.Phone size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+                  <Icons.Phone size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-chadal-dim" />
                   <input
                     type="tel"
                     required
                     value={form.phone}
                     onChange={(e) => setForm({ ...form, phone: e.target.value })}
                     placeholder="99112233"
-                    className="w-full pl-12 pr-5 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all"
+                    className="chadal-input pl-12"
                   />
                 </div>
               </div>
             ) : (
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-3">И-мэйл хаяг</label>
+                <label className="chadal-label">И-мэйл хаяг</label>
                 <div className="relative">
-                  <Icons.Mail size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+                  <Icons.Mail size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-chadal-dim" />
                   <input
                     type="email"
                     required
                     value={form.email}
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
                     placeholder="bolor.erdene@example.mn"
-                    className="w-full pl-12 pr-5 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all"
+                    className="chadal-input pl-12"
                   />
                 </div>
-                <p className="text-xs text-slate-500 mt-2">
+                <p className="text-xs font-medium text-chadal-muted mt-2">
                   Нэвтэрсэн тухай сэрэмжлүүлэг энэ хаяг руу илгээгдэнэ.
                 </p>
               </div>
@@ -205,7 +197,7 @@ export default function LoginPage() {
 
             {/* Role Selector */}
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-3">Хэрэглэгчийн төрөл</label>
+              <label className="chadal-label">Хэрэглэгчийн төрөл</label>
               <div className="grid grid-cols-3 gap-3">
                 {[
                   { value: 'employee', label: 'Ажил хайгч', desc: 'Employee' },
@@ -216,13 +208,13 @@ export default function LoginPage() {
                     key={option.value}
                     type="button"
                     onClick={() => setForm({ ...form, role: option.value })}
-                    className={`p-3 rounded-xl border-2 transition-all text-center ${
+                    className={`p-3 rounded-2xl border transition-all text-center ${
                       form.role === option.value
-                        ? 'border-violet-500 bg-violet-500/20 text-violet-300'
-                        : 'border-white/10 bg-white/5 text-slate-400 hover:border-white/20'
+                        ? 'border-transparent bg-chadal-accent text-chadal-ink'
+                        : 'border-chadal-border bg-white/[0.04] text-chadal-muted hover:border-chadal-accent/50 hover:text-white'
                     }`}
                   >
-                    <div className="font-semibold text-sm">{option.label}</div>
+                    <div className="font-medium text-sm">{option.label}</div>
                     <div className="text-xs opacity-70">{option.desc}</div>
                   </button>
                 ))}
@@ -231,21 +223,21 @@ export default function LoginPage() {
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-3">Нууц үг</label>
+              <label className="chadal-label">Нууц үг</label>
               <div className="relative">
-                <Icons.Lock size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+                <Icons.Lock size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-chadal-dim" />
                 <input
                   type={showPass ? "text" : "password"}
                   required
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                   placeholder="Нууц үгээ оруулна уу"
-                  className="w-full pl-12 pr-14 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all"
+                  className="chadal-input pl-12 pr-14"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-chadal-dim hover:text-white transition-colors"
                 >
                   {showPass ? <Icons.EyeOff size={20} /> : <Icons.Eye size={20} />}
                 </button>
@@ -261,39 +253,41 @@ export default function LoginPage() {
                 type="button"
                 onClick={handleForgotPassword}
                 disabled={resetting}
-                className="text-sm text-violet-400 hover:text-violet-300 transition-colors font-medium disabled:opacity-50"
+                className="text-sm text-chadal-accent hover:text-white transition-colors font-semibold underline underline-offset-4 disabled:opacity-50"
               >
                 {resetting ? 'Илгээж байна…' : 'Нууц үгээ мартсан уу?'}
               </button>
             </div>
 
-            {/* Submit */}
+            {/* Submit — загварын бөөрөнхий товч, баруун талдаа цагаан дугуй сум */}
             <button
               type="submit"
               disabled={loading}
-              className="shine shine-auto w-full px-6 py-4 rounded-xl bg-gradient-to-r from-violet-600 to-violet-500 text-white font-bold text-lg hover:shadow-xl hover:shadow-violet-500/40 transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3"
+              className="chadal-btn chadal-btn-accent w-full text-base"
             >
               {loading ? (
-                <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <div className="w-6 h-6 border-2 border-chadal-ink/30 border-t-chadal-ink rounded-full animate-spin" />
               ) : (
-                "Нэвтрэх"
+                <>
+                  Нэвтрэх
+                  <Icons.ArrowRight size={18} />
+                </>
               )}
-              {!loading && <Icons.ArrowRight size={20} />}
             </button>
           </form>
 
           {/* Divider */}
           <div className="flex items-center gap-4 my-8">
-            <div className="flex-1 h-px bg-white/10" />
-            <span className="text-xs text-slate-500 uppercase tracking-wider">эсвэл</span>
-            <div className="flex-1 h-px bg-white/10" />
+            <div className="flex-1 h-px bg-chadal-border" />
+            <span className="text-xs font-semibold text-chadal-dim uppercase tracking-wider">эсвэл</span>
+            <div className="flex-1 h-px bg-chadal-border" />
           </div>
 
           {/* Social */}
           <button
             type="button"
             onClick={handleGoogle}
-            className="w-full py-4 rounded-xl bg-white/5 border border-white/10 text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-all flex items-center justify-center gap-3"
+            className="w-full py-4 rounded-full bg-white/[0.04] border border-chadal-border text-sm font-semibold text-chadal-fg hover:bg-white/10 hover:text-white transition-all flex items-center justify-center gap-3"
           >
             <svg width={20} height={20} viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.07 5.07 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
@@ -306,9 +300,9 @@ export default function LoginPage() {
         </div>
 
         {/* Footer link */}
-        <p className="text-center text-sm text-slate-500 mt-8">
+        <p className="text-center text-sm font-medium text-chadal-muted mt-8">
           Бүртгэлгүй байна уу?{" "}
-          <Link to="/register" className="text-violet-400 hover:text-violet-300 font-bold transition-colors">
+          <Link to="/register" className="text-chadal-accent font-semibold underline underline-offset-4 transition-colors hover:text-white">
             Бүртгүүлэх
           </Link>
         </p>

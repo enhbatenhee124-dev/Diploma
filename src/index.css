@@ -636,6 +636,99 @@
     @apply bg-white border border-gray-100 rounded-2xl p-6 hover-lift;
   }
 
+  /* ==================== CHADAL — НИЙТИЙН ХУУДСУУД ====================
+     Claude Design-ийн "Chadal Landing" загвараас. Өмнөх Halo сэдвийг
+     БҮРЭН орлов — тэр нь цайвар градиент дээр бараан текст байсан бол
+     энэ нь эсрэгээрээ БАРААН суурин дээр цагаан текст.
+
+     Ингэснээр `/jobs`, `/jobs/:id` зэрэг ажилтны хянах самбартай
+     ХУВААЛЦДАГ хуудсууд (`emp-*` — бараан карт, цагаан текст) нийтийн
+     хүрээнд шууд таарна. Halo үед тэдгээрийг бараан самбар дотор
+     тусгайлан ороож байсан шаардлага арилсан.
+
+     Өнгөний токенууд `tailwind.config.js` дотор — тэнд AA-д тохируулж
+     өөрчилсөн утгууд нь тайлбартай.
+
+     ⚠ Эх загварт `min-width: 1180px` байсан буюу ЗӨВХӨН desktop. Энд
+       бүх хэсгийг responsive болгосон тул тэр хязгаарыг АВСАН. */
+  .chadal-page {
+    @apply min-h-screen bg-chadal-bg font-manrope text-white;
+  }
+
+  /* Үндсэн фокусын хүрээ ЦАГААН — бараан дэвсгэр дээр харагдах ч
+     акцентаар өгвөл сэдэвтэйгээ нийцнэ. */
+  .chadal-page :focus-visible {
+    outline-color: rgb(142 203 251 / 0.85);
+  }
+
+  /* Загварын товч нь энгийн бөөрөнхий шахмал — Halo-гийн сумтай дугуй
+     тэмдэг энд БАЙХГҮЙ. */
+  .chadal-btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border-0
+           px-7 py-3 font-bold cursor-pointer transition-colors
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  /* Үндсэн үйлдэл: цайвар цэнхэр дээр бараан текст (12.6:1). */
+  .chadal-btn-accent {
+    @apply bg-chadal-accent text-chadal-ink hover:bg-white;
+  }
+  /* Хоёрдогч: зөвхөн ирмэгтэй. */
+  .chadal-btn-ghost {
+    @apply border border-[#33425A] text-white hover:bg-white hover:text-chadal-ink;
+  }
+
+  /* Хэсгийн үндсэн карт. */
+  .chadal-card {
+    @apply rounded-2xl border border-chadal-border bg-chadal-card p-7;
+  }
+  .chadal-card-title {
+    @apply text-lg font-bold leading-snug tracking-tight m-0;
+  }
+  .chadal-card-body {
+    @apply text-sm font-medium leading-relaxed text-chadal-muted m-0;
+  }
+
+  /* Хуудасны том самбар (Login/Register/Terms гэх мэт). */
+  .chadal-panel {
+    @apply rounded-3xl border border-chadal-border bg-chadal-card;
+  }
+
+  /* Самбар ДОТОР байрлах дэд хэсэг. Самбартайгаа ижил дүүргэлттэй бол
+     ялгарахгүй тул бага зэрэг ЦАЙВАР болгож, ирмэгээр тодруулна. */
+  .chadal-inset {
+    @apply rounded-3xl border border-white/10 bg-white/[0.04];
+  }
+
+  .chadal-input {
+    @apply w-full px-5 py-4 rounded-2xl bg-chadal-bg/70 border border-chadal-field
+           text-white placeholder-chadal-dim
+           focus:outline-none focus:border-chadal-accent/70
+           focus:ring-2 focus:ring-chadal-accent/20 transition-all;
+  }
+
+  .chadal-label {
+    @apply block text-sm font-semibold text-chadal-fg mb-2;
+  }
+
+  .chadal-nav-link {
+    @apply text-sm font-semibold text-chadal-muted hover:text-white transition-colors;
+  }
+
+  /* Хэсгийн жижиг таних бичээс (загварын "АЖИЛ ХАЙГЧ" гэх мэт). */
+  .chadal-eyebrow {
+    @apply text-xs font-bold tracking-[0.14em] text-chadal-muted;
+  }
+
+  /* Hero-гийн ард байх зөөлөн цэнхэр туяа. `pointer-events-none` тул
+     доогуурх товч, оролт дарагдахгүй. */
+  .chadal-glow {
+    background: radial-gradient(ellipse 50% 45% at 50% 45%,
+                                rgba(70, 150, 235, 0.55),
+                                rgba(30, 80, 160, 0.18) 45%,
+                                rgba(7, 12, 21, 0) 70%);
+    @apply pointer-events-none absolute;
+  }
+
   /* ==================== EMPLOYEE DARK THEME ==================== */
   .emp-page {
     /* Accent-ийн анхдагч утга. Хэрэглэгч мэндчилгээн дээр дарж солиход

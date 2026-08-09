@@ -84,33 +84,38 @@ const SECTIONS = [
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="chadal-page">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12">
         <Link
           to="/"
-          className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors mb-8"
+          className="inline-flex items-center gap-2 text-sm font-medium text-chadal-muted hover:text-white transition-colors mb-8"
         >
           <ArrowLeft className="w-4 h-4" /> Нүүр хуудас
         </Link>
 
-        <h1 className="text-4xl font-extrabold mb-3">Үйлчилгээний нөхцөл</h1>
-        <p className="text-slate-400 mb-8">Сүүлд шинэчилсэн: 2026 оны 7 сарын 29</p>
+        <h1 className="text-[clamp(2.25rem,4.5vw,3rem)] font-extrabold tracking-[-0.03em] leading-[1.08] text-white mb-3">
+          Үйлчилгээний нөхцөл
+        </h1>
+        <p className="font-medium text-chadal-muted mb-8">Сүүлд шинэчилсэн: 2026 оны 7 сарын 29</p>
 
-        <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/25 mb-10">
+        {/* ⚠ Бараан дэвсгэрт шилжсэн тул анхааруулгын өнгийг ХӨРВҮҮЛЭВ:
+            өмнөх `text-amber-800/950` нь цайвар шаргал дэвсгэрт зориулагдсан
+            бөгөөд энд бараг харагдахгүй болно. */}
+        <div className="flex items-start gap-3 p-4 rounded-2xl bg-amber-400/10 border border-amber-400/30 mb-10">
           <ShieldAlert className="w-5 h-5 text-amber-300 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-amber-100">
+          <p className="text-sm font-medium text-amber-100">
             Энэ баримт бичиг нь <strong>төслийн хувилбар</strong> бөгөөд хуулийн
             байгууллагаар хянуулах шатанд байна. Албан ёсны хүчин төгөлдөр
             хувилбарыг эндээс дараа нийтэлнэ.
           </p>
         </div>
 
-        <nav className="mb-10 p-4 rounded-xl bg-white/[0.03] border border-white/10">
-          <p className="text-sm font-medium text-slate-300 mb-2">Агуулга</p>
+        <nav className="chadal-panel mb-10 p-5">
+          <p className="text-sm font-bold text-white mb-2">Агуулга</p>
           <ul className="space-y-1">
             {SECTIONS.map(s => (
               <li key={s.id}>
-                <a href={`#${s.id}`} className="text-sm text-violet-400 hover:text-violet-300">
+                <a href={`#${s.id}`} className="text-sm font-medium text-chadal-muted underline underline-offset-4 hover:text-chadal-accent">
                   {s.title}
                 </a>
               </li>
@@ -121,18 +126,18 @@ export default function TermsPage() {
         <div className="space-y-10">
           {SECTIONS.map(section => (
             <section key={section.id} id={section.id} className="scroll-mt-8">
-              <h2 className="text-xl font-bold mb-3">{section.title}</h2>
+              <h2 className="text-xl font-bold text-white mb-3">{section.title}</h2>
               <div className="space-y-3">
                 {section.body.map((p, i) => (
-                  <p key={i} className="text-slate-300 leading-relaxed">{p}</p>
+                  <p key={i} className="font-medium text-chadal-muted leading-relaxed">{p}</p>
                 ))}
               </div>
             </section>
           ))}
         </div>
 
-        <div className="mt-12 pt-8 border-t border-white/10">
-          <p className="text-sm text-slate-400">
+        <div className="mt-12 pt-8 border-t border-chadal-line">
+          <p className="text-sm font-medium text-chadal-muted">
             Асуулт байвал админд хандана уу.
           </p>
         </div>

@@ -3,9 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useNotification } from '../hooks/useNotification';
 import { signInWithGoogle } from '../services/authService';
-import AnimatedBackground from '../components/AnimatedBackground';
-import CursorGlow from '../components/CursorGlow';
-const bgImage = new URL('../assets/hero-bg.jpg', import.meta.url).href;
 
 // Inline SVG icons
 const Icons = {
@@ -125,108 +122,104 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen text-white font-sans relative overflow-hidden flex items-center justify-center p-4">
-      {/* Нүүр хуудастай ижил амьд дэвсгэр */}
-      <AnimatedBackground image={bgImage} />
-      <CursorGlow />
-
-      <div className="relative z-10 w-full max-w-md">
+    <div className="chadal-page flex min-h-screen items-center justify-center p-4">
+      <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-10 animate-fade-up">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-cyan-400 flex items-center justify-center mx-auto mb-6 shadow-xl shadow-violet-500/20 animate-pop-in">
-            <Icons.Briefcase size={32} className="text-white" />
+          <div className="w-16 h-16 rounded-full bg-chadal-accent flex items-center justify-center mx-auto mb-6 animate-pop-in">
+            <Icons.Briefcase size={28} className="text-chadal-ink" />
           </div>
-          <h1 className="text-3xl font-extrabold mb-2">Бүртгэл Үүсгэх</h1>
-          <p className="text-slate-400">МонголJob-д нэгдэж холбогдох</p>
+          <h1 className="text-3xl font-extrabold tracking-tight text-white mb-2">Бүртгэл үүсгэх</h1>
+          <p className="font-medium text-chadal-muted">MongolJob-д нэгдэж холбогдох</p>
         </div>
 
         {/* Card */}
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-10 animate-fade-up" style={{ animationDelay: '120ms' }}>
+        <div className="chadal-panel p-8 md:p-10 animate-fade-up" style={{ animationDelay: '120ms' }}>
           {/* Role toggle */}
-          <div className="flex p-1.5 rounded-xl bg-white/5 border border-white/10 mb-8">
+          <div className="flex p-1.5 rounded-full bg-white/[0.04] border border-chadal-border mb-8">
             <button
               type="button"
               onClick={() => setRole("employee")}
-              className={`flex-1 py-3 rounded-lg text-sm font-bold transition-all ${
+              className={`flex-1 py-3 rounded-full text-sm font-medium transition-all ${
                 role === "employee"
-                  ? "bg-gradient-to-r from-violet-600 to-violet-500 text-white shadow-xl shadow-violet-500/20"
-                  : "text-slate-400 hover:text-white"
+                  ? "bg-chadal-accent text-chadal-ink"
+                  : "text-chadal-muted hover:text-white"
               }`}
             >
-              Ажил Хайгч
+              Ажил хайгч
             </button>
             <button
               type="button"
               onClick={() => setRole("employer")}
-              className={`flex-1 py-3 rounded-lg text-sm font-bold transition-all ${
+              className={`flex-1 py-3 rounded-full text-sm font-medium transition-all ${
                 role === "employer"
-                  ? "bg-gradient-to-r from-violet-600 to-violet-500 text-white shadow-xl shadow-violet-500/20"
-                  : "text-slate-400 hover:text-white"
+                  ? "bg-chadal-accent text-chadal-ink"
+                  : "text-chadal-muted hover:text-white"
               }`}
             >
-              Ажил Олгогч
+              Ажил олгогч
             </button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Full Name */}
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-3">
+              <label className="chadal-label">
                 {role === "employer" ? "Компанийн Нэр" : "Бүтэн Нэр"}
               </label>
               <div className="relative">
-                <Icons.User size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+                <Icons.User size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-chadal-dim" />
                 <input
                   type="text"
                   required
                   value={form.fullName}
                   onChange={(e) => setForm({ ...form, fullName: e.target.value })}
                   placeholder={role === "employer" ? "Акмэ Корп" : "Болор Эрдэнэ"}
-                  className="w-full pl-12 pr-5 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all"
+                  className="chadal-input pl-12"
                 />
               </div>
             </div>
 
             {/* Phone */}
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-3">Утасны дугаар</label>
+              <label className="chadal-label">Утасны дугаар</label>
               <div className="relative">
-                <Icons.Phone size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+                <Icons.Phone size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-chadal-dim" />
                 <input
                   type="tel"
                   required
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
                   placeholder="99112233"
-                  className="w-full pl-12 pr-5 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all"
+                  className="chadal-input pl-12"
                 />
               </div>
             </div>
 
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-3">И-мэйл хаяг</label>
+              <label className="chadal-label">И-мэйл хаяг</label>
               <div className="relative">
-                <Icons.Mail size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+                <Icons.Mail size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-chadal-dim" />
                 <input
                   type="email"
                   required
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   placeholder="bolor.erdene@example.mn"
-                  className="w-full pl-12 pr-5 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all"
+                  className="chadal-input pl-12"
                 />
               </div>
-              <p className="text-xs text-slate-500 mt-2">
+              <p className="text-xs font-medium text-chadal-muted mt-2">
                 Нэвтрэх бүрд энэ хаяг руу сэрэмжлүүлэг илгээнэ.
               </p>
             </div>
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-3">Нууц үг</label>
+              <label className="chadal-label">Нууц үг</label>
               <div className="relative">
-                <Icons.Lock size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+                <Icons.Lock size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-chadal-dim" />
                 <input
                   type={showPass ? "text" : "password"}
                   required
@@ -234,12 +227,12 @@ export default function RegisterPage() {
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                   placeholder="Хамгийн багадаа 4 тэмдэгт"
-                  className="w-full pl-12 pr-14 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all"
+                  className="chadal-input pl-12 pr-14"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-chadal-dim hover:text-white transition-colors"
                 >
                   {showPass ? <Icons.EyeOff size={20} /> : <Icons.Eye size={20} />}
                 </button>
@@ -250,7 +243,7 @@ export default function RegisterPage() {
                   <div
                     key={bar}
                     className={`h-1.5 flex-1 rounded-full transition-all ${
-                      form.password.length >= bar * 1 ? "bg-emerald-500" : "bg-white/10"
+                      form.password.length >= bar * 1 ? "bg-emerald-400" : "bg-white/10"
                     }`}
                   />
                 ))}
@@ -259,30 +252,30 @@ export default function RegisterPage() {
 
             {/* Confirm Password */}
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-3">Нууц үг баталгаажуулах</label>
+              <label className="chadal-label">Нууц үг баталгаажуулах</label>
               <div className="relative">
-                <Icons.Lock size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+                <Icons.Lock size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-chadal-dim" />
                 <input
                   type={showConfirm ? "text" : "password"}
                   required
                   value={form.confirm}
                   onChange={(e) => setForm({ ...form, confirm: e.target.value })}
                   placeholder="Нууц үгээ давтана уу"
-                  className="w-full pl-12 pr-14 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all"
+                  className="chadal-input pl-12 pr-14"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirm(!showConfirm)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-chadal-dim hover:text-white transition-colors"
                 >
                   {showConfirm ? <Icons.EyeOff size={20} /> : <Icons.Eye size={20} />}
                 </button>
               </div>
               {form.confirm && form.password !== form.confirm && (
-                <p className="text-xs text-red-400 mt-2">Нууц үг таарахгүй байна</p>
+                <p className="text-xs text-red-600 mt-2">Нууц үг таарахгүй байна</p>
               )}
               {form.confirm && form.password === form.confirm && (
-                <p className="text-xs text-emerald-400 mt-2 flex items-center gap-2">
+                <p className="text-xs text-emerald-700 mt-2 flex items-center gap-2">
                   <Icons.CheckCircle size={14} /> Нууц үг таарлаа
                 </p>
               )}
@@ -294,52 +287,54 @@ export default function RegisterPage() {
                 type="checkbox"
                 checked={agreed}
                 onChange={(e) => setAgreed(e.target.checked)}
-                className="w-5 h-5 mt-0.5 rounded border-white/20 bg-white/5 text-violet-500 focus:ring-violet-500/50"
+                className="w-5 h-5 mt-0.5 rounded border-chadal-field bg-chadal-bg text-chadal-accent focus:ring-chadal-accent/40"
                 required
               />
-              <span className="text-sm text-slate-400 leading-relaxed">
+              <span className="text-sm font-medium text-chadal-muted leading-relaxed">
                 Би{" "}
-                <Link to="/terms" target="_blank" className="text-violet-400 hover:text-violet-300 font-medium">Үйлчилгээний Нөхцөлд</Link>
+                <Link to="/terms" target="_blank" className="text-chadal-accent font-semibold underline underline-offset-4">Үйлчилгээний нөхцөлд</Link>
                 {" "}болон{" "}
-                <Link to="/terms#privacy" target="_blank" className="text-violet-400 hover:text-violet-300 font-medium">Нууцлалын Үндэслэлд</Link>
+                <Link to="/terms#privacy" target="_blank" className="text-chadal-accent font-semibold underline underline-offset-4">Нууцлалын бодлогод</Link>
                 {" "}зөвшөөрч байна
               </span>
             </label>
 
             {/* Алдааны мэдээлэл */}
             {error && (
-              <div className="px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/25 text-sm text-red-200">
+              <div className="px-4 py-3 rounded-2xl bg-red-500/10 border border-red-500/30 text-sm text-red-700">
                 {error}
               </div>
             )}
 
-            {/* Submit */}
+            {/* Submit — загварын бөөрөнхий товч, баруун талдаа цагаан дугуй сум */}
             <button
               type="submit"
-              disabled={loading} 
-              className="shine shine-auto w-full px-6 py-4 rounded-xl bg-gradient-to-r from-violet-600 to-violet-500 text-white font-bold text-lg hover:shadow-xl hover:shadow-violet-500/40 transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3"
+              disabled={loading}
+              className="chadal-btn chadal-btn-accent w-full text-base"
             >
               {loading ? (
                 <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
-                "Бүртгэл Үүсгэх"
+                <>
+                  Бүртгэл үүсгэх
+                  <Icons.ArrowRight size={18} />
+                </>
               )}
-              {!loading && <Icons.ArrowRight size={20} />}
             </button>
           </form>
 
           {/* Divider */}
           <div className="flex items-center gap-4 my-8">
-            <div className="flex-1 h-px bg-white/10" />
-            <span className="text-xs text-slate-500 uppercase tracking-wider">эсвэл</span>
-            <div className="flex-1 h-px bg-white/10" />
+            <div className="flex-1 h-px bg-chadal-border" />
+            <span className="text-xs font-semibold text-chadal-dim uppercase tracking-wider">эсвэл</span>
+            <div className="flex-1 h-px bg-chadal-border" />
           </div>
 
           {/* Social */}
           <button
             type="button"
             onClick={handleGoogle}
-            className="w-full py-4 rounded-xl bg-white/5 border border-white/10 text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-all flex items-center justify-center gap-3"
+            className="w-full py-4 rounded-full bg-white/[0.04] border border-chadal-border text-sm font-semibold text-chadal-fg hover:bg-white/10 hover:text-white transition-all flex items-center justify-center gap-3"
           >
             <svg width={20} height={20} viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
@@ -352,9 +347,9 @@ export default function RegisterPage() {
         </div>
 
         {/* Footer link */}
-        <p className="text-center text-sm text-slate-500 mt-8">
+        <p className="text-center text-sm font-medium text-chadal-muted mt-8">
           Бүртгэлтэй байна уу?{" "}
-          <Link to="/login" className="text-violet-400 hover:text-violet-300 font-bold transition-colors">
+          <Link to="/login" className="text-chadal-accent font-semibold underline underline-offset-4 transition-colors hover:text-white">
             Нэвтрэх
           </Link>
         </p>

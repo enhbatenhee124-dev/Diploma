@@ -39,19 +39,22 @@ const SECTIONS = [
   },
 ]
 
+// Chadal сэдэв: хөл нь хуудасны суурин дээр шууд суух бөгөөд зөвхөн
+// НИМГЭН дээд зураасаар тусгаарлагдана — загварын хөлтэй ижил.
+
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-300">
-      <div className="container-page py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+    <footer className="border-t border-chadal-line pb-8 pt-16">
+      <div className="container-page">
+        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 md:grid-cols-4">
           <div className="col-span-1 md:col-span-1">
-            <Link to="/" className="flex items-center gap-2 mb-4">
-              <div className="bg-primary-600 p-2 rounded-lg">
-                <Briefcase className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xl font-bold text-white">МонголАжил</span>
+            <Link to="/" className="mb-4 flex items-center gap-3">
+              <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-chadal-accent">
+                <Briefcase className="h-4 w-4 text-chadal-ink" />
+              </span>
+              <span className="text-xl font-extrabold tracking-tight text-white">MongolJob</span>
             </Link>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm font-medium leading-relaxed text-chadal-muted">
               Цагийн ажил хайгчдыг ажил олгогчтой холбоно. Хичээлийнхээ
               хуваарьт тохирсон ээлжээ олоорой.
             </p>
@@ -59,11 +62,11 @@ export default function Footer() {
 
           {SECTIONS.map(section => (
             <div key={section.title}>
-              <h3 className="text-white font-semibold mb-4">{section.title}</h3>
-              <ul className="space-y-2 text-sm">
+              <h3 className="mb-4 text-sm font-semibold text-chadal-dim">{section.title}</h3>
+              <ul className="space-y-3 text-sm font-medium">
                 {section.links.map(link => (
                   <li key={link.label}>
-                    <Link to={link.to} className="hover:text-white transition-colors">
+                    <Link to={link.to} className="text-chadal-fg transition-colors hover:text-chadal-accent">
                       {link.label}
                     </Link>
                   </li>
@@ -73,13 +76,13 @@ export default function Footer() {
           ))}
         </div>
 
-        <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-gray-500">© 2026 МонголАжил. Бүх эрх хуулиар хамгаалагдсан.</p>
+        <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-chadal-line pt-8 md:flex-row">
+          <p className="text-xs font-semibold text-chadal-dim">© 2026 MongolJob. Бүх эрх хуулиар хамгаалагдсан.</p>
           <a
             href="mailto:support@mongoljob.mn"
-            className="flex items-center gap-2 text-sm text-gray-500 hover:text-white transition-colors"
+            className="flex items-center gap-2 text-xs font-semibold text-chadal-dim transition-colors hover:text-white"
           >
-            <Mail className="w-4 h-4" />
+            <Mail className="h-4 w-4" />
             support@mongoljob.mn
           </a>
         </div>

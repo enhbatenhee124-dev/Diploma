@@ -3,6 +3,10 @@ import { useAuth } from '../hooks/useAuth'
 import { Briefcase, Menu, X, LogOut, LayoutDashboard } from 'lucide-react'
 import { useState } from 'react'
 
+// Chadal сэдэв: бараан хагас тунгалаг зурвас + доод зураас. Загварын
+// цэстэй ижил — лого нь цайвар цэнхэр дугуйтай, «Эхлэх» нь дүүрэн
+// акцент товч.
+
 export default function Navbar() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
@@ -19,69 +23,79 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="bg-white/95 backdrop-blur border-b border-gray-100 sticky top-0 z-50">
+    <nav className="sticky top-0 z-50 border-b border-chadal-line bg-chadal-bg/80 backdrop-blur-xl">
       <div className="container-page">
-        <div className="flex justify-between items-center h-16">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="bg-home-blue p-2 rounded-lg">
-              <Briefcase className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-home-blue to-home-purple bg-clip-text text-transparent">МонголАжил</span>
+        <div className="flex h-[4.5rem] items-center justify-between gap-6">
+          <Link to="/" className="flex items-center gap-3 text-xl font-extrabold tracking-tight text-white">
+            <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-chadal-accent">
+              <Briefcase className="h-4 w-4 text-chadal-ink" />
+            </span>
+            Mongol<span className="font-bold text-chadal-dim">Job</span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-8">
-            <Link to="/jobs" className="text-gray-600 hover:text-home-blue font-medium transition-colors">Ажил Хайх</Link>
-            <Link to="/" className="text-gray-600 hover:text-home-blue font-medium transition-colors">Компани</Link>
-            <Link to="/" className="text-gray-600 hover:text-home-blue font-medium transition-colors">Цалин</Link>
+          <div className="hidden items-center gap-8 md:flex">
+            {/* «Ажил олгогчид» холбоосыг АВСАН: нүүр хуудасны `#employers`
+                хэсэг устсан тул хаана ч хүрэхгүй болно. */}
+            <Link to="/jobs" className="chadal-nav-link">Ажил хайх</Link>
+            <Link to="/#contact" className="chadal-nav-link">Холбоо барих</Link>
           </div>
 
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden items-center gap-4 md:flex">
             {user ? (
               <div className="flex items-center gap-4">
-                <Link to={getDashboardLink()} className="flex items-center gap-2 text-gray-600 hover:text-home-purple font-medium">
-                  <LayoutDashboard className="w-4 h-4" />
+                <Link to={getDashboardLink()} className="chadal-nav-link flex items-center gap-2">
+                  <LayoutDashboard className="h-4 w-4" />
                   Хянах самбар
                 </Link>
-                <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
-                  <img src={user.avatarUrl} alt={user.name} className="w-8 h-8 rounded-full" />
-                  <span className="text-sm font-medium text-gray-700">{user.name}</span>
-                  <button onClick={handleLogout} className="text-gray-400 hover:text-red-500 transition-colors">
-                    <LogOut className="w-4 h-4" />
+                <div className="flex items-center gap-3 border-l border-chadal-border pl-4">
+                  <img src={user.avatarUrl} alt={user.name} className="h-8 w-8 rounded-full" />
+                  <span className="text-sm font-semibold text-chadal-fg">{user.name}</span>
+                  <button onClick={handleLogout} className="text-chadal-dim transition-colors hover:text-red-400">
+                    <LogOut className="h-4 w-4" />
                   </button>
                 </div>
               </div>
             ) : (
               <>
-                <Link to="/login" className="text-gray-600 hover:text-home-blue font-medium">Нэвтрэх</Link>
-                <Link to="/register" className="btn-primary">Эхлэх</Link>
+                <Link to="/login" className="chadal-nav-link">Нэвтрэх</Link>
+                <Link
+                  to="/register"
+                  className="rounded-full bg-chadal-accent px-6 py-2.5 text-sm font-bold text-chadal-ink transition-colors hover:bg-white"
+                >
+                  Эхлэх
+                </Link>
               </>
             )}
           </div>
 
-          <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden p-2">
-            {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          <button onClick={() => setMobileOpen(!mobileOpen)} className="p-2 text-white md:hidden">
+            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
       </div>
 
       {mobileOpen && (
-        <div className="md:hidden border-t border-gray-100 bg-white px-4 py-4 space-y-3">
-          <Link to="/jobs" className="block text-gray-600 font-medium py-2">Ажил Хайх</Link>
-          <Link to="/" className="block text-gray-600 font-medium py-2">Компани</Link>
-          <Link to="/" className="block text-gray-600 font-medium py-2">Цалин</Link>
+        <div className="space-y-3 border-t border-chadal-line bg-chadal-card px-4 py-4 md:hidden">
+          <Link to="/jobs" className="chadal-nav-link block py-2">Ажил хайх</Link>
+          <Link to="/#contact" className="chadal-nav-link block py-2">Холбоо барих</Link>
           {user ? (
             <>
-              <Link to={getDashboardLink()} className="flex items-center gap-2 text-gray-600 font-medium py-2">
-                <LayoutDashboard className="w-4 h-4" /> Хянах самбар
+              <Link to={getDashboardLink()} className="chadal-nav-link flex items-center gap-2 py-2">
+                <LayoutDashboard className="h-4 w-4" /> Хянах самбар
               </Link>
-              <button onClick={handleLogout} className="flex items-center gap-2 text-red-500 font-medium py-2">
-                <LogOut className="w-4 h-4" /> Гарах
+              <button onClick={handleLogout} className="flex items-center gap-2 py-2 font-semibold text-red-400">
+                <LogOut className="h-4 w-4" /> Гарах
               </button>
             </>
           ) : (
             <>
-              <Link to="/login" className="block text-gray-600 font-medium py-2">Нэвтрэх</Link>
-              <Link to="/register" className="block btn-primary text-center">Эхлэх</Link>
+              <Link to="/login" className="chadal-nav-link block py-2">Нэвтрэх</Link>
+              <Link
+                to="/register"
+                className="block rounded-full bg-chadal-accent px-7 py-2.5 text-center font-bold text-chadal-ink"
+              >
+                Эхлэх
+              </Link>
             </>
           )}
         </div>
