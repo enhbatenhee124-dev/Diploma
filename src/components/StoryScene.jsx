@@ -72,14 +72,14 @@ export default function StoryScene() {
       role="img"
       aria-label="Ажил зарлахаас цалин авах хүртэлх урсгалыг харуулсан хөдөлгөөнт дүрс"
     >
-      {/* ⚠ Бүх өнгө нь БАРААН Chadal дэвсгэрт (#0E1522 карт) зориулагдсан.
-          Halo үед энэ дүрс цайвар дэвсгэр дээр байсан тул бараан дүүргэлт,
-          гүнзгий аягийн зураас хэрэглэдэг байв — бараан дэвсгэр дээр
-          тэдгээр нь алга болно. Одоо эсрэгээр: цайвар зураас, тод аяг. */}
+      {/* ⚠ Бүх өнгө нь БАРААН Mufi дэвсгэрт (#150E21 карт) зориулагдсан:
+          цайвар зураас, тод аяг. Өнгө нь загварын хос акцентээс —
+          ягаан #B884FF ба улбар шар #FF9D4A. `ScrollStory`-гийн алхмын
+          өнгөтэй тааруулсан. */}
       <defs>
         <linearGradient id="scene-card" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#A78BFA" stopOpacity="0.22" />
-          <stop offset="100%" stopColor="#38BDF8" stopOpacity="0.10" />
+          <stop offset="0%" stopColor="#B884FF" stopOpacity="0.22" />
+          <stop offset="100%" stopColor="#FF9D4A" stopOpacity="0.10" />
         </linearGradient>
         <filter id="scene-glow" x="-40%" y="-40%" width="180%" height="180%">
           <feGaussianBlur stdDeviation="5" result="b" />
@@ -97,7 +97,7 @@ export default function StoryScene() {
         cy={CY}
         r={158}
         fill="none"
-        stroke="#F472B6"
+        stroke="#F0803F"
         strokeWidth="3"
         strokeLinecap="round"
         opacity="0"
@@ -111,7 +111,7 @@ export default function StoryScene() {
             key={link.i}
             className={`scene-link scene-link-${link.i}`}
             d={link.d}
-            stroke={link.matched ? '#34D399' : '#7E8A9C'}
+            stroke={link.matched ? '#FF9D4A' : '#8E88A0'}
             opacity="0"
           />
         ))}
@@ -149,7 +149,7 @@ export default function StoryScene() {
           height={CARD.h}
           rx={CARD.r}
           fill="url(#scene-card)"
-          stroke="#A78BFA"
+          stroke="#B884FF"
           strokeOpacity="0.55"
           strokeWidth="1.5"
           opacity="0"
@@ -162,7 +162,7 @@ export default function StoryScene() {
             className={`scene-corner scene-corner-${c.id}`}
             d={c.d}
             fill="none"
-            stroke="#A78BFA"
+            stroke="#B884FF"
             strokeWidth="3"
             strokeLinecap="round"
             opacity="0"

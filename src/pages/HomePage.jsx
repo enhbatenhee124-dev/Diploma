@@ -1,14 +1,11 @@
-import { lazy, Suspense, useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Marquee, Reveal, SpotlightCard, StatCounter } from '../components/Motion';
+// Хадгалсан хайлтын дүрслэл нь `components/SavedSearches.jsx`-ийн ЯГ тэр
+// дүрсүүдийг хэрэглэнэ — inline SVG-ээр дуурайвал бодит UI-аас салж эхэлнэ.
+import { BellOff, BellRing, BookmarkPlus, MessageSquare, Trash2 } from 'lucide-react';
+import { Reveal, SpotlightCard, StatCounter } from '../components/Motion';
 import SplitHeading from '../components/SplitHeading';
 import Footer from '../components/Footer';
-
-// anime.js ~43KB (gzip) нэмдэг ба энэ хэсэг ЗӨВХӨН нүүр хуудсанд байдаг.
-// Шууд импортловол ажилтан, ажил олгогч, админ хэн ч түүнийг харахгүй
-// мөртлөө эхний ачаалалтад татна. JobMap-ийг Leaflet-ийн улмаас салгасантай
-// ижил шалтгаан (NFR-1).
-const ScrollStory = lazy(() => import('../components/ScrollStory'));
 
 // Загварын хоёр mascot. Claude Design-ийн "Дизайн импорт арга" төслөөс
 // татсан — хоёулаа RGBA (тунгалаг дэвсгэртэй) тул цайвар картан дээр
@@ -17,21 +14,27 @@ const mascotSeeker = new URL('../assets/mascot-rabbit.png', import.meta.url).hre
 const mascotEmployer = new URL('../assets/mascot-capybara.png', import.meta.url).href;
 
 // ============================================================
-// Chadal сэдэв
+// Mufi сэдэв
 // ============================================================
-// Claude Design-ийн "Chadal Landing" загварыг энэ хуудсанд буулгав.
-// Өмнөх Halo (цайвар) сэдвийг БҮРЭН орлосон. Гол зарчмууд:
+// Claude Design-ийн "Mufi Landing v2" загварыг энэ хуудсанд буулгав.
+// Өмнөх Chadal (бараан цэнхэр) сэдвийг БҮРЭН орлосон. Гол зарчмууд:
 //
-//   • Дэвсгэр нь БАРААН (#070C15), текст нь цагаан. Хуучин `text-halo-*`
-//     классууд энд ажиллахгүй — `text-chadal-*` хэрэглэнэ.
-//   • Акцент нь цайвар цэнхэр #8ECBFB. Үндсэн товч нь ТЭР дүүргэлттэй,
-//     дотор нь бараан текст.
+//   • Дэвсгэр нь БАРААН ЯГААН (#0A0611), текст нь цагаан. Хуучин
+//     `text-chadal-*` классууд энд ажиллахгүй — `text-mufi-*` хэрэглэнэ.
+//   • Акцент нь ХОС: ягаан #B884FF (үндсэн) ба улбар шар #FF9D4A
+//     (хоёрдогч). Загварын hero нь зүүнээс улбар шар, баруунаас ягаан
+//     туяа тулгаж нээдэг — доорх `mufi-glow-*` тэрийг давтана.
+//   • Үндсэн товч нь ЦАЙВАР шахмал (#F6F2FA) дээр бараан текст —
+//     загварын «Book a Demo». Ягаан дүүргэлт нь дэд үйлдэлд.
+//   • Гарчгууд нь НИМГЭН (500-600), жижиг үсгээр, маш нягт tracking-тэй.
+//     Chadal-ын `font-extrabold uppercase` хэлбэр АРИЛСАН.
 //   • Загварын цорын ганц ЦАЙВАР хэсэг нь хоёр mascot карт — тэдгээр нь
-//     санаатай, хуудсын дунд амьсгал өгнө.
-//   • Загварт `min-width: 1180px` байсныг (зөвхөн desktop) АВЧ, бүх
+//     санаатай, хуудсын дунд амьсгал өгнө. Хос акцентийг дагаж ажил
+//     хайгч нь ягаан, ажил олгогч нь улбар шар болов.
+//   • Загварт `width: 1440px` тогтмол байсныг (зөвхөн desktop) АВЧ, бүх
 //     хэсгийг responsive болгов.
 //
-// ⚠ Загварын эх текст нь AI-ийн ажлын зах зээлийн тухай байсан бөгөөд
+// ⚠ Загварын эх текст нь эмнэлгийн цаг товлох SaaS-ын тухай байсан бөгөөд
 //   энэ платформын бодит үйлчилгээтэй (оюутны цагийн ажил) таарахгүй.
 //   Тиймээс ЗӨВХӨН харагдах систем (layout, өнгө, хэмнэл) авч, агуулгыг
 //   нь платформын бодит мэдээллээр бөглөв. Үнийн хэсэг нь `/terms#payments`
@@ -171,11 +174,11 @@ const ROLE_CARDS = [
     cta: 'Профайл үүсгэх',
     to: '/register',
     img: mascotSeeker,
-    bg: 'bg-chadal-lilac',
-    eyebrow: 'text-chadal-lilac-eyebrow',
-    ink: 'text-chadal-lilac-ink',
-    body: 'text-chadal-lilac-body',
-    btn: 'bg-chadal-lilac-btn hover:bg-[#6A43AD]',
+    bg: 'bg-mufi-lilac',
+    eyebrow: 'text-mufi-lilac-eyebrow',
+    ink: 'text-mufi-lilac-ink',
+    body: 'text-mufi-lilac-body',
+    btn: 'bg-mufi-lilac-btn hover:bg-[#5E2AB0]',
   },
   {
     tag: 'АЖИЛ ОЛГОГЧ',
@@ -184,27 +187,462 @@ const ROLE_CARDS = [
     cta: 'Зар нийтлэх',
     to: '/register',
     img: mascotEmployer,
-    bg: 'bg-chadal-mint',
-    eyebrow: 'text-chadal-mint-eyebrow',
-    ink: 'text-chadal-mint-ink',
-    body: 'text-chadal-mint-body',
-    btn: 'bg-chadal-mint-btn hover:bg-[#246661]',
+    bg: 'bg-mufi-peach',
+    eyebrow: 'text-mufi-peach-eyebrow',
+    ink: 'text-mufi-peach-ink',
+    body: 'text-mufi-peach-body',
+    btn: 'bg-mufi-peach-btn hover:bg-[#8F3708]',
   },
 ]
 
-// Загварын «backers» зурвасын байрд — платформыг ашигладаг салбарууд.
-// Үсгийн загвар нь санаатайгаар өөр өөр: жинхэнэ лого зурваст ажиглагддаг
-// «олон брэнд» мэдрэмжийг өнгөгүйгээр гаргана.
-const PARTNER_SECTORS = [
-  { label: 'Кафе & Ресторан', font: "'Times New Roman', serif", weight: 400, spacing: '0.02em', size: '15px' },
-  { label: 'ЖИЖИГЛЭН ХУДАЛДАА', font: "'Arial Black', Arial, sans-serif", weight: 900, spacing: '0.08em', size: '15px' },
-  { label: 'Логистик', font: 'Impact, sans-serif', weight: 700, spacing: '0.05em', size: '18px' },
-  { label: 'Сургалт', font: 'Georgia, serif', weight: 600, spacing: '-0.02em', size: '17px' },
-  { label: 'Мэдээллийн технологи', font: 'Helvetica, Arial, sans-serif', weight: 700, spacing: '-0.01em', size: '15px' },
-  { label: 'ҮЙЛ ЯВДАЛ', font: 'Verdana, sans-serif', weight: 700, spacing: '0.06em', size: '14px' },
-  { label: 'Агуулах', font: "'Courier New', monospace", weight: 700, spacing: '0.18em', size: '14px' },
-  { label: 'Маркетинг', font: "Palatino, 'Book Antiqua', serif", weight: 500, spacing: '0.03em', size: '16px' },
+// ------------------------------
+// Боломжуудын хэсгийн дүрслэлүүд
+// ------------------------------
+// Загварын Features картууд дээр бүтээгдэхүүний ДЭЛГЭЦИЙН ЗУРАГ байх
+// байрлалд эх файл нь зураастай хоосон талбай + `calendar auto-fill screen`
+// гэсэн mono бичээс тавьсан (зураг нь дараа орох гэсэн үг).
+//
+// ⚠ Тэр хоосон талбайг тэр чигээр нь авбал бүтээгдсэн хуудсан дээр
+//   «дуусаагүй» мэт харагдана. Бодит дэлгэцийн зураг ч мөн болохгүй:
+//   хуурамчаар зурвал байхгүй боломжийг байгаа мэт харуулна. Тиймээс
+//   боломж бүрийг сэдвийн ӨӨРИЙН энгийн хэлбэрээр (цэг, зурвас, бөмбөлөг)
+//   ХИЙСВЭРЛЭН үзүүлэв — юу болохыг ойлгуулах ч дэлгэц мэт дүр эсгэхгүй.
+//
+// Бүгд `aria-hidden`: агуулга нь дэргэдэх гарчиг, тайлбарт бүрэн байгаа
+// тул дэлгэц уншигчид эдгээр нь зөвхөн давхардал болно.
+
+/** Хийсвэр дүрслэлийн нийтлэг хайрцаг. */
+function FeatureArt({ children, tone = 'purple' }) {
+  return (
+    <div
+      className={`relative flex h-[11rem] items-center justify-center overflow-hidden rounded-2xl border border-white/10 sm:h-[12.25rem] ${
+        tone === 'warm'
+          ? 'bg-[linear-gradient(160deg,#2B1710,#190D12)]'
+          : 'bg-[linear-gradient(160deg,#1B1030,#120B1E)]'
+      }`}
+      aria-hidden="true"
+    >
+      {/* ⚠ Туяаг ХАГАС хүчээр. Hero-гийн бүтэн хүчээр өгвөл голдоо
+          дэвсгэрийг #52267B хүртэл цайруулж, доорх жижиг бичээсүүдийг
+          4.5:1-ээс унагана (хэмжсэн: 3.65–4.01). Хагасаар бол дэвсгэр
+          #371B55 болж, бүгд 4.9:1-ээс дээш үлдэнэ. */}
+      <div
+        className={`mufi-glow ${tone === 'warm' ? 'mufi-glow-warm' : 'mufi-glow-purple'} inset-0 opacity-50`}
+      />
+      {/* ⚠ Энэ боодол `absolute inset-0` байх ЁСТОЙ, `relative w-full` БИШ.
+          Сүүлийнх нь өөрөө өндөргүй (доторх зүйлс нь бүгд `absolute`)
+          болж хураагддаг тул газрын зургийн сүлжээ алга болж,
+          хувиар өгсөн тэмдэглэгээнүүд нэг цэг дээр овоордог. */}
+      <div className="absolute inset-0 flex items-center justify-center px-6">{children}</div>
+    </div>
+  )
+}
+
+/**
+ * Газрын зураг.
+ *
+ * ⚠ Тэмдэглэгээ нь ЗОХИОМОЛ дугуй биш — `components/JobMap.jsx`-ийн
+ *   `pinIcon()`-ий ЯГ тэр SVG зам, яг тэр өнгө (энгийн `#8b5cf6`, хүсэлт
+ *   илгээсэн зар `#f59e0b`), цагаан 1.5px зураас, голдоо цагаан дугуй.
+ *   Бөмбөлгийн агуулга нь мөн бодит `<Popup>`-ийн бүтэц: гарчиг, цалин
+ *   «/ цаг», дүүрэг, «Дэлгэрэнгүй →».
+ *
+ *   Зарын өгөгдөл нь `server/scripts/seed.js`-ийн бодит мөрөөс —
+ *   «Ахлах бариста», Сүхбаатар, 22,000₮. Цалингийн бичиглэл нь
+ *   `utils/helpers.js → formatCurrency()`-ийн гаргадаг «22,000 ₮».
+ */
+const JOB_PIN = 'M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20c0-6.6-5.4-12-12-12z'
+
+function MapPin({ applied = false, size = 26 }) {
+  return (
+    <svg width={size} height={size * (32 / 24)} viewBox="0 0 24 32" xmlns="http://www.w3.org/2000/svg">
+      <path d={JOB_PIN} fill={applied ? '#f59e0b' : '#8b5cf6'} stroke="white" strokeWidth="1.5" />
+      <circle cx="12" cy="12" r="4.5" fill="white" />
+    </svg>
+  )
+}
+
+function ArtMap() {
+  return (
+    <FeatureArt>
+      {/* Зургийн хавтангийн сүлжээ */}
+      <div
+        className="absolute inset-0 opacity-[0.35]"
+        style={{
+          backgroundImage:
+            'linear-gradient(rgba(255,255,255,0.10) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.10) 1px, transparent 1px)',
+          backgroundSize: '34px 34px',
+        }}
+      />
+
+      {/* Хажуугийн тэмдэглэгээнүүд. Байрлал нь ХУВИАР өгөгдсөн тул карт
+          нарийсахад хамт агшина — тогтмол px байсан бол ирмэгээс халина. */}
+      <span className="absolute left-[12%] top-[24%] -translate-x-1/2 -translate-y-full opacity-70">
+        <MapPin size={18} />
+      </span>
+      <span className="absolute left-[86%] top-[62%] -translate-x-1/2 -translate-y-full opacity-70">
+        <MapPin size={18} />
+      </span>
+      <span className="absolute left-[30%] top-[86%] -translate-x-1/2 -translate-y-full opacity-70">
+        <MapPin size={18} applied />
+      </span>
+
+      {/* Нээлттэй бөмбөлөг. Leaflet-ийн бөмбөлөг ЦАЙВАР дэвсгэртэй,
+          бараан текстэй тул энд ч тэрийг хадгалав — эс бөгөөс бодит
+          газрын зурагтай огт төстэй биш болно. */}
+      <div className="relative mx-auto w-full max-w-[15rem]">
+        <div className="rounded-lg bg-white px-3 py-2.5 text-left shadow-[0_6px_20px_rgba(0,0,0,0.45)]">
+          <strong className="block text-[0.78rem] leading-tight text-[#0f172a]">Ахлах бариста</strong>
+          <div className="mt-1 text-[0.7rem] leading-snug text-[#475569]">
+            <div>22,000 ₮ / цаг</div>
+            <div>Сүхбаатар</div>
+          </div>
+          <span className="mt-1.5 inline-block text-[0.7rem] font-semibold text-[#7c3aed]">
+            Дэлгэрэнгүй →
+          </span>
+        </div>
+        {/* Бөмбөлгийн үзүүр, доор нь тэмдэглэгээ */}
+        <span className="mx-auto block h-0 w-0 border-x-[7px] border-t-[8px] border-x-transparent border-t-white" />
+        <span className="mx-auto mt-0.5 block w-fit">
+          <MapPin size={22} />
+        </span>
+      </div>
+    </FeatureArt>
+  )
+}
+
+/**
+ * Хадгалсан хайлт.
+ *
+ * ⚠ Энэ нь ЗОХИОМОЛ хэлбэр биш — `components/SavedSearches.jsx`-ийн бодит
+ *   бүтцийг давтана: «Хайлтаа хадгалах» товч, дараа нь хадгалсан хайлт бүр
+ *   нь ЧИП болж, чип дээр нь мэдэгдлийн хонх (`BellRing`/`BellOff`) ба
+ *   устгах сав байрлана. Дүрсүүд нь ч тэр компонентын хэрэглэдэг ЯГ тэр
+ *   lucide дүрсүүд.
+ *
+ *   Бичвэр нь мөн бодит: дүүргүүд `data/constants.js → DISTRICTS`-ээс,
+ *   ангиллын нэр `admin/AdminAnalytics.jsx → categoryLabels`-ээс, цалингийн
+ *   бичиглэл нь `SavedSearches.jsx → describe()`-ийн гаргадаг
+ *   «15,000₮/цаг-с дээш» хэлбэрээр.
+ *
+ *   Өнгө нь л сэдэвт тохирсон: бодит компонент дээр `emp-accent` (хянах
+ *   самбарын ягаан), энд нийтийн хуудасны `mufi-accent`.
+ */
+function ArtSavedSearch() {
+  const chips = [
+    { label: 'Сүхбаатар · Хоол · 15,000₮/цаг-с дээш', notify: true },
+    { label: 'Хан-Уул · Хүргэлт', notify: false },
+  ]
+  return (
+    <FeatureArt>
+      <div className="flex w-full max-w-[20rem] flex-col items-start gap-2.5">
+        <span className="inline-flex items-center gap-1.5 rounded-lg bg-white/[0.07] px-3 py-1.5 text-[0.7rem] font-medium text-mufi-fg">
+          <BookmarkPlus className="h-3.5 w-3.5" />
+          Хайлтаа хадгалах
+        </span>
+
+        {chips.map(chip => (
+          <span
+            key={chip.label}
+            className="inline-flex max-w-full items-center gap-1 rounded-lg border border-mufi-accent/25 bg-mufi-accent/15 py-1 pl-3 pr-1 text-[0.7rem]"
+          >
+            <span className="truncate text-mufi-fg">{chip.label}</span>
+            <span className="p-1 text-mufi-fg/60">
+              {chip.notify ? <BellRing className="h-3 w-3" /> : <BellOff className="h-3 w-3" />}
+            </span>
+            <span className="p-1 text-mufi-fg/50">
+              <Trash2 className="h-3 w-3" />
+            </span>
+          </span>
+        ))}
+      </div>
+    </FeatureArt>
+  )
+}
+
+/**
+ * Платформ доторх чат.
+ *
+ * ⚠ `components/ChatPanel.jsx`-ийн бодит бүтэц: `MessageSquare` дүрстэй
+ *   толгой (гарчиг + дэд гарчиг), доор нь бөмбөлгүүд. Бөмбөлгийн хэлбэр
+ *   яг тэндхийнх — өөрийн мессеж БАРУУН талд `bg-white/15` ба
+ *   `rounded-2xl rounded-br-sm`, нөгөө талынх ЗҮҮН талд `bg-white/[0.06]`
+ *   + `border-white/10` ба `rounded-bl-sm`. Доод баруун буланд нь
+ *   `text-[10px] text-white/45` цагийн тэмдэг.
+ *
+ *   Өмнө нь буруу булан (`rounded-tl-md`/`rounded-tr-md`) дээр хийчихсэн
+ *   байсан ба өөрийн мессежийг ягаанаар будсан нь бодит чаттай таарахгүй
+ *   байв — жинхэнэ чат ХОЁУЛАНГ нь саарлаар харуулж, зөвхөн тунгалаг
+ *   байдлаар нь ялгадаг.
+ *
+ * ⚠ ГАНЦ ЗӨРҮҮ: цагийн тэмдэг. Бодит компонент `text-white/45` хэрэглэдэг
+ *   боловч тэр нь тодролын шалгуурыг ДАВДАГГҮЙ (өөрийн бөмбөлөг дээр
+ *   3.69:1, нөгөөгийнх дээр 4.26:1 — хоёулаа 4.5:1-ээс доош). Энд
+ *   `white/65` болгож 4.97:1 болгов. Бодит компонентыг мөн засах
+ *   шаардлагатай — тусад нь тэмдэглэсэн.
+ */
+function ArtChat() {
+  return (
+    <FeatureArt>
+      <div className="flex w-full max-w-[17.5rem] flex-col gap-2.5">
+        <div className="flex items-center gap-2 border-b border-white/10 pb-2.5">
+          <MessageSquare className="h-3.5 w-3.5 flex-none text-white" />
+          <div className="min-w-0">
+            <p className="m-0 truncate text-[0.72rem] font-medium text-white">Ахлах бариста</p>
+            <p className="m-0 truncate text-[0.62rem] text-white/55">Кофе Ланд</p>
+          </div>
+        </div>
+
+        <div className="flex justify-start">
+          <div className="max-w-[78%] rounded-2xl rounded-bl-sm border border-white/10 bg-white/[0.06] px-3 py-1.5">
+            <p className="m-0 text-[0.7rem] leading-snug text-white">Маргаашийн ээлж хүчинтэй юу?</p>
+            <p className="m-0 mt-0.5 text-right text-[0.58rem] text-white/65">14:02</p>
+          </div>
+        </div>
+
+        <div className="flex justify-end">
+          <div className="max-w-[78%] rounded-2xl rounded-br-sm bg-white/15 px-3 py-1.5">
+            <p className="m-0 text-[0.7rem] leading-snug text-white">Тийм, 08:00-д ирээрэй.</p>
+            <p className="m-0 mt-0.5 text-right text-[0.58rem] text-white/65">14:05</p>
+          </div>
+        </div>
+      </div>
+    </FeatureArt>
+  )
+}
+
+/**
+ * Түвшин ба EXP.
+ *
+ * ⚠ `components/Gamification.jsx`-ийн `LevelProgress`-ийн бодит бүтэц:
+ *   «Түвшин N» + «{intoLevel} / {span} EXP», доор нь зурвас, доор нь
+ *   «Дараагийн түвшин хүртэл … EXP · Нийт … EXP». Зурвасын өнгө нь
+ *   `THEMES[0]` буюу анхдагч «Нил ягаан» (`from-violet-500 to-fuchsia-500`).
+ *
+ *   Тоонууд нь ЗОХИОМОЛ биш, бүгд ХООРОНДОО НИЙЦНЭ. Migration
+ *   `20260727000400_gamification.sql`-ийн `exp_for_level` босго нь
+ *   Lv.4 = 560, Lv.5 = 900. Нийт EXP 772 гэвэл `user_progress` view нь:
+ *     level          = 4        (560 ≤ 772 < 900)
+ *     into_level     = 772−560  = 212
+ *     needed_for_next= 900−772  = 128
+ *     progress_pct   = round(100 × 212 ÷ 340) = 62
+ *
+ *   Доод мөр нь `nextWageTier(4)` = { level: 5, minWage: 20000 } —
+ *   `RankingPage`-ийн харуулдагтай ижил зөвлөмж.
+ */
+function ArtLevel() {
+  return (
+    <FeatureArt tone="warm">
+      <div className="w-full max-w-[19rem]">
+        <div className="mb-1.5 flex items-end justify-between gap-3">
+          <span className="text-[0.78rem] font-bold text-white">Түвшин 4</span>
+          <span className="text-[0.66rem] text-white/80">212 / 340 EXP</span>
+        </div>
+
+        <div className="h-2.5 overflow-hidden rounded-full bg-white/15">
+          <div className="h-full w-[62%] rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500" />
+        </div>
+
+        <p className="m-0 mt-1.5 text-[0.64rem] leading-snug text-white/80">
+          Дараагийн түвшин хүртэл 128 EXP · Нийт 772 EXP
+        </p>
+        <p className="m-0 mt-2 text-[0.64rem] leading-snug text-mufi-warm">
+          Lv.5-д хүрвэл цагийн 20,000 ₮-с дээш ажил санал болгоно
+        </p>
+      </div>
+    </FeatureArt>
+  )
+}
+
+// Боломжууд. Тус бүр нь БОДИТ, аль хэдийн ажиллаж буй чиг үүрэг —
+// хажууд нь хэрэгжүүлсэн файлыг зааж өгөв.
+const FEATURES = [
+  {
+    art: ArtMap,
+    title: 'Газрын зураг дээрээс ээлжээ ол',
+    body: 'Зарыг жагсаалтаар биш газрын зураг дээр хараад хичээлийн байр, гэрээсээ ойрхон ажлыг нь шууд сонго.',
+    // `components/JobMap.jsx` → `pages/employee/JobListings.jsx`
+  },
+  {
+    art: ArtSavedSearch,
+    title: 'Хадгалсан хайлт мэдэгдэл болно',
+    body: 'Шүүлтээ хадгалахад тохирох зар гармагц мэдэгдэл ирнэ. Мэдэгдлийг өгөгдлийн сан өөрөө үүсгэдэг тул апп нээлттэй байх шаардлагагүй.',
+    // `components/SavedSearches.jsx` (FR-5.4)
+  },
+  {
+    art: ArtChat,
+    title: 'Платформ доторх чат',
+    body: 'Утасны дугаараа солилцолгүйгээр ажил олгогчтой шууд ярилц.',
+    // `components/ChatDock.jsx` → Employee/Employer layout
+  },
+  {
+    art: ArtLevel,
+    title: 'Түвшин нь зөвлөмж, хаалт биш',
+    body: 'Ажил хийж EXP цуглуулна. Түвшин нь өндөр цалинтай ажилд ямар туршлага санал болгож байгааг харуулах ч хэнийг ч хаахгүй — хүссэн ажилдаа хүсэлт илгээнэ.',
+    // `utils/gamification.js` → `levelAdvice` (ЗӨВЛӨМЖ, хориг БИШ)
+  },
 ]
+
+/** Боломжийн нэг карт: дүрслэл + гарчиг + тайлбар. */
+function FeatureCard({ feature, delay }) {
+  const Art = feature.art
+  return (
+    <Reveal delay={delay} className="h-full">
+      <div className="mufi-card flex h-full flex-col gap-6">
+        <Art />
+        <div className="flex flex-col gap-2.5">
+          <h3 className="m-0 text-[1.3rem] font-semibold leading-snug tracking-tight text-mufi-fg">
+            {feature.title}
+          </h3>
+          <p className="m-0 text-[0.9rem] font-normal leading-relaxed text-balance text-mufi-muted">
+            {feature.body}
+          </p>
+        </div>
+      </div>
+    </Reveal>
+  )
+}
+
+/**
+ * Уриалгын самбарын дүрслэл: боломжит цагийн хүснэгт.
+ *
+ * Загварын CTA дээр «weekly schedule shot» гэсэн зурагны байр байсан.
+ *
+ * ⚠ Энэ нь зохиомол баганан диаграм БИШ — `pages/employee/EmployeeProfile.jsx`
+ *   дээрх бодит «Боломжит цаг» хүснэгтийн бүтэц: мөр нь 7 өдөр
+ *   (`days` жагсаалт), багана нь 3 цагийн интервал (`timeSlots`), нүд бүр
+ *   нь 6×6 дөрвөлжин унтраалт. Дүүрэн нүд = боломжтой, хоосон нь =
+ *   боломжгүй. Интервалын утга нь `utils/matching.js → slotIndex()`-тэй
+ *   таарна: 0 = өглөө (<12), 1 = өдөр (<18), 2 = орой.
+ *
+ *   Энэ хүснэгт нь тохирлын оноонд ХАМГИЙН ЖИНТЭЙ хэсэг (40/100 оноо)
+ *   учраас CTA-гийн «хичээлийнхээ хуваарийг оруулмагц» гэсэн үгтэй
+ *   шууд нийцнэ.
+ */
+function ArtWeek() {
+  const days = ['Даваа', 'Мягмар', 'Лхагва', 'Пүрэв', 'Баасан', 'Бямба', 'Ням']
+  const timeSlots = ['Өглөө', 'Өдөр', 'Орой']
+  // Оюутны ердийн долоо хоног: өдрийн цагаар хичээлтэй тул орой ба амралтын
+  // өдөр нь чөлөөтэй. `availability` объектын бодит хэлбэр — { өдөр: [цаг] }.
+  const availability = { 0: [2], 1: [2], 2: [1, 2], 3: [2], 4: [1, 2], 5: [0, 1, 2], 6: [0, 1] }
+
+  return (
+    <div
+      className="relative flex h-[13rem] items-center overflow-hidden rounded-2xl border border-white/10 bg-[linear-gradient(160deg,#1B1030,#120B1E)] px-4 sm:h-[14.5rem] sm:px-5"
+      aria-hidden="true"
+    >
+      <div className="mufi-glow mufi-glow-purple inset-0 opacity-50" />
+      <table className="relative w-full border-collapse text-[0.6rem] sm:text-[0.66rem]">
+        <thead>
+          <tr>
+            <th />
+            {timeSlots.map(slot => (
+              <th key={slot} className="px-1 pb-1.5 text-center font-normal text-mufi-muted">
+                {slot}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {days.map((day, dayIdx) => (
+            <tr key={day} className="border-t border-white/10">
+              <td className="py-[3px] pr-2 text-mufi-muted">{day}</td>
+              {timeSlots.map((slot, slotIdx) => (
+                <td key={slot} className="px-1 py-[3px] text-center">
+                  <span
+                    className={`mx-auto block h-3.5 w-3.5 rounded border sm:h-4 sm:w-4 ${
+                      availability[dayIdx]?.includes(slotIdx)
+                        ? 'border-mufi-accent bg-mufi-accent'
+                        : 'border-white/10 bg-white/5'
+                    }`}
+                  />
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+// ------------------------------
+// Түгээмэл асуулт
+// ------------------------------
+// ⚠ Хариулт бүр нь ЗОХИОСОН биш — `/terms` эсвэл кодын бодит зан төлөвөөс
+//   гаралтай. Хажууд нь эх сурвалжийг зааж өгөв. Хариултыг өөрчлөх бол
+//   эх сурвалжийг нь ЗААВАЛ хамт шалга, эс бөгөөс хуудас нөхцөлтэйгээ
+//   зөрчилдөнө.
+const FAQS = [
+  {
+    q: 'Ажил хайгчид ямар нэг төлбөр төлөх үү?',
+    a: 'Үгүй. Профайл үүсгэх, ажил хайх, хүсэлт илгээх, чатлах бүгд үнэгүй. Зөвхөн ажил олгогч зар нийтлэхийн тулд сарын багц авна.',
+    // /terms#payments — «Ажил хайгчид платформ ҮНЭГҮЙ»
+  },
+  {
+    q: 'Цалин платформоор дамжих уу?',
+    a: 'Үгүй. Ажил олгогч ажилтандаа ШУУД төлнө. Тиймээс цалин төлөгдөөгүй тохиолдолд бид шууд хариуцлага хүлээхгүй ч маргааныг шийдвэрлэхэд туслах, зөрчсөн ажил олгогчийг хаана.',
+    // /terms#payments — 3 дахь догол мөр, ҮГ ҮСГЭЭР нь
+  },
+  {
+    q: 'Түвшин бага бол өндөр цалинтай ажилд орж болох уу?',
+    a: 'Болно. Түвшин нь ЗӨВЛӨМЖ болохоос хориг биш — хэн ч ямар ч ажилд хүсэлт илгээж чадна. Ажил олгогч хүсэлтийг харахдаа тухайн ажилд ямар туршлага санал болгож байгааг нэмэлт мэдээлэл болгон харна.',
+    // utils/gamification.js → `levelAdvice` дээрх тайлбар
+  },
+  {
+    q: 'Мэдэгдэл авахын тулд апп нээлттэй байх шаардлагатай юу?',
+    a: 'Үгүй. Хадгалсан хайлтад тохирох зар гармагц мэдэгдлийг өгөгдлийн сан өөрөө үүсгэдэг тул дараа орохдоо хонхон дээрээ харна.',
+    // components/SavedSearches.jsx (FR-5.4) дээрх тайлбар
+  },
+]
+
+/**
+ * FAQ-ийн нэг мөр.
+ *
+ * ⚠ Эх загварт энэ нь `onClick`-тэй `<div>` байсан. Тэр нь хулганаар л
+ *   ажиллана — гараас Tab-аар хүрэхгүй, Enter-ээр нээгдэхгүй. Энд
+ *   жинхэнэ `<button>` болгож, `aria-expanded`/`aria-controls`-оор
+ *   төлвийг нь дэлгэц уншигчид мэдэгдэв.
+ */
+function FaqRow({ item, index, open, onToggle }) {
+  const panelId = `faq-panel-${index}`
+  const buttonId = `faq-button-${index}`
+  return (
+    <div
+      className={`overflow-hidden rounded-2xl border transition-colors ${
+        open ? 'border-mufi-accent/40' : 'border-mufi-border hover:border-mufi-accent/25'
+      }`}
+      style={{ background: 'linear-gradient(158deg, #191027, #110b1b)' }}
+    >
+      <button
+        type="button"
+        id={buttonId}
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={onToggle}
+        className="flex w-full items-center justify-between gap-6 px-5 py-5 text-left sm:px-6"
+      >
+        <span className="text-[0.98rem] font-medium text-mufi-fg">{item.q}</span>
+        {/* Загварын тэмдэг: хэвтээ зураас үргэлж, босоо нь ЗӨВХӨН хаалттай
+            үед — нээхэд «+» нь «−» болж хувирна. */}
+        <span
+          className="relative flex h-7 w-7 flex-none items-center justify-center rounded-lg border border-white/10 bg-white/[0.05]"
+          aria-hidden="true"
+        >
+          <span className="h-[1.5px] w-3 rounded-full bg-white/70" />
+          {!open && <span className="absolute h-3 w-[1.5px] rounded-full bg-white/70" />}
+        </span>
+      </button>
+      {open && (
+        <div id={panelId} role="region" aria-labelledby={buttonId} className="px-5 pb-5 sm:px-6">
+          <p className="m-0 max-w-2xl text-[0.9rem] font-normal leading-relaxed text-balance text-mufi-muted">
+            {item.a}
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}
 
 // Үнийн хэсэг. Тоо бодохгүй — `/terms#payments` дээрх нөхцөлийг ЯГ
 // давтана: ажил хайгчид үнэгүй, ажил олгогч сарын багц авна (үнийг
@@ -267,6 +705,9 @@ function scrollToSection(id) {
 export default function HomePage() {
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
+  // Нэг л асуулт задарна (загварынхтай ижил): шинийг дарахад өмнөх нь хаагдана.
+  // `null` = бүгд хаалттай. Дарсан асуултаа дахин дарвал хаана.
+  const [openFaq, setOpenFaq] = useState(null);
 
   // Hero-гийн хайлт. Хоосон бол шүүлтгүйгээр жагсаалт руу оруулна.
   const handleSearch = e => {
@@ -275,48 +716,52 @@ export default function HomePage() {
     navigate(q ? `/jobs?q=${encodeURIComponent(q)}` : '/jobs')
   }
 
+  // Ангиллууд. `tone` нь загварын ХОС акцентийн аль нэгийг сонгоно:
+  // `purple` (үндсэн) эсвэл `warm` (улбар шар). Chadal үед ангилал бүр
+  // өөрийн өнгөтэй (ногоон, цэнхэр, цайвар ягаан…) байсныг АВСАН —
+  // Mufi нь зөвхөн хоёр өнгө хэрэглэдэг тул тэр нь загвартай зөрчилдөнө.
   const categories = [
     {
       title: "Кафе ба Ресторан",
       desc: "Бариста, үйлчлэгч, хоолны өрөөний ажилтан",
       level: "Туршлага шаардахгүй · Оройн ээлж",
-      glow: "rgba(249, 115, 22, 0.35)",
-      icon: <Icons.Coffee className="text-orange-300" size={22} />,
+      tone: "warm",
+      icon: <Icons.Coffee size={22} />,
     },
     {
       title: "Багш ба Номлогч",
       desc: "Хувийн багш, хэлний багш, STEM зөвлөгч",
       level: "Оюутан · Бакалавр",
-      glow: "rgba(139, 92, 246, 0.35)",
-      icon: <Icons.GraduationCap className="text-violet-300" size={22} />,
+      tone: "purple",
+      icon: <Icons.GraduationCap size={22} />,
     },
     {
       title: "Хүргэлт ба Логистик",
       desc: "Хоолны хүргэлт, курьер, агуулахын тусламж",
       level: "Уян хатан цаг · Өдрийн ажил",
-      glow: "rgba(16, 185, 129, 0.35)",
-      icon: <Icons.Truck className="text-emerald-300" size={22} />,
+      tone: "purple",
+      icon: <Icons.Truck size={22} />,
     },
     {
       title: "Борлуулалт ба Захиалга",
       desc: "Дэлгүүрийн туслах, кассир, брэндийн дэмжигч",
       level: "Долоо хоногийн эцэст",
-      glow: "rgba(236, 72, 153, 0.35)",
-      icon: <Icons.ShoppingBag className="text-pink-300" size={22} />,
+      tone: "warm",
+      icon: <Icons.ShoppingBag size={22} />,
     },
     {
       title: "Фриланс ба Алсаас",
       desc: "Дизайн, бичих, кодлогч, виртуал туслах",
       level: "Алсаас · Богино хугацаа",
-      glow: "rgba(59, 130, 246, 0.35)",
-      icon: <Icons.Laptop className="text-blue-300" size={22} />,
+      tone: "purple",
+      icon: <Icons.Laptop size={22} />,
     },
     {
       title: "Үзэсгэлэнт Ажил",
       desc: "Дэмжигч, удирдагч, брэндийн төлөөлөгч",
       level: "Улирлын ажил",
-      glow: "rgba(6, 182, 212, 0.35)",
-      icon: <Icons.Calendar className="text-cyan-300" size={22} />,
+      tone: "warm",
+      icon: <Icons.Calendar size={22} />,
     },
   ];
 
@@ -325,80 +770,103 @@ export default function HomePage() {
       value: "45,200+",
       label: "Идэвхтэй оюутан ажил хайгч",
       desc: "Одоогоор Монгол дахь цагийн ажил хайж байгаа",
-      glow: "rgba(139, 92, 246, 0.35)",
+      tone: "purple",
     },
     {
       value: "68%",
       label: "Цагийн ажилд орсон оюутан",
       desc: "Их сургуулийн оюутнууд ажил, сургалтаа хослуулж байна",
-      glow: "rgba(236, 72, 153, 0.35)",
+      tone: "purple",
     },
     {
       value: "32%",
       label: "Жилийн өсөлт",
       desc: "2025 онд цагийн ажлын зарлалын нэмэгдэл",
-      glow: "rgba(6, 182, 212, 0.35)",
+      tone: "warm",
     },
     {
       value: "4.2K",
       label: "Сарын тохиролт",
       desc: "Ажил олгогч, ажилтан амжилттай холбогдсон тоо",
-      glow: "rgba(99, 102, 241, 0.35)",
+      tone: "warm",
     },
   ];
 
+  // Диаграмын зурвасууд. Ягаанаас улбар шар руу шилжих ХЭЛХЭЭ — зөвхөн
+  // хоёр акцентийн хооронд байх тул хуудасны бусад хэсэгтэй нийцнэ.
   const demandData = [
-    { category: "Кафе ба Ресторан", percent: 28, color: "bg-orange-500" },
-    { category: "Багш", percent: 22, color: "bg-violet-500" },
-    { category: "Хүргэлт", percent: 18, color: "bg-emerald-500" },
-    { category: "Борлуулалт", percent: 15, color: "bg-pink-500" },
-    { category: "Фриланс", percent: 12, color: "bg-blue-500" },
-    { category: "Үзэсгэлэн", percent: 5, color: "bg-cyan-500" },
+    { category: "Кафе ба Ресторан", percent: 28, color: "bg-[#B884FF]" },
+    { category: "Багш", percent: 22, color: "bg-[#A06AF0]" },
+    { category: "Хүргэлт", percent: 18, color: "bg-[#9A6BE8]" },
+    { category: "Борлуулалт", percent: 15, color: "bg-[#C96FA0]" },
+    { category: "Фриланс", percent: 12, color: "bg-[#F0803F]" },
+    { category: "Үзэсгэлэн", percent: 5, color: "bg-[#FF9D4A]" },
   ];
 
+  // Хоёр акцентийн ангиллын өнгө. `SpotlightCard`-ийн туяа, дүрсний
+  // хайрцаг хоёулаа эндээс уншина.
+  const TONES = {
+    purple: {
+      glow: "rgba(184, 132, 255, 0.30)",
+      tile: "border-mufi-accent/35 bg-gradient-to-br from-mufi-accent/25 to-mufi-accent-deep/15 text-mufi-accent",
+      hover: "hover:border-mufi-accent/45",
+    },
+    warm: {
+      glow: "rgba(255, 157, 74, 0.28)",
+      tile: "border-mufi-warm/35 bg-gradient-to-br from-mufi-warm/25 to-mufi-warm-deep/15 text-mufi-warm",
+      hover: "hover:border-mufi-warm/45",
+    },
+  };
+
   return (
-    // ⚠ `overflow-hidden` байж БОЛОХГҮЙ: `overflow: hidden` бүхий эцэг элемент
-    //   доторх `position: sticky`-г идэвхгүй болгодог (гүйлгэлтийн контейнер
-    //   болж хувирдаг тул) — `ScrollStory`-гийн наалдалт ажиллахгүй болно.
-    //   `overflow-x: clip` нь хэвтээ халилтыг ижилхэн таслах ч гүйлгэлтийн
+    // Hero-гийн туяанууд дэлгэцээс өргөн тул хэвтээ халилтыг таслах ёстой.
+    //
+    // ⚠ Гэхдээ `overflow-hidden` байж БОЛОХГҮЙ: `overflow: hidden` бүхий эцэг
+    //   элемент доторх `position: sticky`-г идэвхгүй болгодог (гүйлгэлтийн
+    //   контейнер болж хувирдаг тул) — доорх наалддаг цэс унана.
+    //   `overflow-x: clip` нь халилтыг ижилхэн таслах ч гүйлгэлтийн
     //   контейнер ҮҮСГЭДЭГГҮЙ тул sticky хэвээр ажиллана.
-    <div className="chadal-page relative overflow-x-clip">
+    <div className="mufi-page relative overflow-x-clip">
       {/* Уншилтын явцын зурвас. Өргөн нь JS-гүйгээр, гүйлгэлтийн байрлалаас
           шууд тооцогдоно (index.css → `.scroll-progress`). */}
       <div className="scroll-progress" aria-hidden="true" />
 
       {/* ==================== ЦЭС ====================
-          Загварынхтай ижил: наалддаг, хагас тунгалаг бараан зурвас.
+          Загварын цэс нь хуудасны холбоосуудыг нэг тунгалаг ШАХМАЛ дотор
+          цуглуулж, гурван хэсэгт хуваана: лого | шахмал | үйлдэл.
           `MainLayout`-ийн `Navbar` энд ХЭРЭГЛЭГДЭХГҮЙ — нүүр хуудас нь
           зөвхөн өөр дээрээ гүйлгэдэг тусдаа цэстэй (`NAV_SECTIONS`). */}
-      <nav className="sticky top-0 z-50 border-b border-chadal-line bg-chadal-bg/80 backdrop-blur-xl">
+      <nav className="sticky top-0 z-50 border-b border-mufi-line bg-mufi-bg/80 backdrop-blur-xl">
         <div className="container-page">
           <div className="flex h-[4.5rem] items-center justify-between gap-6">
             <button
               onClick={() => scrollToSection(null)}
-              className="flex items-center gap-3 text-xl font-extrabold tracking-tight text-white"
+              className="flex items-center gap-3 text-xl font-semibold tracking-tight text-white"
             >
-              <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-chadal-accent">
-                <Icons.Briefcase size={17} className="text-chadal-ink" />
+              {/* Загварын жижиг тэмдгүүд нь ягаан градиент дээр цайвар
+                  дүрстэй — цул дүүргэлт биш. */}
+              <span className="flex h-9 w-9 flex-none items-center justify-center rounded-xl bg-gradient-to-br from-mufi-accent to-mufi-accent-deep shadow-[0_0_20px_rgba(150,80,240,0.45)]">
+                <Icons.Briefcase size={17} className="text-white" />
               </span>
-              Mongol<span className="font-bold text-chadal-dim">Job</span>
+              Mongol<span className="font-normal text-mufi-dim">Job</span>
             </button>
 
-            <div className="hidden items-center gap-8 lg:flex">
+            <div className="mufi-pill-nav hidden lg:flex">
               {NAV_SECTIONS.map(item => (
-                <button key={item.label} onClick={() => scrollToSection(item.id)} className="chadal-nav-link">
+                <button key={item.label} onClick={() => scrollToSection(item.id)} className="mufi-pill-link">
                   {item.label}
                 </button>
               ))}
             </div>
 
             <div className="flex items-center gap-4">
-              <Link to="/login" className="chadal-nav-link hidden sm:block">
+              <Link to="/login" className="mufi-nav-link hidden sm:block">
                 Нэвтрэх
               </Link>
+              {/* Загварын үндсэн товч: ЦАЙВАР шахмал дээр бараан текст. */}
               <Link
                 to="/register"
-                className="rounded-full bg-chadal-accent px-6 py-2.5 text-sm font-bold text-chadal-ink transition-colors hover:bg-white"
+                className="rounded-full bg-mufi-light px-6 py-2.5 text-sm font-bold text-mufi-ink shadow-[0_10px_30px_rgba(0,0,0,0.4)] transition-colors hover:bg-white"
               >
                 Эхлэх
               </Link>
@@ -408,25 +876,54 @@ export default function HomePage() {
       </nav>
 
       {/* ==================== HERO ====================
-          Загварын нээлт: асар том том үсгээр бичсэн гарчиг, доор нь
-          нэг мөрийн хайлт, доогуур нь шуурхай шүүлтүүрүүд. Ард нь
-          цэнхэр туяа (`chadal-glow`). */}
-      <header className="relative overflow-hidden px-4 pb-24 pt-16 text-center sm:px-6 sm:pb-28 sm:pt-24">
-        {/* Туяа нь агуулгаас ӨРГӨН байх ёстой — эс бөгөөс ирмэг нь
-            гарчгийн доор тод зураас болж харагдана. `max-w-[150vw]` нь
+          Загварын нээлт: дээр нь тэмдэглэгээ-шахмал, доор нь хоёр өнгөөр
+          хуваасан нимгэн гарчиг, доор нь нэг мөрийн хайлт ба шуурхай
+          шүүлтүүрүүд. Ард нь ХОЁР эсрэг талын туяа — зүүнээс улбар шар,
+          баруунаас ягаан (`mufi-glow-warm` / `mufi-glow-purple`). */}
+      <header className="relative overflow-hidden px-4 pb-24 pt-14 text-center sm:px-6 sm:pb-28 sm:pt-20">
+        {/* Туяанууд агуулгаас ӨРГӨН байх ёстой — эс бөгөөс ирмэг нь
+            гарчгийн доор тод зураас болж харагдана. `max-w-*vw` нь
             жижиг дэлгэцэнд хэвтээ халилт үүсгэхээс сэргийлнэ. */}
         <div
-          className="chadal-glow left-1/2 top-[-9rem] h-[56rem] w-[94rem] max-w-[160vw] -translate-x-1/2"
+          className="mufi-glow mufi-glow-purple left-1/2 top-[-14rem] h-[46rem] w-[70rem] max-w-[150vw] -translate-x-1/2"
+          aria-hidden="true"
+        />
+        <div
+          className="mufi-glow mufi-glow-warm left-[-22rem] top-[-4rem] h-[42rem] w-[42rem] max-w-[110vw]"
+          aria-hidden="true"
+        />
+        <div
+          className="mufi-glow mufi-glow-purple right-[-22rem] top-[-6rem] h-[44rem] w-[44rem] max-w-[110vw]"
+          aria-hidden="true"
+        />
+        {/* Загварын цэгэн торлол — гарчгийн дээгүүр сүүдэрлэнэ. */}
+        <div
+          className="mufi-dots left-1/2 top-2 h-24 w-[32rem] max-w-[90vw] -translate-x-1/2 opacity-50"
           aria-hidden="true"
         />
 
-        <h1 className="relative m-0 mx-auto max-w-5xl text-[clamp(2.6rem,8.6vw,7.4rem)] font-extrabold uppercase leading-[0.92] tracking-[-0.035em] text-white animate-fade-up">
-          Дараагийн ажлаа олъё
+        {/* Загварын тэмдэглэгээ-шахмал: жижиг ромб + нэг үг. */}
+        <div className="relative inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-[#1C102A]/70 px-4 py-2 shadow-[0_0_40px_rgba(150,80,230,0.25)] animate-fade-up">
+          <span className="h-2 w-2 rotate-45 rounded-[1px] bg-gradient-to-br from-white to-mufi-accent" />
+          <span className="text-xs font-semibold tracking-wide text-mufi-fg">Оюутны цагийн ажил</span>
+        </div>
+
+        {/* Загварын гарчиг нь нэг өгүүлбэрийг ХОЁР ТОДРОЛООР хуваадаг:
+            гол үг нь тод цагаан, үлдсэн нь бүдэг. Ингэснээр том хэмжээтэй
+            мөртлөө чанга биш харагдана. */}
+        <h1
+          className="relative m-0 mx-auto mt-8 max-w-4xl text-[clamp(2.5rem,7.4vw,5.2rem)] font-medium leading-[1.06] tracking-[-0.035em] animate-fade-up"
+          style={{ animationDelay: '60ms' }}
+        >
+          <span className="text-mufi-fg/40">Дараагийн</span>
+          <span className="text-white"> ажлаа өнөөдөр</span>
+          <br />
+          <span className="text-mufi-fg/60">олъё</span>
         </h1>
 
         <p
-          className="relative mx-auto mt-8 max-w-xl text-base font-medium leading-relaxed text-[#A9C8E8] animate-fade-up sm:text-[1.07rem]"
-          style={{ animationDelay: '80ms' }}
+          className="relative mx-auto mt-7 max-w-xl text-[0.95rem] font-normal leading-relaxed text-mufi-muted animate-fade-up sm:text-base"
+          style={{ animationDelay: '120ms' }}
         >
           Монгол дахь цагийн ажилчид, оюутнуудыг ажил олгогчтой холбоно.
           Цагтаа тохирсон ээлжээ ол, эсвэл минутын дотор ажилтнаа ол.
@@ -434,10 +931,10 @@ export default function HomePage() {
 
         <form
           onSubmit={handleSearch}
-          className="relative mx-auto mt-11 flex w-full max-w-[54rem] items-center gap-3 rounded-[1.35rem] border border-chadal-field bg-chadal-card/90 p-3 pl-5 backdrop-blur animate-fade-up sm:pl-6"
-          style={{ animationDelay: '160ms' }}
+          className="relative mx-auto mt-10 flex w-full max-w-[54rem] items-center gap-3 rounded-full border border-white/10 bg-white/[0.06] p-2.5 pl-5 backdrop-blur-xl animate-fade-up sm:pl-7"
+          style={{ animationDelay: '180ms' }}
         >
-          <Icons.Search size={19} className="hidden flex-none text-chadal-dim sm:block" />
+          <Icons.Search size={19} className="hidden flex-none text-mufi-dim sm:block" />
           <label htmlFor="hero-search" className="sr-only">Ажлын хайлт</label>
           <input
             id="hero-search"
@@ -445,12 +942,13 @@ export default function HomePage() {
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="Бариста, хүргэлт, хувийн багш…"
-            className="min-w-0 flex-1 bg-transparent text-base font-medium text-white outline-none placeholder:text-chadal-dim"
+            className="min-w-0 flex-1 bg-transparent text-base font-normal text-white outline-none placeholder:text-mufi-dim"
           />
+          {/* Загварын hero товч: ягаан туяатай бараан шахмал. */}
           <button
             type="submit"
             aria-label="Ажил хайх"
-            className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-chadal-accent text-chadal-ink transition-colors hover:bg-white"
+            className="flex h-12 w-12 flex-none items-center justify-center rounded-full border border-white/20 bg-gradient-to-b from-[#2E1A44] to-[#160C22] text-white shadow-[0_0_50px_rgba(160,74,255,0.55),inset_0_1px_0_rgba(255,255,255,0.14)] transition-colors hover:from-mufi-accent-deep hover:to-mufi-accent-deep"
           >
             <Icons.ArrowRight size={20} />
           </button>
@@ -464,7 +962,7 @@ export default function HomePage() {
             <Link
               key={chip}
               to={`/jobs?q=${encodeURIComponent(chip)}`}
-              className="rounded-full border border-[#2F4A70] bg-[#142034]/60 px-5 py-2.5 text-sm font-semibold text-[#CFE4F9] transition-colors hover:border-chadal-accent hover:text-white"
+              className="rounded-full border border-white/10 bg-white/[0.05] px-5 py-2.5 text-sm font-medium text-mufi-muted transition-colors hover:border-mufi-accent/60 hover:text-white"
             >
               {chip}
             </Link>
@@ -509,12 +1007,13 @@ export default function HomePage() {
 
       {/* ==================== АНГИЛЛУУД ==================== */}
       <section id="popular-jobs" className="container-page scroll-mt-24 pb-24 text-center sm:pb-28">
-        <Reveal>
-          <div className="chadal-eyebrow">АНГИЛЛААР</div>
-          <SplitHeading className="mx-auto mt-4 max-w-3xl text-[clamp(1.9rem,4.4vw,2.9rem)] font-extrabold leading-[1.14] tracking-[-0.03em] text-white">
+        <Reveal className="flex flex-col items-center gap-4">
+          <div className="mufi-eyebrow">Ангиллаар</div>
+          <SplitHeading className="mx-auto max-w-3xl text-[clamp(1.9rem,4.4vw,2.9rem)] font-medium leading-[1.14] tracking-[-0.03em] text-mufi-fg">
             Алдартай цагийн ажил
           </SplitHeading>
-          <p className="mx-auto mt-5 max-w-2xl text-[0.95rem] font-medium leading-relaxed text-chadal-muted">
+          <div className="mufi-rule" aria-hidden="true" />
+          <p className="mx-auto max-w-2xl text-[0.95rem] font-normal leading-relaxed text-mufi-muted">
             Монгол дахь хамгийн эрэлттэй цагийн ажлуудыг ангиллаар нь үзээрэй.
             Ангилал дээр дарвал шүүсэн жагсаалт руу шилжинэ.
           </p>
@@ -524,53 +1023,26 @@ export default function HomePage() {
           {categories.map((category, i) => (
             <Reveal key={category.title} delay={i * 60} className="h-full">
               <SpotlightCard
-                glow={category.glow}
-                className="flex h-full min-h-[13rem] cursor-pointer flex-col justify-between rounded-[1.25rem] border border-chadal-border bg-chadal-card p-7 transition-colors hover:border-[#33507A]"
+                glow={TONES[category.tone].glow}
+                className={`mufi-card flex h-full min-h-[13rem] cursor-pointer flex-col justify-between transition-colors ${TONES[category.tone].hover}`}
                 onClick={() => navigate(`/jobs?q=${encodeURIComponent(category.title)}`)}
               >
                 <div>
-                  <div className="mb-5 flex h-[2.6rem] w-[2.6rem] items-center justify-center rounded-xl border border-chadal-accent/25 bg-chadal-accent/10 transition-transform duration-300 ease-spring group-hover:scale-110 group-hover:-rotate-3">
+                  <div className={`mb-5 flex h-[2.6rem] w-[2.6rem] items-center justify-center rounded-xl border transition-transform duration-300 ease-spring group-hover:scale-110 group-hover:-rotate-3 ${TONES[category.tone].tile}`}>
                     {category.icon}
                   </div>
-                  <div className="text-[1.18rem] font-bold leading-snug tracking-tight text-white">{category.title}</div>
-                  <div className="mt-2 text-sm font-semibold text-[#7FB4E4]">{category.desc}</div>
+                  <div className="text-[1.18rem] font-semibold leading-snug tracking-tight text-mufi-fg">{category.title}</div>
+                  <div className="mt-2 text-sm font-normal text-mufi-muted">{category.desc}</div>
                 </div>
-                <div className="mt-6 text-[0.82rem] font-medium text-chadal-dim">{category.level}</div>
+                <div className="mt-6 text-[0.82rem] font-normal text-mufi-dim">{category.level}</div>
               </SpotlightCard>
             </Reveal>
           ))}
         </div>
 
-        <Link to="/jobs" className="chadal-btn chadal-btn-accent mt-12">
+        <Link to="/jobs" className="mufi-btn mufi-btn-accent mt-12">
           Бүх ажлыг үзэх
         </Link>
-      </section>
-
-      {/* ==================== САЛБАРУУДЫН ЗУРВАС ====================
-          Загварын компанийн логоны зурвасын байрд. Жинхэнэ лого байхгүй
-          тул салбаруудыг өөр өөр үсгийн загвараар — «олон брэнд»
-          мэдрэмжийг өнгөгүйгээр гаргана. */}
-      <section className="pb-24 sm:pb-28">
-        <div className="container-page mb-7 flex items-center gap-2.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-chadal-accent" />
-          <span className="text-xs font-bold text-white">MongolJob дээр ажилтан хайж буй салбарууд</span>
-        </div>
-        <Marquee speed={38}>
-          {PARTNER_SECTORS.map(sector => (
-            <div
-              key={sector.label}
-              className="flex h-[8.9rem] w-[13.25rem] items-center justify-center rounded-[1.15rem] border border-chadal-border bg-chadal-card px-5 text-center text-chadal-muted transition-all duration-300 hover:border-chadal-accent/55 hover:bg-chadal-card-hover hover:text-[#DCEEFF] hover:shadow-[0_0_0_1px_rgba(142,203,251,.25),0_0_34px_rgba(80,160,240,.35),inset_0_0_30px_rgba(90,170,245,.12)]"
-              style={{
-                fontFamily: sector.font,
-                fontWeight: sector.weight,
-                letterSpacing: sector.spacing,
-                fontSize: sector.size,
-              }}
-            >
-              {sector.label}
-            </div>
-          ))}
-        </Marquee>
       </section>
 
       {/* ==================== ТОМ МЭДЭГДЭЛ ====================
@@ -578,39 +1050,53 @@ export default function HomePage() {
           дараагийн блокт бэлддэг. */}
       <section className="container-page pb-24 text-center sm:pb-28">
         <Reveal>
-          <h2 className="m-0 mx-auto max-w-3xl text-[clamp(1.75rem,3.7vw,2.65rem)] font-extrabold leading-[1.22] tracking-[-0.03em] text-balance text-white">
+          <h2 className="m-0 mx-auto max-w-3xl text-[clamp(1.75rem,3.7vw,2.65rem)] font-medium leading-[1.22] tracking-[-0.03em] text-balance text-mufi-fg">
             Оюутны цагийн ажлын Монгол дахь хамгийн энгийн зам
           </h2>
         </Reveal>
       </section>
 
-      {/* ==================== ХЭРХЭН АЖИЛЛАДАГ ВЭ ====================
-          Гүйлгэлтээр жолоодогддог түүх — доошоо гүйлгэхэд хэсэг наалдаж,
-          алхмууд солигдоно.
+      {/* ==================== БОЛОМЖУУД ====================
+          Загварын Features хэсэг. Тор нь ЗОРИУД тэгш бус: эхний мөрөнд
+          зүүн карт өргөн, хоёрдугаар мөрөнд баруун нь өргөн. Ингэснээр
+          дөрвөн ижил хайрцаг байхаас илүү хэмнэлтэй болж, өргөн карт
+          бүр нь тухайн мөрийн гол мессежийг үүрнэ.
 
-          ⚠ Энд `overflow` (hidden/clip/auto) ОГТ өгч болохгүй — доторх
-            `sticky top-0` шууд унаж, наалдалт ажиллахаа болино. Тиймээс
-            булангийн бөөрөнхийлөлтийг `overflow-hidden`-гүйгээр хийв
-            (хүүхэд нь өөрийн дэвсгэргүй тул булангаас халихгүй).
+          Жижиг дэлгэцэнд нэг багана болж, тэгш бус байдал арилна. */}
+      <section className="container-page pb-24 sm:pb-28">
+        <Reveal className="flex flex-col items-center gap-4 text-center">
+          <div className="mufi-eyebrow">Боломжууд</div>
+          <SplitHeading className="mx-auto max-w-3xl text-[clamp(1.9rem,4.4vw,2.9rem)] font-medium leading-[1.14] tracking-[-0.03em] text-mufi-fg">
+            Ажил хайхыг хөнгөвчлөх зүйлс
+          </SplitHeading>
+          <div className="mufi-rule" aria-hidden="true" />
+          <p className="mx-auto max-w-xl text-[0.95rem] font-normal leading-relaxed text-mufi-muted">
+            Зар үзэхээс цалингаа авах хүртэлх зам дээрх жижиг сааднуудыг
+            платформ өөрөө үүрнэ.
+          </p>
+        </Reveal>
 
-          ⚠ `backdrop-blur` мөн ЗОРИУДААР ашиглаагүй: filter төрлийн
-            шинжүүд агуулагч блок үүсгэдэг тул наалдалтад эрсдэл нэмнэ. */}
-      <div className="px-4 pb-24 sm:px-6 sm:pb-28">
-        <div className="chadal-panel">
-          <Suspense fallback={<div className="h-screen" />}>
-            <ScrollStory />
-          </Suspense>
+        <div className="mt-14 grid gap-6 lg:grid-cols-[1.35fr_1fr]">
+          {FEATURES.slice(0, 2).map((feature, i) => (
+            <FeatureCard key={feature.title} feature={feature} delay={i * 90} />
+          ))}
         </div>
-      </div>
+        <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_1.35fr]">
+          {FEATURES.slice(2).map((feature, i) => (
+            <FeatureCard key={feature.title} feature={feature} delay={i * 90} />
+          ))}
+        </div>
+      </section>
 
       {/* ==================== СТАТИСТИК ==================== */}
       <section id="stats" className="container-page scroll-mt-24 pb-24 sm:pb-28">
-        <Reveal className="mb-12 max-w-2xl">
-          <div className="chadal-eyebrow">МЭДЭЭЛЭЛ БА ҮЗҮҮЛЭЛТ</div>
-          <SplitHeading className="mt-4 text-[clamp(1.9rem,4.4vw,2.9rem)] font-extrabold leading-[1.14] tracking-[-0.03em] text-white">
+        <Reveal className="mb-12 flex max-w-2xl flex-col gap-4">
+          <div className="mufi-eyebrow">Мэдээлэл ба үзүүлэлт</div>
+          <SplitHeading className="text-[clamp(1.9rem,4.4vw,2.9rem)] font-medium leading-[1.14] tracking-[-0.03em] text-mufi-fg">
             Монголын оюутны ажлын зах зээл
           </SplitHeading>
-          <p className="mt-5 text-[0.95rem] font-medium leading-relaxed text-chadal-muted">
+          <div className="mufi-rule mufi-rule-left" aria-hidden="true" />
+          <p className="text-[0.95rem] font-normal leading-relaxed text-mufi-muted">
             Платформын тоо нь Монгол оюутан, залуу мэргэжилтнүүдийн цагийн ажилд
             хэр идэвхтэй хүрч байгааг харуулна.
           </p>
@@ -619,30 +1105,30 @@ export default function HomePage() {
         <div className="mb-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat, i) => (
             <Reveal key={stat.label} delay={i * 70} className="h-full">
-              <SpotlightCard
-                glow={stat.glow}
-                className="h-full rounded-[1.25rem] border border-chadal-border bg-chadal-card p-7"
-              >
+              <SpotlightCard glow={TONES[stat.tone].glow} className="mufi-card h-full">
                 <StatCounter
                   value={stat.value}
-                  className="mb-3 block text-[2.5rem] font-extrabold leading-none tracking-[-0.03em] text-white transition-transform duration-300 ease-spring group-hover:scale-105"
+                  className={`mb-3 block text-[2.5rem] font-semibold leading-none tracking-[-0.03em] transition-transform duration-300 ease-spring group-hover:scale-105 ${
+                    stat.tone === 'warm' ? 'text-mufi-warm' : 'text-mufi-accent'
+                  }`}
                 />
-                <div className="mb-2 font-bold text-white">{stat.label}</div>
-                <div className="text-sm font-medium text-chadal-muted">{stat.desc}</div>
+                <div className="mb-2 font-semibold text-mufi-fg">{stat.label}</div>
+                <div className="text-sm font-normal text-mufi-muted">{stat.desc}</div>
               </SpotlightCard>
             </Reveal>
           ))}
         </div>
 
-        {/* Графикууд. Загварын «цагаан карт градиент хүрээнд» гэсэн
-            хэлбэрийг дагав — гадна нь цэнхэр градиент, дотор нь агуулга. */}
-        <div className="rounded-[1.9rem] bg-[linear-gradient(150deg,#12457F,#7CC2F9)] p-1.5 sm:p-2">
-          <div className="grid gap-10 rounded-[1.55rem] bg-chadal-card p-7 sm:p-10 lg:grid-cols-2 lg:items-center">
+        {/* Графикууд. Загварын hero доорх «бүтээгдэхүүний карт» нь ГАДНА
+            ирмэгээрээ өнгө ялгаруулж, доогуураа туяа тавьдаг — тэр хэлбэрийг
+            дагав: ягаанаас улбар шар руу шилжих хүрээ, дотор нь агуулга. */}
+        <div className="rounded-[2rem] bg-[linear-gradient(150deg,#6D33C9,#A8410A)] p-1.5 shadow-[0_0_90px_rgba(150,70,235,0.20)] sm:p-2">
+          <div className="grid gap-10 rounded-[1.65rem] bg-mufi-card p-7 sm:p-10 lg:grid-cols-2 lg:items-center">
             <div>
-              <h3 className="m-0 mb-2 text-xl font-bold tracking-tight text-white">
+              <h3 className="m-0 mb-2 text-xl font-semibold tracking-tight text-mufi-fg">
                 Хамгийн эрэлттэй ажлын ангилал
               </h3>
-              <p className="m-0 mb-8 text-sm font-medium text-chadal-muted">
+              <p className="m-0 mb-8 text-sm font-normal text-mufi-muted">
                 2025 онд ангиллаар цагийн ажлын зарлалын түгээлт
               </p>
 
@@ -650,8 +1136,8 @@ export default function HomePage() {
                 {demandData.map((item, i) => (
                   <div key={item.category}>
                     <div className="mb-2 flex justify-between text-sm">
-                      <span className="font-semibold text-chadal-fg">{item.category}</span>
-                      <StatCounter value={`${item.percent}%`} className="font-bold text-chadal-accent" />
+                      <span className="font-semibold text-mufi-fg">{item.category}</span>
+                      <StatCounter value={`${item.percent}%`} className="font-bold text-mufi-accent" />
                     </div>
                     <div className="h-2.5 overflow-hidden rounded-full bg-white/10">
                       {/* Зурвас нь гүйлгэж ирэхэд зүүнээс баруун тийш ургана.
@@ -669,10 +1155,10 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="chadal-inset p-6">
+            <div className="mufi-inset p-6">
               <div className="mb-6 flex items-center gap-2">
-                <Icons.TrendingUp className="text-chadal-accent" size={20} />
-                <h4 className="m-0 text-base font-bold text-white">Өсөлтийн урсгал: ажлын зарлал</h4>
+                <Icons.TrendingUp className="text-mufi-warm" size={20} />
+                <h4 className="m-0 text-base font-semibold text-mufi-fg">Өсөлтийн урсгал: ажлын зарлал</h4>
               </div>
               <div className="flex h-48 items-end justify-between gap-3 pt-8">
                 {[60, 75, 65, 85, 78, 90, 100].map((height, i) => (
@@ -686,18 +1172,18 @@ export default function HomePage() {
                       <Reveal
                         animation="animate-grow-y"
                         delay={i * 70}
-                        className="w-full origin-bottom rounded-t-lg bg-gradient-to-t from-chadal-accent/25 to-chadal-accent"
+                        className="w-full origin-bottom rounded-t-lg bg-gradient-to-t from-mufi-accent-deep/30 via-mufi-accent/80 to-mufi-warm"
                         style={{ height: `${height}%` }}
                       />
                     </div>
-                    <span className="text-xs font-medium text-chadal-dim">
+                    <span className="text-xs font-medium text-mufi-dim">
                       {['1-р', '2-р', '3-р', '4-р', '5-р', '6-р', '7-р'][i]}
                     </span>
                   </div>
                 ))}
               </div>
               <div className="mt-6 flex items-center justify-between border-t border-white/10 pt-4">
-                <span className="text-sm font-medium text-chadal-muted">Нийт өсөлт</span>
+                <span className="text-sm font-medium text-mufi-muted">Нийт өсөлт</span>
                 {/* «+» нь урд байгаа тул тусад нь бичив — `StatCounter` нь
                     зөвхөн ард байх дагаварыг таньдаг. */}
                 <span className="text-lg font-bold text-white">
@@ -712,10 +1198,10 @@ export default function HomePage() {
       {/* ==================== ҮНЭ ==================== */}
       <section className="container-page pb-24 sm:pb-28">
         <Reveal className="flex flex-wrap items-start justify-between gap-8">
-          <h2 className="m-0 max-w-lg text-[clamp(1.75rem,3.7vw,2.4rem)] font-extrabold leading-[1.18] tracking-[-0.03em] text-white">
+          <h2 className="m-0 max-w-lg text-[clamp(1.75rem,3.7vw,2.4rem)] font-medium leading-[1.18] tracking-[-0.03em] text-mufi-fg">
             Ажил хайгчдад үргэлж үнэгүй
           </h2>
-          <p className="m-0 max-w-xs text-sm font-medium leading-relaxed text-chadal-muted">
+          <p className="m-0 max-w-xs text-sm font-normal leading-relaxed text-mufi-muted">
             Цалин платформоор дамжихгүй — ажил олгогч ажилтандаа ШУУД төлнө.
             Дэлгэрэнгүйг үйлчилгээний нөхцөлөөс уншина уу.
           </p>
@@ -724,34 +1210,36 @@ export default function HomePage() {
         <div className="mt-11 grid gap-5 md:grid-cols-2">
           {PRICING.map((plan, i) => (
             <Reveal key={plan.tag} delay={i * 90} className="h-full">
+              {/* Онцлох карт нь загварын УЛБАР ШАР картын дүр — цул
+                  дүүргэлт биш, доошоо бараандах градиент + туяа. */}
               <div
-                className={`flex h-full flex-col rounded-[1.4rem] p-8 ${
+                className={`flex h-full flex-col rounded-3xl p-8 ${
                   plan.featured
-                    ? 'bg-chadal-pink text-white'
-                    : 'border border-chadal-border bg-chadal-card'
+                    ? 'border border-mufi-warm/40 bg-[linear-gradient(158deg,#3A1A08,#1F1310)] text-white shadow-[0_0_70px_rgba(255,110,30,0.16)]'
+                    : 'mufi-card'
                 }`}
               >
-                <div className={`text-xs font-bold tracking-[0.14em] ${plan.featured ? 'text-chadal-pink-soft' : 'text-chadal-muted'}`}>
+                <div className={`text-xs font-semibold uppercase tracking-[0.16em] ${plan.featured ? 'text-mufi-warm' : 'text-mufi-dim'}`}>
                   {plan.tag}
                 </div>
                 <div className="mt-5 flex flex-wrap items-baseline gap-2">
-                  <span className="text-[2.4rem] font-extrabold leading-none tracking-[-0.03em] text-white">
+                  <span className="text-[2.4rem] font-semibold leading-none tracking-[-0.03em] text-mufi-fg">
                     {plan.price}
                   </span>
                   {plan.unit && (
-                    <span className={`text-sm font-medium ${plan.featured ? 'text-chadal-pink-soft' : 'text-chadal-muted'}`}>
+                    <span className={`text-sm font-normal ${plan.featured ? 'text-mufi-flame-soft' : 'text-mufi-muted'}`}>
                       {plan.unit}
                     </span>
                   )}
                 </div>
-                <p className={`m-0 mt-4 text-sm font-medium ${plan.featured ? 'text-chadal-pink-soft' : 'text-chadal-muted'}`}>
+                <p className={`m-0 mt-4 text-sm font-normal ${plan.featured ? 'text-mufi-flame-soft' : 'text-mufi-muted'}`}>
                   {plan.note}
                 </p>
 
-                <ul className="m-0 mt-7 flex list-none flex-col gap-3 p-0 text-sm font-medium">
+                <ul className="m-0 mt-7 flex list-none flex-col gap-3 p-0 text-sm font-normal">
                   {plan.features.map(feature => (
-                    <li key={feature} className={`flex items-start gap-2.5 ${plan.featured ? 'text-white' : 'text-chadal-fg'}`}>
-                      <Icons.Check size={16} className="mt-0.5 flex-none" />
+                    <li key={feature} className="flex items-start gap-2.5 text-mufi-fg">
+                      <Icons.Check size={16} className={`mt-0.5 flex-none ${plan.featured ? 'text-mufi-warm' : 'text-mufi-accent'}`} />
                       {feature}
                     </li>
                   ))}
@@ -761,10 +1249,10 @@ export default function HomePage() {
                     урт нь хоёр картад ялгаатай байсан ч товчнууд эгнэнэ. */}
                 <Link
                   to={plan.to}
-                  className={`mt-auto block rounded-xl px-6 py-3.5 text-center text-sm font-bold transition-colors ${
+                  className={`mt-auto block rounded-full px-6 py-3.5 text-center text-sm font-bold transition-colors ${
                     plan.featured
-                      ? 'bg-[#FDEEF5] text-[#8D1F57] hover:bg-white'
-                      : 'bg-chadal-accent text-chadal-ink hover:bg-white'
+                      ? 'bg-gradient-to-r from-[#FF9D4A] to-[#EF5F16] text-mufi-warm-ink hover:from-white hover:to-white hover:text-mufi-ink'
+                      : 'bg-mufi-light text-mufi-ink hover:bg-white'
                   }`}
                 >
                   {plan.cta}
@@ -775,49 +1263,121 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ==================== ТОМ УРИАЛГА ==================== */}
+      {/* ==================== ТҮГЭЭМЭЛ АСУУЛТ ====================
+          Загварын FAQ: зүүн талд гарчиг, баруун талд задардаг жагсаалт.
+          Харьцаа нь ЗОРИУД тэнцүү биш (0.85 : 1.15) — асуултууд илүү
+          өргөн зайтай байх ёстой. */}
       <section className="container-page pb-24 sm:pb-28">
-        <Reveal className="flex flex-wrap items-center justify-between gap-8 rounded-[1.6rem] bg-chadal-accent px-8 py-12 sm:px-14 sm:py-14">
-          <h2 className="m-0 max-w-lg text-[clamp(1.7rem,3.4vw,2.5rem)] font-bold leading-[1.2] tracking-[-0.03em] text-chadal-ink">
-            Профайлаа үүсгээд өнөөдрөөс ээлжээ хай.
-          </h2>
-          <Link
-            to="/register"
-            className="rounded-xl bg-chadal-ink px-8 py-4 text-sm font-bold text-white transition-colors hover:bg-[#1B2534]"
-          >
-            Үнэгүй профайл үүсгэх
-          </Link>
+        <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20">
+          <Reveal className="flex flex-col gap-5">
+            <div className="mufi-eyebrow">Түгээмэл асуулт</div>
+            <h2 className="m-0 text-[clamp(1.75rem,3.7vw,2.6rem)] font-medium leading-[1.1] tracking-[-0.03em] text-mufi-fg">
+              Асуухаас өмнөх хариултууд
+            </h2>
+            <div className="mufi-rule mufi-rule-left" aria-hidden="true" />
+            <p className="m-0 text-[0.95rem] font-normal leading-relaxed text-mufi-muted">
+              Хариултаа олсонгүй юу? Доорх холбоо барих хэсгээр бичвэл манай
+              баг тодруулж өгнө.
+            </p>
+          </Reveal>
+
+          <div className="flex flex-col gap-3">
+            {FAQS.map((item, i) => (
+              <Reveal key={item.q} delay={i * 70}>
+                <FaqRow
+                  item={item}
+                  index={i}
+                  open={openFaq === i}
+                  onToggle={() => setOpenFaq(prev => (prev === i ? null : i))}
+                />
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ==================== ТОМ УРИАЛГА ====================
+          Загварын хаалтын самбар: ягаанаас улбар шар руу шилжих бараан
+          градиент, дотор нь хоёр өнцөгт нуугдсан туяа. */}
+      <section className="container-page pb-24 sm:pb-28">
+        <Reveal className="relative grid items-center gap-10 overflow-hidden rounded-[2rem] border border-mufi-accent/40 bg-[linear-gradient(120deg,#2A1450_0%,#1B1030_55%,#2B1610_100%)] px-8 py-12 shadow-[0_0_120px_rgba(150,70,235,0.22)] sm:px-14 sm:py-14 lg:grid-cols-[1fr_0.9fr] lg:gap-12">
+          {/* ⚠ Боломжийн картуудын адил ХАГАС хүчээр. Бүтэн хүчээр өгвөл
+              зүүн доод туяа тайлбар текстийн ард орж, дэвсгэрийг #5B288D
+              хүртэл цайруулж 3.61:1 болгоно. Хагасаар бол 4.68:1 үлдэнэ —
+              ингэснээр тайлбарыг тодруулж, гарчигтай нэг жин болгохоос
+              зайлсхийв. */}
+          <div
+            className="mufi-glow mufi-glow-purple bottom-[-14rem] left-[-8rem] h-[32rem] w-[32rem] opacity-50"
+            aria-hidden="true"
+          />
+          <div
+            className="mufi-glow mufi-glow-warm right-[-6rem] top-[-12rem] h-[28rem] w-[28rem] opacity-50"
+            aria-hidden="true"
+          />
+
+          <div className="relative flex flex-col gap-5">
+            <h2 className="m-0 max-w-lg text-[clamp(1.7rem,3.4vw,2.5rem)] font-medium leading-[1.2] tracking-[-0.03em] text-mufi-fg">
+              Профайлаа үүсгээд өнөөдрөөс ээлжээ хай.
+            </h2>
+            <p className="m-0 max-w-md text-[0.95rem] font-normal leading-relaxed text-balance text-mufi-muted">
+              Бүртгэл үүсгэхэд хэдхэн минут. Хичээлийнхээ хуваарийг оруулмагц
+              түүнд тохирох ээлжүүд шүүгдэж эхэлнэ.
+            </p>
+            <div className="mt-1 flex flex-wrap items-center gap-3.5">
+              <Link
+                to="/register"
+                className="rounded-full bg-mufi-light px-8 py-4 text-sm font-bold text-mufi-ink shadow-[0_14px_40px_rgba(0,0,0,0.35)] transition-colors hover:bg-white"
+              >
+                Үнэгүй профайл үүсгэх
+              </Link>
+              {/* Загварын хоёр дахь товч «Talk to sales» байсан — энд
+                  борлуулалтын баг байхгүй тул бодит зарын жагсаалт руу
+                  заалаа. */}
+              <Link
+                to="/jobs"
+                className="rounded-full border border-white/20 px-7 py-4 text-sm font-medium text-mufi-fg transition-colors hover:bg-white hover:text-mufi-ink"
+              >
+                Эхлээд ажлуудыг үзэх
+              </Link>
+            </div>
+          </div>
+
+          <div className="relative">
+            <ArtWeek />
+          </div>
         </Reveal>
       </section>
 
       {/* ==================== ХОЛБОО БАРИХ ==================== */}
       <section id="contact" className="container-page scroll-mt-24 pb-24 sm:pb-28">
-        <Reveal className="mb-12 max-w-2xl">
-          <div className="chadal-eyebrow">ХОЛБОО БАРИХ</div>
-          <SplitHeading className="mt-4 text-[clamp(1.9rem,4.4vw,2.9rem)] font-extrabold leading-[1.14] tracking-[-0.03em] text-white">
+        <Reveal className="mb-12 flex max-w-2xl flex-col gap-4">
+          <div className="mufi-eyebrow">Холбоо барих</div>
+          <SplitHeading className="text-[clamp(1.9rem,4.4vw,2.9rem)] font-medium leading-[1.14] tracking-[-0.03em] text-mufi-fg">
             Бидэнтэй холбогдоорой
           </SplitHeading>
-          <p className="mt-5 text-[0.95rem] font-medium leading-relaxed text-chadal-muted">
+          <div className="mufi-rule mufi-rule-left" aria-hidden="true" />
+          <p className="text-[0.95rem] font-normal leading-relaxed text-mufi-muted">
             Ажил зарлах эсвэл ажил олох талаар асуулт байна уу? Манай баг тусламж үзүүлэхэд бэлэн.
           </p>
         </Reveal>
 
         <div className="grid gap-5 lg:grid-cols-5">
           <div className="space-y-5 lg:col-span-2">
-            <Reveal className="chadal-card">
-              <h3 className="m-0 mb-6 text-lg font-bold text-white">Холбоо барих мэдээлэл</h3>
+            <Reveal className="mufi-card">
+              <h3 className="m-0 mb-6 text-lg font-semibold text-mufi-fg">Холбоо барих мэдээлэл</h3>
 
               <div className="space-y-6">
                 {CONTACT_ROWS.map((row, i) => {
                   const Icon = Icons[row.icon]
                   return (
                     <Reveal key={row.label} delay={140 + i * 110} className="group flex items-start gap-4">
-                      <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-chadal-accent text-chadal-ink transition-transform duration-200 ease-spring group-hover:scale-110">
+                      {/* Загварын дүрсний хайрцаг: ягаан градиент + туяа. */}
+                      <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-mufi-accent to-mufi-accent-deep text-white shadow-[0_0_20px_rgba(150,80,240,0.45)] transition-transform duration-200 ease-spring group-hover:scale-110">
                         <Icon size={20} />
                       </span>
                       <div>
-                        <div className="mb-1 text-sm font-bold text-white">{row.label}</div>
-                        <div className="text-sm font-medium text-chadal-muted">{row.value}</div>
+                        <div className="mb-1 text-sm font-semibold text-mufi-fg">{row.label}</div>
+                        <div className="text-sm font-normal text-mufi-muted">{row.value}</div>
                       </div>
                     </Reveal>
                   )
@@ -825,13 +1385,13 @@ export default function HomePage() {
               </div>
             </Reveal>
 
-            <Reveal delay={160} className="chadal-card">
-              <h3 className="m-0 mb-6 text-lg font-bold text-white">Дагах</h3>
+            <Reveal delay={160} className="mufi-card">
+              <h3 className="m-0 mb-6 text-lg font-semibold text-mufi-fg">Дагах</h3>
               <div className="flex gap-3">
                 {[1, 2, 3, 4].map(i => (
                   <div
                     key={i}
-                    className="animate-pop-in press flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl border border-chadal-border bg-white/[0.04] text-chadal-muted transition-all hover-lift hover:border-chadal-accent/55 hover:text-white"
+                    className="animate-pop-in press flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl border border-white/10 bg-white/[0.05] text-mufi-muted transition-all hover-lift hover:border-mufi-accent/45 hover:text-white"
                     style={{ animationDelay: `${260 + i * 80}ms` }}
                   >
                     <Icons.Globe size={18} />
@@ -842,32 +1402,32 @@ export default function HomePage() {
           </div>
 
           <div className="lg:col-span-3">
-            <Reveal delay={120} className="chadal-card p-7 sm:p-9">
+            <Reveal delay={120} className="mufi-card p-7 sm:p-9">
               {/* Талбарууд дараалан гарч ирнэ — `stagger` класс нь хүүхэд
                   бүрд nth-child-ээр саатал өгнө (index.css). */}
               <form className="stagger space-y-6">
                 <div className="grid animate-fade-up gap-6 sm:grid-cols-2">
                   <div>
-                    <label className="chadal-label" htmlFor="contact-name">Бүтэн нэр</label>
-                    <input id="contact-name" type="text" placeholder="Таны нэр" className="chadal-input" />
+                    <label className="mufi-label" htmlFor="contact-name">Бүтэн нэр</label>
+                    <input id="contact-name" type="text" placeholder="Таны нэр" className="mufi-input" />
                   </div>
                   <div>
-                    <label className="chadal-label" htmlFor="contact-email">И-мэйл</label>
-                    <input id="contact-email" type="email" placeholder="ta@example.com" className="chadal-input" />
+                    <label className="mufi-label" htmlFor="contact-email">И-мэйл</label>
+                    <input id="contact-email" type="email" placeholder="ta@example.com" className="mufi-input" />
                   </div>
                 </div>
 
                 <div className="animate-fade-up">
-                  <label className="chadal-label" htmlFor="contact-message">Мессеж</label>
+                  <label className="mufi-label" htmlFor="contact-message">Мессеж</label>
                   <textarea
                     id="contact-message"
                     placeholder="Бид танд хэрхэн туслах вэ?"
                     rows={5}
-                    className="chadal-input resize-none"
+                    className="mufi-input resize-none"
                   />
                 </div>
 
-                <button type="button" className="chadal-btn chadal-btn-accent animate-fade-up">
+                <button type="button" className="mufi-btn mufi-btn-accent animate-fade-up">
                   <Icons.Send size={18} />
                   Мессеж илгээх
                 </button>

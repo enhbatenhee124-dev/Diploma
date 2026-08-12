@@ -31,8 +31,9 @@ export default defineConfig({
         // үлдэж, аппын код өөрчлөгдөхөд ДАХИН татагдахгүй.
         manualChunks: {
           react: ['react', 'react-dom', 'react-router-dom'],
-          // Нүүр хуудасны хоёр график хоёулаа anime.js-ийг ашигладаг.
-          // Тусад нь салгаагүй бол сан нь ХОЁР багцад давхардаж орно.
+          // anime.js-ийг зөвхөн `SplitHeading` ашиглах бөгөөд түүнийг ЧУХ
+          // хэрэгтэй үедээ (`import('animejs')`) татдаг. Тусад нь салгаснаар
+          // сан нь өөрийн кэшлэгддэг багцад үлдэнэ.
           anime: ['animejs'],
           charts: ['recharts'],
           icons: ['lucide-react'],

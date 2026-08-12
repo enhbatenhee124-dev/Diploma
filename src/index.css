@@ -590,7 +590,8 @@
     height: 3px;
     z-index: 60;
     transform-origin: 0 50%;
-    background: linear-gradient(90deg, #8b5cf6, #22d3ee);
+    /* Mufi-гийн хос акцент: ягаанаас улбар шар руу */
+    background: linear-gradient(90deg, #b884ff, #ff9d4a);
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -636,97 +637,141 @@
     @apply bg-white border border-gray-100 rounded-2xl p-6 hover-lift;
   }
 
-  /* ==================== CHADAL — НИЙТИЙН ХУУДСУУД ====================
-     Claude Design-ийн "Chadal Landing" загвараас. Өмнөх Halo сэдвийг
-     БҮРЭН орлов — тэр нь цайвар градиент дээр бараан текст байсан бол
-     энэ нь эсрэгээрээ БАРААН суурин дээр цагаан текст.
+  /* ==================== MUFI — НИЙТИЙН ХУУДСУУД ====================
+     Claude Design-ийн "Mufi Landing v2" загвараас. Өмнөх Chadal сэдвийг
+     БҮРЭН орлов — тэр нь бараан ЦЭНХЭР дээр `#8ECBFB` акцент байсан бол
+     энэ нь бараан ЯГААН дээр ягаан + улбар шар хос акцент.
 
-     Ингэснээр `/jobs`, `/jobs/:id` зэрэг ажилтны хянах самбартай
-     ХУВААЛЦДАГ хуудсууд (`emp-*` — бараан карт, цагаан текст) нийтийн
-     хүрээнд шууд таарна. Halo үед тэдгээрийг бараан самбар дотор
-     тусгайлан ороож байсан шаардлага арилсан.
+     Chadal шиг энэ ч бас БАРААН суурин дээр цагаан текст тул `/jobs`,
+     `/jobs/:id` зэрэг ажилтны хянах самбартай ХУВААЛЦДАГ хуудсууд
+     (`emp-*`) нийтийн хүрээнд шууд таарсан хэвээр байна.
 
      Өнгөний токенууд `tailwind.config.js` дотор — тэнд AA-д тохируулж
      өөрчилсөн утгууд нь тайлбартай.
 
-     ⚠ Эх загварт `min-width: 1180px` байсан буюу ЗӨВХӨН desktop. Энд
+     ⚠ Эх загварт `width: 1440px` тогтмол байсан буюу ЗӨВХӨН desktop. Энд
        бүх хэсгийг responsive болгосон тул тэр хязгаарыг АВСАН. */
-  .chadal-page {
-    @apply min-h-screen bg-chadal-bg font-manrope text-white;
+  .mufi-page {
+    @apply min-h-screen bg-mufi-bg font-jakarta text-white;
   }
 
-  /* Үндсэн фокусын хүрээ ЦАГААН — бараан дэвсгэр дээр харагдах ч
-     акцентаар өгвөл сэдэвтэйгээ нийцнэ. */
-  .chadal-page :focus-visible {
-    outline-color: rgb(142 203 251 / 0.85);
+  /* Фокусын хүрээ нь сэдвийн ягаан акцент. */
+  .mufi-page :focus-visible {
+    outline-color: rgb(184 132 255 / 0.9);
   }
 
-  /* Загварын товч нь энгийн бөөрөнхий шахмал — Halo-гийн сумтай дугуй
-     тэмдэг энд БАЙХГҮЙ. */
-  .chadal-btn {
+  /* Загварын товч нь бөөрөнхий шахмал. */
+  .mufi-btn {
     @apply inline-flex items-center justify-center gap-2 rounded-full border-0
            px-7 py-3 font-bold cursor-pointer transition-colors
            disabled:opacity-50 disabled:cursor-not-allowed;
   }
-  /* Үндсэн үйлдэл: цайвар цэнхэр дээр бараан текст (12.6:1). */
-  .chadal-btn-accent {
-    @apply bg-chadal-accent text-chadal-ink hover:bg-white;
+  /* Үндсэн үйлдэл: загварын цайвар товч дээр бараан текст (17.0:1).
+     Загварын hero-гийн «Book a Demo» яг ийм. */
+  .mufi-btn-accent {
+    @apply bg-mufi-light text-mufi-ink hover:bg-white;
   }
-  /* Хоёрдогч: зөвхөн ирмэгтэй. */
-  .chadal-btn-ghost {
-    @apply border border-[#33425A] text-white hover:bg-white hover:text-chadal-ink;
+  /* Хоёрдогч: зөвхөн ирмэгтэй — загварын «See how it works». */
+  .mufi-btn-ghost {
+    @apply border border-white/20 text-white hover:bg-white hover:text-mufi-ink;
   }
 
-  /* Хэсгийн үндсэн карт. */
-  .chadal-card {
-    @apply rounded-2xl border border-chadal-border bg-chadal-card p-7;
+  /* Хэсгийн үндсэн карт. Загварын карт нь ХАВТГАЙ дүүргэлт биш, дээрээсээ
+     доошоо бага зэрэг цайрдаг градиент — тэр нь бараан дэвсгэр дээр картыг
+     «өргөгдсөн» мэт харагдуулна. */
+  .mufi-card {
+    @apply rounded-3xl border border-mufi-border p-7;
+    background: linear-gradient(158deg, #191027, #110b1b);
   }
-  .chadal-card-title {
-    @apply text-lg font-bold leading-snug tracking-tight m-0;
+  .mufi-card-title {
+    @apply text-lg font-semibold leading-snug tracking-tight m-0;
   }
-  .chadal-card-body {
-    @apply text-sm font-medium leading-relaxed text-chadal-muted m-0;
+  .mufi-card-body {
+    @apply text-sm font-normal leading-relaxed text-mufi-muted m-0;
   }
 
   /* Хуудасны том самбар (Login/Register/Terms гэх мэт). */
-  .chadal-panel {
-    @apply rounded-3xl border border-chadal-border bg-chadal-card;
+  .mufi-panel {
+    @apply rounded-3xl border border-mufi-border;
+    background: linear-gradient(158deg, #191027, #110b1b);
   }
 
   /* Самбар ДОТОР байрлах дэд хэсэг. Самбартайгаа ижил дүүргэлттэй бол
      ялгарахгүй тул бага зэрэг ЦАЙВАР болгож, ирмэгээр тодруулна. */
-  .chadal-inset {
-    @apply rounded-3xl border border-white/10 bg-white/[0.04];
+  .mufi-inset {
+    @apply rounded-3xl border border-white/10 bg-white/[0.05];
   }
 
-  .chadal-input {
-    @apply w-full px-5 py-4 rounded-2xl bg-chadal-bg/70 border border-chadal-field
-           text-white placeholder-chadal-dim
-           focus:outline-none focus:border-chadal-accent/70
-           focus:ring-2 focus:ring-chadal-accent/20 transition-all;
+  .mufi-input {
+    @apply w-full px-5 py-4 rounded-2xl bg-mufi-bg-deep/70 border border-mufi-field
+           text-white placeholder-mufi-dim
+           focus:outline-none focus:border-mufi-accent/70
+           focus:ring-2 focus:ring-mufi-accent/20 transition-all;
   }
 
-  .chadal-label {
-    @apply block text-sm font-semibold text-chadal-fg mb-2;
+  .mufi-label {
+    @apply block text-sm font-semibold text-mufi-fg mb-2;
   }
 
-  .chadal-nav-link {
-    @apply text-sm font-semibold text-chadal-muted hover:text-white transition-colors;
+  .mufi-nav-link {
+    @apply text-sm font-medium text-mufi-muted hover:text-white transition-colors;
   }
 
-  /* Хэсгийн жижиг таних бичээс (загварын "АЖИЛ ХАЙГЧ" гэх мэт). */
-  .chadal-eyebrow {
-    @apply text-xs font-bold tracking-[0.14em] text-chadal-muted;
+  /* Хэсгийн жижиг таних бичээс (загварын "FEATURES", "WHY US" гэх мэт).
+     Загварт энэ нь ТОМ үсгээр, өргөн зайтай. */
+  .mufi-eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.16em] text-mufi-dim;
   }
 
-  /* Hero-гийн ард байх зөөлөн цэнхэр туяа. `pointer-events-none` тул
+  /* Загварын хэсэг бүрийн гарчгийн ДООР байх нимгэн зураас. Хоёр үзүүр нь
+     уусдаг тул зураас гэхээсээ илүү гэрлийн зурвас шиг харагдана. */
+  .mufi-rule {
+    @apply h-px w-32;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(200, 150, 255, 0.65), rgba(255, 255, 255, 0));
+  }
+  /* Зүүн тийш эгнэсэн гарчигт — зөвхөн баруун үзүүр нь уусна. */
+  .mufi-rule-left {
+    background: linear-gradient(90deg, rgba(200, 150, 255, 0.65), rgba(255, 255, 255, 0));
+  }
+
+  /* Загварын цэсийн «шахмал» — холбоосуудыг нэг тунгалаг капсул дотор
+     цуглуулна. Жижиг дэлгэцэнд цэс нуугддаг тул зөвхөн lg-ээс дээш. */
+  .mufi-pill-nav {
+    @apply items-center gap-1 rounded-full border border-white/10 bg-white/5 p-1.5
+           backdrop-blur-xl shadow-[0_12px_40px_rgba(0,0,0,0.35)];
+  }
+  .mufi-pill-link {
+    @apply rounded-full px-4 py-2 text-sm font-medium text-mufi-muted
+           transition-colors hover:bg-white/10 hover:text-white;
+  }
+
+  /* Hero-гийн ард байх туяа. Загварын нээлт нь ХОЁР эсрэг талын туяа:
+     зүүнээс улбар шар, баруунаас ягаан. `pointer-events-none` тул
      доогуурх товч, оролт дарагдахгүй. */
-  .chadal-glow {
-    background: radial-gradient(ellipse 50% 45% at 50% 45%,
-                                rgba(70, 150, 235, 0.55),
-                                rgba(30, 80, 160, 0.18) 45%,
-                                rgba(7, 12, 21, 0) 70%);
+  .mufi-glow {
     @apply pointer-events-none absolute;
+  }
+  .mufi-glow-purple {
+    background: radial-gradient(ellipse at center,
+                                rgba(158, 68, 226, 0.42),
+                                rgba(122, 58, 190, 0.16) 45%,
+                                rgba(10, 6, 17, 0) 70%);
+  }
+  .mufi-glow-warm {
+    background: radial-gradient(ellipse at center,
+                                rgba(255, 116, 38, 0.30),
+                                rgba(239, 95, 22, 0.10) 45%,
+                                rgba(10, 6, 17, 0) 70%);
+  }
+
+  /* Загварын hero-гийн цэгэн торлол. `mask` нь ирмэгийг нь уусгана —
+     эс бөгөөс дөрвөлжин хэсэг тод харагдана. */
+  .mufi-dots {
+    @apply pointer-events-none absolute;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.3) 1px, rgba(255, 255, 255, 0) 1px);
+    background-size: 9px 9px;
+    -webkit-mask-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0) 70%);
+    mask-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0) 70%);
   }
 
   /* ==================== EMPLOYEE DARK THEME ==================== */

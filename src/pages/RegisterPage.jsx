@@ -122,28 +122,28 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="chadal-page flex min-h-screen items-center justify-center p-4">
+    <div className="mufi-page flex min-h-screen items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-10 animate-fade-up">
-          <div className="w-16 h-16 rounded-full bg-chadal-accent flex items-center justify-center mx-auto mb-6 animate-pop-in">
-            <Icons.Briefcase size={28} className="text-chadal-ink" />
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-mufi-accent to-mufi-accent-deep shadow-[0_0_30px_rgba(150,80,240,0.5)] flex items-center justify-center mx-auto mb-6 animate-pop-in">
+            <Icons.Briefcase size={28} className="text-white" />
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-white mb-2">Бүртгэл үүсгэх</h1>
-          <p className="font-medium text-chadal-muted">MongolJob-д нэгдэж холбогдох</p>
+          <h1 className="text-3xl font-medium tracking-[-0.03em] text-mufi-fg mb-2">Бүртгэл үүсгэх</h1>
+          <p className="font-normal text-mufi-muted">MongolJob-д нэгдэж холбогдох</p>
         </div>
 
         {/* Card */}
-        <div className="chadal-panel p-8 md:p-10 animate-fade-up" style={{ animationDelay: '120ms' }}>
+        <div className="mufi-panel p-8 md:p-10 animate-fade-up" style={{ animationDelay: '120ms' }}>
           {/* Role toggle */}
-          <div className="flex p-1.5 rounded-full bg-white/[0.04] border border-chadal-border mb-8">
+          <div className="flex p-1.5 rounded-full bg-white/[0.04] border border-mufi-border mb-8">
             <button
               type="button"
               onClick={() => setRole("employee")}
               className={`flex-1 py-3 rounded-full text-sm font-medium transition-all ${
                 role === "employee"
-                  ? "bg-chadal-accent text-chadal-ink"
-                  : "text-chadal-muted hover:text-white"
+                  ? "bg-mufi-accent text-mufi-ink"
+                  : "text-mufi-muted hover:text-white"
               }`}
             >
               Ажил хайгч
@@ -153,8 +153,8 @@ export default function RegisterPage() {
               onClick={() => setRole("employer")}
               className={`flex-1 py-3 rounded-full text-sm font-medium transition-all ${
                 role === "employer"
-                  ? "bg-chadal-accent text-chadal-ink"
-                  : "text-chadal-muted hover:text-white"
+                  ? "bg-mufi-accent text-mufi-ink"
+                  : "text-mufi-muted hover:text-white"
               }`}
             >
               Ажил олгогч
@@ -164,62 +164,62 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Full Name */}
             <div>
-              <label className="chadal-label">
+              <label className="mufi-label">
                 {role === "employer" ? "Компанийн Нэр" : "Бүтэн Нэр"}
               </label>
               <div className="relative">
-                <Icons.User size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-chadal-dim" />
+                <Icons.User size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-mufi-dim" />
                 <input
                   type="text"
                   required
                   value={form.fullName}
                   onChange={(e) => setForm({ ...form, fullName: e.target.value })}
                   placeholder={role === "employer" ? "Акмэ Корп" : "Болор Эрдэнэ"}
-                  className="chadal-input pl-12"
+                  className="mufi-input pl-12"
                 />
               </div>
             </div>
 
             {/* Phone */}
             <div>
-              <label className="chadal-label">Утасны дугаар</label>
+              <label className="mufi-label">Утасны дугаар</label>
               <div className="relative">
-                <Icons.Phone size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-chadal-dim" />
+                <Icons.Phone size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-mufi-dim" />
                 <input
                   type="tel"
                   required
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
                   placeholder="99112233"
-                  className="chadal-input pl-12"
+                  className="mufi-input pl-12"
                 />
               </div>
             </div>
 
             {/* Email */}
             <div>
-              <label className="chadal-label">И-мэйл хаяг</label>
+              <label className="mufi-label">И-мэйл хаяг</label>
               <div className="relative">
-                <Icons.Mail size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-chadal-dim" />
+                <Icons.Mail size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-mufi-dim" />
                 <input
                   type="email"
                   required
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   placeholder="bolor.erdene@example.mn"
-                  className="chadal-input pl-12"
+                  className="mufi-input pl-12"
                 />
               </div>
-              <p className="text-xs font-medium text-chadal-muted mt-2">
+              <p className="text-xs font-medium text-mufi-muted mt-2">
                 Нэвтрэх бүрд энэ хаяг руу сэрэмжлүүлэг илгээнэ.
               </p>
             </div>
 
             {/* Password */}
             <div>
-              <label className="chadal-label">Нууц үг</label>
+              <label className="mufi-label">Нууц үг</label>
               <div className="relative">
-                <Icons.Lock size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-chadal-dim" />
+                <Icons.Lock size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-mufi-dim" />
                 <input
                   type={showPass ? "text" : "password"}
                   required
@@ -227,12 +227,12 @@ export default function RegisterPage() {
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                   placeholder="Хамгийн багадаа 4 тэмдэгт"
-                  className="chadal-input pl-12 pr-14"
+                  className="mufi-input pl-12 pr-14"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-chadal-dim hover:text-white transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-mufi-dim hover:text-white transition-colors"
                 >
                   {showPass ? <Icons.EyeOff size={20} /> : <Icons.Eye size={20} />}
                 </button>
@@ -252,21 +252,21 @@ export default function RegisterPage() {
 
             {/* Confirm Password */}
             <div>
-              <label className="chadal-label">Нууц үг баталгаажуулах</label>
+              <label className="mufi-label">Нууц үг баталгаажуулах</label>
               <div className="relative">
-                <Icons.Lock size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-chadal-dim" />
+                <Icons.Lock size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-mufi-dim" />
                 <input
                   type={showConfirm ? "text" : "password"}
                   required
                   value={form.confirm}
                   onChange={(e) => setForm({ ...form, confirm: e.target.value })}
                   placeholder="Нууц үгээ давтана уу"
-                  className="chadal-input pl-12 pr-14"
+                  className="mufi-input pl-12 pr-14"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirm(!showConfirm)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-chadal-dim hover:text-white transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-mufi-dim hover:text-white transition-colors"
                 >
                   {showConfirm ? <Icons.EyeOff size={20} /> : <Icons.Eye size={20} />}
                 </button>
@@ -287,14 +287,14 @@ export default function RegisterPage() {
                 type="checkbox"
                 checked={agreed}
                 onChange={(e) => setAgreed(e.target.checked)}
-                className="w-5 h-5 mt-0.5 rounded border-chadal-field bg-chadal-bg text-chadal-accent focus:ring-chadal-accent/40"
+                className="w-5 h-5 mt-0.5 rounded border-mufi-field bg-mufi-bg text-mufi-accent focus:ring-mufi-accent/40"
                 required
               />
-              <span className="text-sm font-medium text-chadal-muted leading-relaxed">
+              <span className="text-sm font-medium text-mufi-muted leading-relaxed">
                 Би{" "}
-                <Link to="/terms" target="_blank" className="text-chadal-accent font-semibold underline underline-offset-4">Үйлчилгээний нөхцөлд</Link>
+                <Link to="/terms" target="_blank" className="text-mufi-accent font-semibold underline underline-offset-4">Үйлчилгээний нөхцөлд</Link>
                 {" "}болон{" "}
-                <Link to="/terms#privacy" target="_blank" className="text-chadal-accent font-semibold underline underline-offset-4">Нууцлалын бодлогод</Link>
+                <Link to="/terms#privacy" target="_blank" className="text-mufi-accent font-semibold underline underline-offset-4">Нууцлалын бодлогод</Link>
                 {" "}зөвшөөрч байна
               </span>
             </label>
@@ -310,7 +310,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="chadal-btn chadal-btn-accent w-full text-base"
+              className="mufi-btn mufi-btn-accent w-full text-base"
             >
               {loading ? (
                 <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -325,16 +325,16 @@ export default function RegisterPage() {
 
           {/* Divider */}
           <div className="flex items-center gap-4 my-8">
-            <div className="flex-1 h-px bg-chadal-border" />
-            <span className="text-xs font-semibold text-chadal-dim uppercase tracking-wider">эсвэл</span>
-            <div className="flex-1 h-px bg-chadal-border" />
+            <div className="flex-1 h-px bg-mufi-border" />
+            <span className="text-xs font-semibold text-mufi-dim uppercase tracking-wider">эсвэл</span>
+            <div className="flex-1 h-px bg-mufi-border" />
           </div>
 
           {/* Social */}
           <button
             type="button"
             onClick={handleGoogle}
-            className="w-full py-4 rounded-full bg-white/[0.04] border border-chadal-border text-sm font-semibold text-chadal-fg hover:bg-white/10 hover:text-white transition-all flex items-center justify-center gap-3"
+            className="w-full py-4 rounded-full bg-white/[0.04] border border-mufi-border text-sm font-semibold text-mufi-fg hover:bg-white/10 hover:text-white transition-all flex items-center justify-center gap-3"
           >
             <svg width={20} height={20} viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
@@ -347,9 +347,9 @@ export default function RegisterPage() {
         </div>
 
         {/* Footer link */}
-        <p className="text-center text-sm font-medium text-chadal-muted mt-8">
+        <p className="text-center text-sm font-medium text-mufi-muted mt-8">
           Бүртгэлтэй байна уу?{" "}
-          <Link to="/login" className="text-chadal-accent font-semibold underline underline-offset-4 transition-colors hover:text-white">
+          <Link to="/login" className="text-mufi-accent font-semibold underline underline-offset-4 transition-colors hover:text-white">
             Нэвтрэх
           </Link>
         </p>

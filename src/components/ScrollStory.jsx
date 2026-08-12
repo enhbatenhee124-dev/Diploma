@@ -21,35 +21,37 @@ import StoryScene, { APPLICANTS, MATCHED_INDEX, CORNERS } from './StoryScene'
 //   байж болохгүй (HomePage-д `overflow-x-clip` болгосон шалтгаан).
 // ------------------------------
 
-// ⚠ Алхмын өнгө нь БАРААН Chadal дэвсгэрт (#0E1522 самбар) зориулагдсан.
-//   Halo (цайвар) үед эдгээр нь -800 аягтай гүн өнгө байсан; бараан дээр
-//   тэдгээр нь дэвсгэртэйгээ нийлж алга болно. Тиймээс -400 аяг руу
-//   буцаав — өнгөний ЧАНАР нь хэвээр, зөвхөн гүн нь өөрчлөгдсөн.
+// ⚠ Алхмын өнгө нь БАРААН Mufi дэвсгэрт (#150E21 самбар) зориулагдсан
+//   бөгөөд загварын ХОС акцентээс гардаг: эхний хоёр алхам ягаан, сүүлийн
+//   хоёр нь улбар шар (загварын «Why us» картуудын дараалалтай ижил).
+//   Chadal үед эдгээр нь ягаан/цэнхэр/ногоон/цайвар ягаан дөрвөн ӨӨР өнгө
+//   байсныг АВСАН — Mufi зөвхөн хоёр өнгө хэрэглэдэг.
+//   Дөрвүүлээ #150E21 самбар дээр 5.0:1-ээс дээш (AA).
 //   `StoryScene` дэх ижил үүрэгтэй өнгөнүүдтэй тааруулсан.
 const STEPS = [
   {
     n: '01',
     title: 'Ажил зарлах',
     body: 'Ажил олгогч цагийн ажлаа минутын дотор нийтэлнэ — цаг, байршил, цалингаа зааж өгөхөд л хангалттай.',
-    color: '#A78BFA',
+    color: '#B884FF',
   },
   {
     n: '02',
     title: 'Хүсэлт илгээх',
     body: 'Ажил хайгчид өөрсдийн боломжит цаг, ур чадварт тохирсон зарыг хараад нэг товшилтоор хүсэлтээ илгээнэ.',
-    color: '#38BDF8',
+    color: '#9A6BE8',
   },
   {
     n: '03',
     title: 'Тохирол',
     body: 'Систем ур чадвар, байршил, цагийн давхцлыг тооцож эрэмбэлнэ. Ажил олгогч зөвшөөрөхөд хоёр тал холбогдоно.',
-    color: '#34D399',
+    color: '#FF9D4A',
   },
   {
     n: '04',
     title: 'Ажиллаад цалингаа авах',
     body: 'Ажил дуусахад үнэлгээ өгч, туршлагын оноо цуглуулна. Түвшин ахих тусам илүү өндөр цалинтай ажил нээгдэнэ.',
-    color: '#F472B6',
+    color: '#F0803F',
   },
 ]
 
@@ -183,14 +185,14 @@ export default function ScrollStory() {
   if (reduced) {
     return (
       <section className="container-page py-16">
-        <h2 className="text-4xl font-extrabold mb-10 text-white">Хэрхэн ажилладаг вэ?</h2>
+        <h2 className="text-4xl font-medium tracking-[-0.03em] mb-10 text-mufi-fg">Хэрхэн ажилладаг вэ?</h2>
         <div className="space-y-8">
           {STEPS.map(step => (
             <div key={step.n} className="flex gap-5">
               <span className="text-2xl font-mono font-bold" style={{ color: step.color }}>{step.n}</span>
               <div>
-                <h3 className="text-xl font-bold text-white">{step.title}</h3>
-                <p className="text-chadal-muted mt-1">{step.body}</p>
+                <h3 className="text-xl font-semibold text-mufi-fg">{step.title}</h3>
+                <p className="text-mufi-muted mt-1">{step.body}</p>
               </div>
             </div>
           ))}
@@ -209,7 +211,7 @@ export default function ScrollStory() {
           {/* Зүүн: алхмуудын текст. Бүгд нэг дээр давхарлаж, timeline нь
               алийг нь харуулахыг шийднэ. */}
           <div className="relative min-h-[21rem] order-2 lg:order-1">
-            <p className="text-xs sm:text-sm uppercase tracking-[0.25em] text-chadal-muted mb-6">
+            <p className="text-xs sm:text-sm uppercase tracking-[0.16em] font-semibold text-mufi-dim mb-6">
               Хэрхэн ажилладаг вэ
             </p>
 
@@ -241,10 +243,10 @@ export default function ScrollStory() {
                 >
                   {step.n}
                 </span>
-                <h3 className="text-3xl sm:text-4xl font-extrabold text-white mb-3">
+                <h3 className="text-3xl sm:text-4xl font-medium tracking-[-0.03em] text-mufi-fg mb-3">
                   {step.title}
                 </h3>
-                <p className="text-base sm:text-lg text-chadal-muted max-w-xl leading-relaxed">
+                <p className="text-base sm:text-lg text-mufi-muted max-w-xl leading-relaxed">
                   {step.body}
                 </p>
               </div>
@@ -260,7 +262,7 @@ export default function ScrollStory() {
         {/* Зураасан заагч */}
         <div
           className="absolute bottom-6 sm:bottom-8 right-4 sm:right-10 h-9 w-48 sm:w-72 rounded-lg
-                     bg-chadal-card/80 border border-chadal-border backdrop-blur
+                     bg-mufi-card/80 border border-mufi-border backdrop-blur
                      flex items-center overflow-hidden"
           aria-hidden="true"
         >
