@@ -198,11 +198,15 @@ export default function LoginPage() {
             {/* Role Selector */}
             <div>
               <label className="mufi-label">Хэрэглэгчийн төрөл</label>
-              <div className="grid grid-cols-3 gap-3">
+              {/* Админы сонголт ЗОРИУДААР байхгүй: админ эрхийг өгөх нь
+                  бүртгэлээс биш, зөвхөн өгөгдлийн сангаас хийгддэг тул
+                  нийтэд харагдах формд түүнийг санал болгох нь ямар ч
+                  утгагүй. Админ хэрэглэгч энэ хуудсаар хэвийн нэвтэрч,
+                  ЖИНХЭНЭ дүрээрээ `/admin/dashboard` руу шилжсэн хэвээр. */}
+              <div className="grid grid-cols-2 gap-3">
                 {[
                   { value: 'employee', label: 'Ажил хайгч', desc: 'Employee' },
                   { value: 'employer', label: 'Ажил олгогч', desc: 'Employer' },
-                  { value: 'admin', label: 'Админ', desc: 'Admin' }
                 ].map((option) => (
                   <button
                     key={option.value}

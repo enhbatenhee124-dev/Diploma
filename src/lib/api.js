@@ -26,6 +26,8 @@ async function authHeader() {
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
+const UNREACHABLE = 'Сервертэй холбогдож чадсангүй. Интернэт холболтоо шалгаад дахин оролдоно уу.'
+
 async function request(method, path, body) {
   let res
   try {
@@ -38,16 +40,43 @@ async function request(method, path, body) {
       body: body !== undefined ? JSON.stringify(body) : undefined,
     })
   } catch {
-    // Сүлжээ тасарсан, эсвэл сервер асаагүй
-    return { ok: false, error: 'Сервертэй холбогдож чадсангүй. Интернэт холболтоо шалгана уу.' }
+    // Сүлжээ тасарсан, эсвэл хүсэлт огт гарч чадаагүй
+    return { ok: false, error: UNREACHABLE }
   }
 
   // 204 эсвэл хоосон биет
   const text = await res.text()
-  let payload
-  try {
-    payload = text ? JSON.parse(text) : {}
-  } catch {
+  let payload = {}
+  let parsed = true
+  if (text) {
+    try {
+      payload = JSON.parse(text)
+    } catch {
+      parsed = false
+    }
+  }
+
+  // ⚠ API сервер асаагүй үед дээрх `catch` ХЭЗЭЭ Ч ажиллахгүй: хүсэлтийг
+  //   завсрын давхарга барьж аваад бүрэн хүчинтэй HTTP хариу буцаадаг.
+  //   Хөгжүүлэлтэд Vite proxy нь ХООСОН БИЕТТЭЙ 500, продакшнд gateway нь
+  //   HTML-тэй 502/504 өгнө. Урьд нь энэ нь хэрэглэгчид «Алдаа гарлаа
+  //   (500).» гэж харагдаж, юу эвдэрснийг огт хэлдэггүй байв.
+  //
+  //   Серверийн ӨӨРИЙН алдаа ҮРГЭЛЖ `{ error }` JSON буцаадаг
+  //   (`server/core/http.js` → `errorHandler`). Тиймээс «JSON биш, эсвэл
+  //   `error` талбаргүй 5xx» гэдэг нь хүсэлт сервер хүртэл ОГТ хүрээгүй
+  //   гэсэн найдвартай шинж — жинхэнэ 500-г далдлахгүй.
+  if (res.status >= 500 && (!parsed || payload?.error === undefined)) {
+    if (import.meta.env.DEV) {
+      console.warn(
+        `[api] ${method} ${path} → ${res.status} биет хоосон. API сервер ажиллаж байна уу?`
+        + ' `npm run dev` нь Express-ийг 3001 дээр зэрэг асаах ёстой.'
+      )
+    }
+    return { ok: false, error: UNREACHABLE, status: res.status }
+  }
+
+  if (!parsed) {
     return { ok: false, error: 'Серверээс буруу хариу ирлээ.' }
   }
 

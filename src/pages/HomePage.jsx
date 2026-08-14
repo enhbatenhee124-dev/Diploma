@@ -166,6 +166,17 @@ const HERO_CHIPS = ['Оройн ээлж', 'Долоо хоногийн эцэс
 
 // Загварын хоёр mascot карт. Зүүн нь ажил хайгч (туулай), баруун нь
 // ажил олгогч (бавуу).
+//
+// Урьд нь эдгээр нь хуудасны ЦОРЫН ГАНЦ цайвар (lilac / peach) хэсэг
+// байсан тул бараан загвараас хэт тодорч байлаа. Одоо дэвсгэр нь бусад
+// карттай ижил бараан суурьтай ба дүр бүр ЗӨВХӨН акцентээр ялгарна:
+// ажил хайгч → ягаан, ажил олгогч → улбар шар.
+//
+// Тэр акцентийг hero-гийн туяанаас ЯГ авав (`mufi-glow-purple` нь
+// rgb(158,68,226), `mufi-glow-warm` нь rgb(255,116,38)) — ингэснээр
+// нээлтийн хэсэг доод карт руу үргэлжилсэн мэт унших ба шинэ өнгө
+// нэмэгдэхгүй. Дүрслэлийг `.mufi-role-card` (index.css) хийнэ; энд
+// зөвхөн дүр тус бүрийн өнгийг хувьсагчаар дамжуулна.
 const ROLE_CARDS = [
   {
     tag: 'АЖИЛ ХАЙГЧ',
@@ -174,11 +185,15 @@ const ROLE_CARDS = [
     cta: 'Профайл үүсгэх',
     to: '/register',
     img: mascotSeeker,
-    bg: 'bg-mufi-lilac',
-    eyebrow: 'text-mufi-lilac-eyebrow',
-    ink: 'text-mufi-lilac-ink',
-    body: 'text-mufi-lilac-body',
-    btn: 'bg-mufi-lilac-btn hover:bg-[#5E2AB0]',
+    eyebrow: 'text-mufi-accent',            // картан дээр 6.97:1
+    btn: 'bg-mufi-accent-deep hover:bg-[#5E2AB0]', // цагаан текст 7.08:1
+    spot: 'rgba(184, 132, 255, 0.20)',      // курсорыг дагах гэрэл
+    vars: {
+      '--role-glow': 'rgba(158, 68, 226, 0.30)',
+      '--role-edge': 'rgba(184, 132, 255, 0.22)',
+      '--role-edge-hover': 'rgba(184, 132, 255, 0.45)',
+      '--role-ring': 'rgba(158, 68, 226, 0.75)',
+    },
   },
   {
     tag: 'АЖИЛ ОЛГОГЧ',
@@ -187,11 +202,15 @@ const ROLE_CARDS = [
     cta: 'Зар нийтлэх',
     to: '/register',
     img: mascotEmployer,
-    bg: 'bg-mufi-peach',
-    eyebrow: 'text-mufi-peach-eyebrow',
-    ink: 'text-mufi-peach-ink',
-    body: 'text-mufi-peach-body',
-    btn: 'bg-mufi-peach-btn hover:bg-[#8F3708]',
+    eyebrow: 'text-mufi-warm',              // картан дээр 9.11:1
+    btn: 'bg-mufi-warm-deep hover:bg-[#8F3708]',   // цагаан текст 6.13:1
+    spot: 'rgba(255, 157, 74, 0.18)',
+    vars: {
+      '--role-glow': 'rgba(255, 116, 38, 0.26)',
+      '--role-edge': 'rgba(255, 157, 74, 0.22)',
+      '--role-edge-hover': 'rgba(255, 157, 74, 0.45)',
+      '--role-ring': 'rgba(255, 116, 38, 0.70)',
+    },
   },
 ]
 
@@ -971,19 +990,28 @@ export default function HomePage() {
       </header>
 
       {/* ==================== ХОЁР ДҮРИЙН КАРТ ====================
-          Загварын цорын ганц цайвар хэсэг. Mascot нь картын ЁРООЛД
-          наалдана — тиймээс эцэг нь `items-end`, доод padding нь 0. */}
-      <section className="container-page pb-24 sm:pb-28">
+          Бараан суурь + hero-гийн туяа, гэрэлтэх хүрээ, курсорыг дагах
+          гэрэл (`SpotlightCard`). Mascot нь картын ЁРООЛД наалдана —
+          тиймээс агуулгын бүрхүүл нь `items-end`, доод padding нь 0. */}
+      <section className="container-page pb-24 pt-8 sm:pb-28 sm:pt-12">
         <div className="grid gap-6 lg:grid-cols-2">
           {ROLE_CARDS.map((card, i) => (
-            <Reveal key={card.tag} delay={i * 90}>
-              <div className={`flex h-full min-h-[16rem] items-end gap-3 overflow-hidden rounded-[1.75rem] p-7 pb-0 sm:gap-4 sm:p-11 sm:pb-0 ${card.bg}`}>
+            <Reveal key={card.tag} delay={i * 90} className="h-full">
+              <SpotlightCard
+                glow={card.spot}
+                // Ангиллын жижиг карт (14°) шиг налгавал энэ өргөн карт
+                // хэт «эргэлдэж» харагдана — хагасаар нь багасгав.
+                tilt={7}
+                style={card.vars}
+                className="mufi-role-card h-full rounded-[1.75rem]"
+                contentClassName="flex h-full min-h-[16rem] items-end gap-3 p-7 pb-0 sm:gap-4 sm:p-11 sm:pb-0"
+              >
                 <div className="min-w-0 flex-1 pb-8 sm:pb-10">
                   <div className={`text-xs font-bold tracking-[0.14em] ${card.eyebrow}`}>{card.tag}</div>
-                  <h3 className={`m-0 mt-4 text-[1.4rem] font-bold leading-[1.15] tracking-[-0.02em] sm:text-[1.85rem] ${card.ink}`}>
+                  <h3 className="m-0 mt-4 text-[1.4rem] font-bold leading-[1.15] tracking-[-0.02em] text-mufi-fg sm:text-[1.85rem]">
                     {card.title}
                   </h3>
-                  <p className={`m-0 mt-3.5 text-sm font-medium ${card.body}`}>{card.desc}</p>
+                  <p className="m-0 mt-3.5 text-sm font-normal leading-relaxed text-mufi-muted">{card.desc}</p>
                   <Link
                     to={card.to}
                     className={`mt-6 inline-block whitespace-nowrap rounded-full px-6 py-3 text-sm font-bold text-white transition-colors ${card.btn}`}
@@ -991,7 +1019,7 @@ export default function HomePage() {
                     {card.cta}
                   </Link>
                 </div>
-                {/* Тунгалаг PNG тул цайвар картан дээр цагаан хайрцаг
+                {/* Тунгалаг PNG тул бараан картан дээр цагаан хайрцаг
                     үүсгэхгүй. Мэдээллийн ачаалалгүй чимэглэл учир
                     `alt=""` — дэлгэц уншигч алгасана. */}
                 <img
@@ -999,7 +1027,7 @@ export default function HomePage() {
                   alt=""
                   className="w-24 flex-none self-end object-contain object-bottom sm:w-36 lg:w-44"
                 />
-              </div>
+              </SpotlightCard>
             </Reveal>
           ))}
         </div>

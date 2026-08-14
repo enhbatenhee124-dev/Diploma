@@ -318,10 +318,16 @@ export function PageTransition({ children, className = '' }) {
 export function SpotlightCard({
   children,
   className = '',
+  // Дотоод агуулгын бүрхүүлд нэмэх класс. Бүрхүүл нь гэрлийн ДЭЭГҮҮР
+  // байх ёстой тул компонент өөрөө `relative z-10` өгдөг — гэхдээ
+  // байрлуулалт (flex, padding, өндөр) нь дуудагчийнх, эс бөгөөс энэ
+  // нэмэлт давхарга картын layout-ыг таслана.
+  contentClassName = '',
   glow = 'rgba(139, 92, 246, 0.3)',
   // Хамгийн захад ±7° налалт өгнө. Үүнээс их бол тоглоом шиг, бага бол
   // огт мэдрэгдэхгүй.
   tilt = 14,
+  style,
   ...rest
 }) {
   const ref = useRef(null)
@@ -356,11 +362,14 @@ export function SpotlightCard({
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       className={`group spotlight relative overflow-hidden ${className}`}
-      style={{ '--spot-glow': glow }}
+      // ⚠ Дуудагчийн `style` нь ХОЙНО нь тархах ёстой — тэгэхгүй бол
+      //   `{...rest}` дотор ирсэн `style` нь `--spot-glow`-ыг бүхэлд нь
+      //   дарж, курсорын гэрэл унтарна.
+      style={{ '--spot-glow': glow, ...style }}
       {...rest}
     >
       <div className="spotlight-glow" />
-      <div className="relative z-10">{children}</div>
+      <div className={`relative z-10 ${contentClassName}`}>{children}</div>
     </div>
   )
 }
