@@ -94,7 +94,7 @@ export function useEmployerQueue() {
   return useFetch(q.fetchEmployerQueue, [], empty)
 }
 
-/** Нэвтэрсэн хэрэглэгчийн EXP / түвшин — өгөгдлийн сангийн view-гээс. */
+/** Нэвтэрсэн хэрэглэгчийн XP / түвшин — өгөгдлийн сангийн view-гээс. */
 export function useMyProgress() {
   const { user } = useAuth()
   const id = user?.id
@@ -365,7 +365,7 @@ function useWorkerProfiles() {
  *
  * Хоёр эх сурвалжийг нэгтгэнэ:
  *   • `worker_profiles` — ажилтан өөрөө оруулсан ур чадвар, хуваарь
- *   • `rankings` view   — өгөгдлийн сангаас тооцоолсон үнэлгээ, EXP
+ *   • `rankings` view   — өгөгдлийн сангаас тооцоолсон үнэлгээ, XP
  *
  * Үнэлгээг view-гээс авах нь чухал: клиент дээр тооцвол RLS-ээс болж
  * бүрэн бус, мөн хэрэглэгч өөрчилж чадах тоо болно.

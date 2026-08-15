@@ -40,7 +40,7 @@ export default function RankingPage() {
         <h1 className={`text-3xl font-bold ${heading} flex items-center gap-3`}>
           <Trophy className="w-8 h-8 text-white" /> Тэргүүлэгчид
         </h1>
-        <p className={`mt-1 ${body}`}>Ажил хийж EXP цуглуулан дээшлээрэй.</p>
+        <p className={`mt-1 ${body}`}>Ажил хийж XP цуглуулан дээшлээрэй.</p>
       </div>
 
       {/* Миний байршил */}
@@ -58,7 +58,7 @@ export default function RankingPage() {
             </div>
           </div>
           <div className="text-right">
-            <p className={`text-sm ${body}`}>Нийт EXP</p>
+            <p className={`text-sm ${body}`}>Нийт XP</p>
             <p className={`text-3xl font-extrabold ${heading}`}>
               {stats.exp.toLocaleString('mn-MN')}
             </p>
@@ -103,22 +103,22 @@ export default function RankingPage() {
         <RankingList entries={entries} currentUserId={user?.id} accentClass={accentRow} />
       </div>
 
-      {/* EXP хэрхэн олох вэ */}
+      {/* XP хэрхэн олох вэ */}
       <div className={card}>
-        <h2 className={`text-lg font-semibold ${heading} mb-4`}>EXP хэрхэн цуглуулах вэ?</h2>
+        <h2 className={`text-lg font-semibold ${heading} mb-4`}>XP хэрхэн цуглуулах вэ?</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {(isEmployer
             ? [
-                [Flag, 'Ажлаа амжилттай дуусгах', '+20 EXP'],
-                [Timer, 'Ажилтан ажилласан цаг тутам', '+4 EXP'],
-                [Star, '5 одтой үнэлгээ авах', '+30 EXP'],
-                [ThumbsUp, '4 одтой үнэлгээ авах', '+15 EXP'],
+                [Flag, 'Ажлаа амжилттай дуусгах', '+20 XP'],
+                [Timer, 'Ажилтан ажилласан цаг тутам', '+4 XP'],
+                [Star, '5 одтой үнэлгээ авах', '+30 XP'],
+                [ThumbsUp, '4 одтой үнэлгээ авах', '+15 XP'],
               ]
             : [
-                [Flag, 'Ажил бүрэн дуусгах', '+25 EXP'],
-                [Timer, 'Ажилласан цаг тутам', '+10 EXP'],
-                [Star, '5 одтой үнэлгээ авах', '+30 EXP'],
-                [ThumbsUp, '4 одтой үнэлгээ авах', '+15 EXP'],
+                [Flag, 'Ажил бүрэн дуусгах', '+25 XP'],
+                [Timer, 'Ажилласан цаг тутам', '+10 XP'],
+                [Star, '5 одтой үнэлгээ авах', '+30 XP'],
+                [ThumbsUp, '4 одтой үнэлгээ авах', '+15 XP'],
               ]
           ).map(([Icon, label, value]) => (
             <div key={label} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.04] border border-white/10">

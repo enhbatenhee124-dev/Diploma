@@ -92,7 +92,7 @@ export default function EmployeeProfile() {
     setTimeout(() => setSaved(false), 2000)
   }
 
-  // Дуусгасан ажлууд — EXP-ийн задаргаатай
+  // Дуусгасан ажлууд — XP-ийн задаргаатай
   const workHistory = applications
     .filter(a => a.status === 'completed' && a.workerId === user?.id)
     .map(a => {
@@ -142,7 +142,7 @@ export default function EmployeeProfile() {
           { label: 'Дууссан ажил', value: stats.completed, Icon: Flag },
           { label: 'Ажилласан цаг', value: `${stats.hours}ц`, Icon: Timer },
           { label: 'Дундаж үнэлгээ', value: stats.avgRating || '—', Icon: Star },
-          { label: 'Нийт EXP', value: stats.exp.toLocaleString('mn-MN'), Icon: Zap },
+          { label: 'Нийт XP', value: stats.exp.toLocaleString('mn-MN'), Icon: Zap },
         ].map(item => (
           <div key={item.label} className="emp-card-sm text-center">
             <div className="w-9 h-9 mx-auto mb-2 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center">
@@ -293,7 +293,7 @@ export default function EmployeeProfile() {
 
         {workHistory.length === 0 ? (
           <p className="text-center py-8 emp-text-body">
-            Одоогоор дуусгасан ажил алга. Эхний ажлаа дуусгаад EXP цуглуулж эхлээрэй!
+            Одоогоор дуусгасан ажил алга. Эхний ажлаа дуусгаад XP цуглуулж эхлээрэй!
           </p>
         ) : (
           <div className="space-y-3">
@@ -308,7 +308,7 @@ export default function EmployeeProfile() {
                   </div>
                   <div className="text-right flex-shrink-0">
                     <span className="text-sm text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-full">
-                      +{item.exp} EXP
+                      +{item.exp} XP
                     </span>
                   </div>
                 </div>

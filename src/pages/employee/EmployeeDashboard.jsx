@@ -199,7 +199,7 @@ export default function EmployeeDashboard() {
                     {nextTier.minWage.toLocaleString('mn-MN')} ₮/цаг-с дээш ажлууд
                   </h2>
                   <p className="text-sm text-white/70 mt-1.5">
-                    Дараагийн түвшин хүртэл {stats.neededForNext?.toLocaleString('mn-MN') ?? 0} EXP —
+                    Дараагийн түвшин хүртэл {stats.neededForNext?.toLocaleString('mn-MN') ?? 0} XP —
                     ойролцоогоор {Math.ceil((stats.neededForNext || 0) / 65)} ажил.
                   </p>
                 </div>
@@ -225,7 +225,7 @@ export default function EmployeeDashboard() {
             {recent.length === 0 ? (
               <div className="text-center py-6">
                 <p className="flex items-center justify-center gap-2 emp-text-body text-sm">
-                  <Sprout className="w-4 h-4 text-white" /> Эхний ажлаа дуусгаад +25 EXP аваарай.
+                  <Sprout className="w-4 h-4 text-white" /> Эхний ажлаа дуусгаад +25 XP аваарай.
                 </p>
                 <Link to="/employee/jobs" className="text-sm text-white hover:text-emp-accent transition-colors">
                   Ажил хайх

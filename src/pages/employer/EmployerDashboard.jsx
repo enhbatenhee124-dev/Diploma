@@ -186,7 +186,7 @@ export default function EmployerDashboard() {
                   <Megaphone className="w-9 h-9 text-white/70 mx-auto mb-3" />
                   <p className="wrk-text-heading font-medium">Эхний зараа нийтэлье!</p>
                   <p className="wrk-text-body text-sm mt-1">
-                    Ажил амжилттай хаагдах бүрд +20 EXP болон түвшин ахина.
+                    Ажил амжилттай хаагдах бүрд +20 XP болон түвшин ахина.
                   </p>
                   <Link to="/employer/postings" className="wrk-btn-primary mt-4 inline-flex items-center gap-2">
                     <PlusCircle className="w-4 h-4" /> Шинэ зар

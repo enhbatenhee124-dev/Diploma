@@ -1,14 +1,14 @@
 // ------------------------------
-// EXP / Level тооцоолол
+// XP / Level тооцоолол
 // ------------------------------
 // ⚠ Энэ логик өгөгдлийн санд (supabase/migrations/..._gamification.sql) шилжсэн.
 //
 // Яагаад клиент дээр тооцох БОЛОМЖГҮЙ вэ:
 //   RLS-ээс болж ажилтан зөвхөн 'Active' зар болон ӨӨРИЙН хүсэлтийг л хардаг.
 //   Дуусгасан ажил нь 'Closed' төлөвтэй тул клиент дээр тооцвол өөрийнх нь
-//   ажилласан EXP ороогүй, бусдын EXP бүр 0 гарна.
+//   ажилласан XP ороогүй, бусдын XP бүр 0 гарна.
 //
-// Одоо EXP-г `useMyProgress()`, тэргүүлэгчдийг `useRanking()` hook-оор
+// Одоо XP-г `useMyProgress()`, тэргүүлэгчдийг `useRanking()` hook-оор
 // өгөгдлийн сангийн view-гээс уншина.
 
 /** Ээлжийн үргэлжлэх хугацаа (цагаар) — цалин харуулахад хэрэглэнэ. */
@@ -23,7 +23,7 @@ export function shiftHours(shift) {
 // ------------------------------
 // `icon` нь lucide-react дүрсний нэр. Дүрсийг components/Gamification.jsx доторх
 // бүртгэлээр шийднэ — ингэснээр энэ файл зөвхөн логик хэвээр үлдэж, UI-н
-// сан (lucide) EXP тооцоолол ашигладаг бүх газарт чирэгдэхгүй.
+// сан (lucide) XP тооцоолол ашигладаг бүх газарт чирэгдэхгүй.
 export const TITLES = [
   { id: 'newcomer', label: 'Шинэ гишүүн', minLevel: 1, icon: 'sprout' },
   { id: 'trainee', label: 'Дадлагажигч', minLevel: 2, icon: 'book' },
@@ -93,7 +93,7 @@ const BADGE_DEFS = [
   { id: 'first-five-star', label: 'Таван од', icon: 'star', hint: '5 одтой үнэлгээ ав', goal: 1, current: s => s.fiveStars, unit: 'үнэлгээ' },
   { id: 'beloved', label: 'Хүндлэгдсэн', icon: 'heart', hint: '5 ширхэг 5 одтой үнэлгээ ав', goal: 5, current: s => s.fiveStars, unit: 'үнэлгээ' },
   { id: 'century', label: 'Зуут', icon: 'timer', hint: '100 цаг ажилла', goal: 100, current: s => s.hours, unit: 'цаг' },
-  { id: 'exp-1000', label: 'Мянгат', icon: 'rocket', hint: '1000 EXP цуглуул', goal: 1000, current: s => s.exp, unit: 'EXP' },
+  { id: 'exp-1000', label: 'Мянгат', icon: 'rocket', hint: '1000 XP цуглуул', goal: 1000, current: s => s.exp, unit: 'XP' },
   { id: 'level-5', label: 'Тавдугаар түвшин', icon: 'award', hint: 'Lv.5-д хүр', goal: 5, current: s => s.level, unit: 'түвшин' },
   { id: 'level-10', label: 'Аварга', icon: 'trophy', hint: 'Lv.10-д хүр', goal: 10, current: s => s.level, unit: 'түвшин' },
 ]
@@ -111,7 +111,7 @@ export const EMPTY_STATS = {
  * ⚠ Статистикийг өгөгдлийн сангийн `user_progress` view-гээс авна, клиент дээр
  * тооцохгүй. Учир нь RLS-ээс болж ажилтан зөвхөн 'Active' зар болон өөрийн
  * хүсэлтийг л хардаг — дуусгасан ажил нь 'Closed' төлөвтэй тул клиент дээр
- * тооцвол EXP дутуу гарна.
+ * тооцвол XP дутуу гарна.
  *
  * @param {object} stats useMyProgress()-ээс ирсэн статистик
  */

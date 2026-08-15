@@ -431,16 +431,16 @@ function ArtChat() {
 }
 
 /**
- * Түвшин ба EXP.
+ * Түвшин ба XP.
  *
  * ⚠ `components/Gamification.jsx`-ийн `LevelProgress`-ийн бодит бүтэц:
- *   «Түвшин N» + «{intoLevel} / {span} EXP», доор нь зурвас, доор нь
- *   «Дараагийн түвшин хүртэл … EXP · Нийт … EXP». Зурвасын өнгө нь
+ *   «Түвшин N» + «{intoLevel} / {span} XP», доор нь зурвас, доор нь
+ *   «Дараагийн түвшин хүртэл … XP · Нийт … XP». Зурвасын өнгө нь
  *   `THEMES[0]` буюу анхдагч «Нил ягаан» (`from-violet-500 to-fuchsia-500`).
  *
  *   Тоонууд нь ЗОХИОМОЛ биш, бүгд ХООРОНДОО НИЙЦНЭ. Migration
  *   `20260727000400_gamification.sql`-ийн `exp_for_level` босго нь
- *   Lv.4 = 560, Lv.5 = 900. Нийт EXP 772 гэвэл `user_progress` view нь:
+ *   Lv.4 = 560, Lv.5 = 900. Нийт XP 772 гэвэл `user_progress` view нь:
  *     level          = 4        (560 ≤ 772 < 900)
  *     into_level     = 772−560  = 212
  *     needed_for_next= 900−772  = 128
@@ -455,7 +455,7 @@ function ArtLevel() {
       <div className="w-full max-w-[19rem]">
         <div className="mb-1.5 flex items-end justify-between gap-3">
           <span className="text-[0.78rem] font-bold text-white">Түвшин 4</span>
-          <span className="text-[0.66rem] text-white/80">212 / 340 EXP</span>
+          <span className="text-[0.66rem] text-white/80">212 / 340 XP</span>
         </div>
 
         <div className="h-2.5 overflow-hidden rounded-full bg-white/15">
@@ -463,7 +463,7 @@ function ArtLevel() {
         </div>
 
         <p className="m-0 mt-1.5 text-[0.64rem] leading-snug text-white/80">
-          Дараагийн түвшин хүртэл 128 EXP · Нийт 772 EXP
+          Дараагийн түвшин хүртэл 128 XP · Нийт 772 XP
         </p>
         <p className="m-0 mt-2 text-[0.64rem] leading-snug text-mufi-warm">
           Lv.5-д хүрвэл цагийн 20,000 ₮-с дээш ажил санал болгоно
@@ -497,7 +497,7 @@ const FEATURES = [
   {
     art: ArtLevel,
     title: 'Түвшин нь зөвлөмж, хаалт биш',
-    body: 'Ажил хийж EXP цуглуулна. Түвшин нь өндөр цалинтай ажилд ямар туршлага санал болгож байгааг харуулах ч хэнийг ч хаахгүй — хүссэн ажилдаа хүсэлт илгээнэ.',
+    body: 'Ажил хийж XP цуглуулна. Түвшин нь өндөр цалинтай ажилд ямар туршлага санал болгож байгааг харуулах ч хэнийг ч хаахгүй — хүссэн ажилдаа хүсэлт илгээнэ.',
     // `utils/gamification.js` → `levelAdvice` (ЗӨВЛӨМЖ, хориг БИШ)
   },
 ]
@@ -786,13 +786,13 @@ export default function HomePage() {
 
   const stats = [
     {
-      value: "45,200+",
+      value: "10,000+",
       label: "Идэвхтэй оюутан ажил хайгч",
       desc: "Одоогоор Монгол дахь цагийн ажил хайж байгаа",
       tone: "purple",
     },
     {
-      value: "68%",
+      value: "43%",
       label: "Цагийн ажилд орсон оюутан",
       desc: "Их сургуулийн оюутнууд ажил, сургалтаа хослуулж байна",
       tone: "purple",

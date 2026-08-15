@@ -97,7 +97,7 @@ export default function EmployerProfile() {
           { label: 'Дуусгасан ажил', value: stats.completed, Icon: Flag },
           { label: 'Ажиллуулсан цаг', value: `${stats.hours}ц`, Icon: Timer },
           { label: 'Дундаж үнэлгээ', value: stats.avgRating || '—', Icon: Star },
-          { label: 'Нийт EXP', value: stats.exp.toLocaleString('mn-MN'), Icon: Zap },
+          { label: 'Нийт XP', value: stats.exp.toLocaleString('mn-MN'), Icon: Zap },
         ].map(item => (
           <div key={item.label} className="wrk-card-sm text-center">
             <div className="w-9 h-9 mx-auto mb-2 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center">
@@ -185,7 +185,7 @@ export default function EmployerProfile() {
 
         {history.length === 0 ? (
           <p className="text-center py-8 wrk-text-body">
-            Одоогоор дуусгасан ажил алга. Зар нийтэлж ажилтан ажиллуулаад EXP цуглуулаарай!
+            Одоогоор дуусгасан ажил алга. Зар нийтэлж ажилтан ажиллуулаад XP цуглуулаарай!
           </p>
         ) : (
           <div className="space-y-3">
@@ -197,7 +197,7 @@ export default function EmployerProfile() {
                     <p className="text-sm wrk-text-body">{item.date} · {item.hours.toFixed(1)} цаг</p>
                   </div>
                   <span className="text-sm text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-full flex-shrink-0">
-                    +{item.exp} EXP
+                    +{item.exp} XP
                   </span>
                 </div>
               </div>

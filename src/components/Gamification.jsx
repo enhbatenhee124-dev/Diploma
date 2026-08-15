@@ -83,7 +83,7 @@ export function AvatarWithFrame({ user, level, frame, size = 'md', showLevel = t
 }
 
 // ------------------------------
-// EXP явцын мөр
+// XP явцын мөр
 // ------------------------------
 function LevelProgress({ progress, theme, compact = false }) {
   const { level, exp, intoLevel, neededForNext, progress: pct, nextLevelExp, currentLevelExp } = progress
@@ -96,7 +96,7 @@ function LevelProgress({ progress, theme, compact = false }) {
           Түвшин {level}
         </span>
         <span className={`text-white/80 ${compact ? 'text-[11px]' : 'text-xs'}`}>
-          {intoLevel.toLocaleString('mn-MN')} / {span.toLocaleString('mn-MN')} EXP
+          {intoLevel.toLocaleString('mn-MN')} / {span.toLocaleString('mn-MN')} XP
         </span>
       </div>
 
@@ -110,8 +110,8 @@ function LevelProgress({ progress, theme, compact = false }) {
       {!compact && (
         <p className="text-xs text-white/80 mt-1.5">
           {neededForNext > 0
-            ? `Дараагийн түвшин хүртэл ${neededForNext.toLocaleString('mn-MN')} EXP · Нийт ${exp.toLocaleString('mn-MN')} EXP`
-            : `Хамгийн дээд түвшин! Нийт ${exp.toLocaleString('mn-MN')} EXP`}
+            ? `Дараагийн түвшин хүртэл ${neededForNext.toLocaleString('mn-MN')} XP · Нийт ${exp.toLocaleString('mn-MN')} XP`
+            : `Хамгийн дээд түвшин! Нийт ${exp.toLocaleString('mn-MN')} XP`}
         </p>
       )}
     </div>
@@ -119,7 +119,7 @@ function LevelProgress({ progress, theme, compact = false }) {
 }
 
 // ------------------------------
-// Хэрэглэгчийн толгой хэсэг (баннер + аватар + цол + EXP)
+// Хэрэглэгчийн толгой хэсэг (баннер + аватар + цол + XP)
 // ------------------------------
 export function ProfileHero({ user, progress, look, subtitle, children }) {
   return (
@@ -152,7 +152,7 @@ export function ProfileHero({ user, progress, look, subtitle, children }) {
 }
 
 // ------------------------------
-// Дугуй EXP бөгж
+// Дугуй XP бөгж
 // ------------------------------
 export function LevelRing({ progress, look, size = 190 }) {
   const stroke = 12
@@ -191,7 +191,7 @@ export function LevelRing({ progress, look, size = 190 }) {
         <span className="text-[11px] uppercase tracking-widest text-white/50">Түвшин</span>
         <span className="text-4xl font-extrabold text-white leading-none">{progress.level}</span>
         <span className="text-xs text-white/60 mt-1">
-          {progress.exp.toLocaleString('mn-MN')} EXP
+          {progress.exp.toLocaleString('mn-MN')} XP
         </span>
       </div>
     </div>
@@ -299,7 +299,7 @@ export function RankingList({ entries, currentUserId, limit, accentClass = 'bg-w
         </div>
         <span className="text-sm font-bold text-white flex-shrink-0">
           {entry.exp.toLocaleString('mn-MN')}
-          <span className="text-[10px] font-normal text-white/60 ml-1">EXP</span>
+          <span className="text-[10px] font-normal text-white/60 ml-1">XP</span>
         </span>
       </div>
     )

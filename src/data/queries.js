@@ -97,7 +97,7 @@ export const fetchCosmetics = userId => apiGet(`/profiles/${userId}/cosmetics`)
 export const saveCosmetics = (_userId, patch) => apiPut('/profiles/me/cosmetics', patch)
 
 // ------------------------------
-// EXP / түвшин / тэргүүлэгчид
+// XP / түвшин / тэргүүлэгчид
 // ------------------------------
 export const fetchMyProgress = () => apiGet('/gamification/me')
 

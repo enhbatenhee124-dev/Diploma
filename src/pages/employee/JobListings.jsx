@@ -167,7 +167,7 @@ export default function JobListings() {
           <div className="flex items-baseline gap-2">
             <span className="text-lg font-bold emp-text-heading">Lv.{myProgress.level}</span>
             <span className="text-xs emp-text-body">
-              · {myProgress.exp.toLocaleString('mn-MN')} EXP
+              · {myProgress.exp.toLocaleString('mn-MN')} XP
             </span>
           </div>
         </div>

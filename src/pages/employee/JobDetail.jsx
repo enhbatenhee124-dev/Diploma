@@ -177,15 +177,15 @@ export default function JobDetail() {
           )}
         </div>
 
-        {/* Энэ ажлыг дуусгавал хэдэн EXP авахыг урьдчилан харуулна */}
+        {/* Энэ ажлыг дуусгавал хэдэн XP авахыг урьдчилан харуулна */}
         <div className="flex items-center gap-3 p-4 mb-4 rounded-xl bg-emp-accent/10 border border-emp-accent/20">
           <Zap className="w-5 h-5 text-emp-accent flex-shrink-0" />
           <p className="text-sm emp-text-body">
             Энэ ажлыг дуусгавал{' '}
             <strong className="emp-text-heading">
-              +{(25 + Math.round(shiftHours(shift) * 10)).toLocaleString('mn-MN')} EXP
+              +{(25 + Math.round(shiftHours(shift) * 10)).toLocaleString('mn-MN')} XP
             </strong>{' '}
-            авна ({shiftHours(shift).toFixed(1)} цаг). Сайн үнэлгээ авбал нэмэлт EXP.
+            авна ({shiftHours(shift).toFixed(1)} цаг). Сайн үнэлгээ авбал нэмэлт XP.
           </p>
         </div>
 

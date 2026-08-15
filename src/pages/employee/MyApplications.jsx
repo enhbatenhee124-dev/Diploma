@@ -121,6 +121,23 @@ export default function MyApplications() {
           const employerProfile = getEmployerProfile(shift?.employerId)
           const existingReview = getReview(app.id, user?.id)
           const canRate = app.status === 'completed' && !existingReview
+
+          // Ажлаа дууссан гэж ажилтан ӨӨРӨӨ тэмдэглэх боломж.
+          //
+          // Урьд нь энэ товч ЗӨВХӨН ажил олгогчид байсан. Тэр дарахаа
+          // мартвал хүсэлт «Хийгдэж буй» дээр үүрд гацаж, ажилтан
+          // ажилласан атлаа XP-гүй үлдэх ба үнэлгээ ч өгөх боломжгүй
+          // болдог байв (XP нь `completed` хүсэлтээс бодогддог).
+          //
+          // ⚠ Ээлжийн цаг ӨНГӨРСНИЙ дараа л харуулна. Эс тэгвээс ажил
+          //   олгогч «Ажилдаа» дармагц ажилтан шууд «Дуусгах» дарж,
+          //   ажиллаагүй цагийнхаа XP-г өөртөө өгч чадна — энэ нь
+          //   «XP-г хуурамчаар нэмэгдүүлэх боломжгүй» гэсэн системийн
+          //   гол зарчмыг эвдэнэ.
+          //
+          // Зар ачаалагдаагүй үед `false` — эргэлзээтэй бол НУУНА.
+          const shiftEnded = shift?.endAt ? new Date(shift.endAt) <= new Date() : false
+          const canComplete = app.status === 'in-progress' && shiftEnded
           return (
             <div
               key={app.id}
@@ -147,6 +164,14 @@ export default function MyApplications() {
                                   className="emp-btn-secondary py-2 px-3 text-sm flex items-center gap-1"
                                 >
                                   Цуцлах
+                                </button>
+                              )}
+                              {canComplete && (
+                                <button
+                                  onClick={() => updateApplicationStatus(app.id, 'completed')}
+                                  className="py-2 px-3 rounded-xl border border-emerald-500/25 bg-emerald-500/10 text-sm font-medium text-emerald-400 transition-colors hover:bg-emerald-500/20"
+                                >
+                                  Дуусгах
                                 </button>
                               )}
                               {canRate && (
