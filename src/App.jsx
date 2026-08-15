@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react'
+import { Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { Briefcase } from 'lucide-react'
 import { useAuth } from './hooks/useAuth'
@@ -15,44 +15,15 @@ import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 
-const TermsPage = lazy(() => import('./pages/TermsPage'))
-const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
-const AuthCallback = lazy(() => import('./pages/AuthCallback'))
-const ChooseRolePage = lazy(() => import('./pages/ChooseRolePage'))
-
-// ============================================================
-// Дүрээр нь хуваасан ачаалалт (NFR-1)
-// ============================================================
-// Ажилтан админы хуудсуудыг ХЭЗЭЭ Ч нээхгүй. Тэднийг эхний ачаалалтад
-// оруулах нь утасны сүлжээнд дэмий хүлээлт үүсгэнэ. `lazy` нь дүр бүрийн
-// кодыг тусдаа файл болгож, хэрэгтэй үед нь татна.
-// ============================================================
-
-const RankingPage = lazy(() => import('./pages/RankingPage'))
-
-// Ажилтан
-const EmployeeDashboard = lazy(() => import('./pages/employee/EmployeeDashboard'))
-const JobListings = lazy(() => import('./pages/employee/JobListings'))
-const JobDetail = lazy(() => import('./pages/employee/JobDetail'))
-const MyApplications = lazy(() => import('./pages/employee/MyApplications'))
-const EmployeeProfile = lazy(() => import('./pages/employee/EmployeeProfile'))
-const SavedJobs = lazy(() => import('./pages/employee/SavedJobs'))
-
-// Ажил олгогч
-const EmployerDashboard = lazy(() => import('./pages/employer/EmployerDashboard'))
-const MyPostings = lazy(() => import('./pages/employer/MyPostings'))
-const EmployerProfile = lazy(() => import('./pages/employer/EmployerProfile'))
-const EmployerEarnings = lazy(() => import('./pages/employer/EmployerEarnings'))
-const Subscription = lazy(() => import('./pages/employer/Subscription'))
-const FindWorkers = lazy(() => import('./pages/employer/FindWorkers'))
-
-// Админ
-const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
-const ManageUsers = lazy(() => import('./pages/admin/ManageUsers'))
-const ManageJobs = lazy(() => import('./pages/admin/ManageJobs'))
-const AdminAnalytics = lazy(() => import('./pages/admin/AdminAnalytics'))
-const Payments = lazy(() => import('./pages/admin/Payments'))
-const Moderation = lazy(() => import('./pages/admin/Moderation'))
+// Бүх lazy хуудас `routes/lazyRoutes.js`-д — хажуугийн цэс мөн тэднийг
+// урьдчилан татдаг тул нэг цэгээс тарааж, тойрог хамааралгүй байлгав.
+import {
+  TermsPage, ResetPasswordPage, AuthCallback, ChooseRolePage,
+  RankingPage, JobListings, JobDetail,
+  EmployeeDashboard, MyApplications, EmployeeProfile, SavedJobs,
+  EmployerDashboard, MyPostings, EmployerProfile, EmployerEarnings, Subscription, FindWorkers,
+  AdminDashboard, ManageUsers, ManageJobs, AdminAnalytics, Payments, Moderation,
+} from './routes/lazyRoutes'
 
 /**
  * Хуудас татагдаж байх үеийн дэлгэц.

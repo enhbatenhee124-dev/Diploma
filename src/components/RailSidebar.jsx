@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { LogOut, Menu, X } from 'lucide-react'
 import NotificationBell from './NotificationBell'
+import { prefetchRoute } from '../routes/lazyRoutes'
 
 // ------------------------------
 // Эвхэгддэг хажуугийн цэс
@@ -93,6 +94,17 @@ export default function RailSidebar({ theme = 'emp', items, brand, caption, logo
               key={item.path}
               to={item.path}
               onClick={() => setMobileOpen(false)}
+              // Хуудсын чанкийг ДАРАХААС ӨМНӨ татаж эхэлнэ. Хулгана
+              // холбоос дээр очоод дарах хүртэлх хугацаанд (ихэвчлэн
+              // 100–300мс) файл ирсэн байх тул шилжилт агшин зуурт
+              // болно. `prefetchRoute` нь нэг замыг дахин татахгүй.
+              //
+              // `onFocus` нь гарын Tab-аар явж буй хэрэглэгчид ижил
+              // ашгийг өгнө; мэдрэгч дэлгэцэнд hover байхгүй тул
+              // `onTouchStart` нь хамгийн эрт мэдэгдэх дохио.
+              onMouseEnter={() => prefetchRoute(item.path)}
+              onFocus={() => prefetchRoute(item.path)}
+              onTouchStart={() => prefetchRoute(item.path)}
               title={rail ? item.label : undefined}
               className={`group relative flex items-center h-12 rounded-r-xl text-sm font-medium
                           transition-colors duration-200

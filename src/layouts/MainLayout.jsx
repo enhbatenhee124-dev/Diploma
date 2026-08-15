@@ -1,6 +1,8 @@
+import { Suspense } from 'react'
 import { Outlet } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import { Loading } from '../components/States'
 import { PageTransition } from '../components/Motion'
 
 // ============================================================
@@ -23,9 +25,15 @@ export default function MainLayout() {
       <Navbar />
       <main className="flex-1 px-4 py-6 sm:px-6 sm:py-10">
         <div className="container-page">
-          <PageTransition>
-            <Outlet />
-          </PageTransition>
+          {/* Хуудсын чанк татагдах зуур ЗӨВХӨН энэ хэсэг хий үзэгдэл
+              болно — Navbar, Footer байрандаа үлдэнэ. Үүнгүй бол App-ийн
+              дээд түвшний Suspense барьж, бүтэн дэлгэц эргэлдэх дугуй
+              болдог байв. */}
+          <Suspense fallback={<Loading />}>
+            <PageTransition>
+              <Outlet />
+            </PageTransition>
+          </Suspense>
         </div>
       </main>
       <Footer />

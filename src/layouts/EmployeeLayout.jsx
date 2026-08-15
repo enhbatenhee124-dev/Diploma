@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { Outlet } from 'react-router-dom'
 import { LayoutDashboard, Briefcase, FileText, Bookmark, User, Trophy } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
@@ -5,6 +6,7 @@ import { useCosmetics } from '../hooks/useData'
 import { accentStyle } from '../utils/accents'
 import RailSidebar from '../components/RailSidebar'
 import ChatDock from '../components/ChatDock'
+import { Loading } from '../components/States'
 import { PageTransition } from '../components/Motion'
 
 const navItems = [
@@ -37,10 +39,17 @@ export default function EmployeeLayout() {
         <main className="flex-1 overflow-y-auto">
           {/* Доод талд чатын товчны зай үлдээнэ */}
           <div className="p-6 lg:p-8 pb-28">
-            {/* Цэсээр шилжих бүрд агуулга зөөлөн орж ирнэ */}
-            <PageTransition>
-              <Outlet />
-            </PageTransition>
+            {/* ⚠ Энэ Suspense нь ЗААВАЛ layout дотор байх ёстой. Урьд нь
+                зөвхөн App-ийн дээд түвшинд байсан тул цэс солих бүрд
+                хажуугийн зурвас, чат хүртэл бүтэн дэлгэцийн эргэлдэх
+                дугуйгаар солигдож, шинэ хуудас руу «үсэрч» байгаа мэт
+                удаан мэдрэгддэг байв. Одоо зөвхөн агуулга солигдоно. */}
+            <Suspense fallback={<Loading />}>
+              {/* Цэсээр шилжих бүрд агуулга зөөлөн орж ирнэ */}
+              <PageTransition>
+                <Outlet />
+              </PageTransition>
+            </Suspense>
           </div>
         </main>
       </div>

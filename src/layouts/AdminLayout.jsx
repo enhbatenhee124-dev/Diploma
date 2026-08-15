@@ -1,7 +1,9 @@
+import { Suspense } from 'react'
 import { Outlet } from 'react-router-dom'
 import { LayoutDashboard, Users, Briefcase, BarChart3, Shield, CreditCard, Flag } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import RailSidebar from '../components/RailSidebar'
+import { Loading } from '../components/States'
 import { PageTransition } from '../components/Motion'
 
 const navItems = [
@@ -30,9 +32,13 @@ export default function AdminLayout() {
 
         <main className="flex-1 overflow-y-auto">
           <div className="p-6 lg:p-8">
-            <PageTransition>
-              <Outlet />
-            </PageTransition>
+            {/* Хажуугийн зурвас байрандаа үлдэж, зөвхөн агуулга солигдоно
+                — тайлбарыг `EmployeeLayout`-оос үзнэ үү. */}
+            <Suspense fallback={<Loading />}>
+              <PageTransition>
+                <Outlet />
+              </PageTransition>
+            </Suspense>
           </div>
         </main>
       </div>
